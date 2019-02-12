@@ -31,12 +31,16 @@
 - Hidden services/rendezvous points
 
 # Design
-- Basics:
+
+Basics:
+-------
 * Onion proxy connects to onion routers via TLS connections.
 * OP -> OR = circuit.
 * Multiple TCP streams are sent through circuit.
 * Communication happens via Cells, same sized encrypted packets so that they are indistinguishable.
-- Setup:
+
+Setup:
+------
 * Directory servers distribute keys.
 * OP figures out route, performs handshake and setsup symmetric key with every OR per circuit.
 * If cell decrypts to data then send it to destination, otherwise forward to next router. This way client can specify where to exit in circuit - Leaky Pipe Circuit.
