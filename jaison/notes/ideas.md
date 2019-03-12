@@ -11,6 +11,7 @@
 - Congestion control in PCN's? Large number of micropayments through well connected nodes (for eg: landmark).
 - Congestion control for payment-channel-networks: Congestion control algos need to be deadline-aware since transations are timed.
 - Explore imbalance-aware congestion control algorithm
+- Evaluate ideal design for network topology and influencing them to ensure good performance.
 
 # Tor
 - Explore all here: https://research.torproject.org/ideas.html
