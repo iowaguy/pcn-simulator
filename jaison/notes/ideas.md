@@ -9,6 +9,8 @@
 - Byzantine detection in PCN's.
 - PCN channel with SpeedyMurmurs type rebalanced algo + Revive type channel rebalancing - Performance Evaluation + Development.
 - Congestion control in PCN's? Large number of micropayments through well connected nodes (for eg: landmark).
+- Congestion control for payment-channel-networks: Congestion control algos need to be deadline-aware since transations are timed.
+- Explore imbalance-aware congestion control algorithm
 
 # Tor
 - Explore all here: https://research.torproject.org/ideas.html
