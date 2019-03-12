@@ -1,0 +1,74 @@
+Major four security conferences:
+- Symposium of security and privacy (SMP).
+- CCS
+- UseNix security
+- NDSS
+
+Privacy:
+- PETS (Workshop).
+
+System Conferences:
+- SOSP
+- OSDI
+- NSDI
+- UseNix ATC
+
+Networking:
+- SIGCOMM
+- CONEXT
+
+Distributed Systems *Not really first tier*:
+- ICDCS
+- DSN
+
+How to select papers:
+- Citations - for fundamental topics
+- Find papers published in these conferences, if not, ask Cristina
+- Authors who have published good papers, keep in mind good authors
+- Famous schools
+
+Not more than one month on getting done with these sessions:
+
+3 Sessions: 1 Month!
+^^^^^^^^^^^^^^^^^^^^
+
+Session 1: ROUTING Fundamentals:
+* Read Radia Permans Thesis + PITNS together - PITNS is more complete. (routing between any two pairs) - code publicly available.
+* ODSBR - routing between 1 source and destination *not entire network*, does not deal with byzantine intrusion, it does find where the attackers are aka Fault localisation.
+
+- Read these three together.
+- Note how long it takes to read the paper.
+- Try figure out things with Ben. If not, ask Cristina.
+
+- Figure out what is done, what isnt, advantages.
+- Write ideas that come to mind after reading these.
+**Note: These will not be credit based.
+
+
+Session 2: Privacy:
+- TOR paper
+- Recent attacks against TOR.
+- Nikita Borisov's website is good, Amir H*something* - look at them and find papers that are recent.
+- Ian Goldberg.
+- Cristinas slides on anonymity. Talks about things before TOR. Mixnets, statistical attacks.
+
+Session 3: Credit Based Networks:
+- In the credit based networks, citation, read all the ones that are cited in the abstract.
+
+
+
+
+How to read?
+- Be skeptical about everything you read.
+- What they did and what they did not do
+- Try finding Limitations
+Think: "They did x and did not do Y, what assumptions did they make? what models they did use?"
+
+Be able to summarise papers:
+- What is the problem?
+- Model
+- Assumption
+- What is the solution?
+- How are you convinced that the solution is good?
+- Evaluation: is it realistic?
+- Proofs: if it is security*

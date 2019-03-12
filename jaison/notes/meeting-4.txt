@@ -1,0 +1,44 @@
+Routing:
+- IP based
+- Geographical
+
+Homomomorphic based cryptography - allows operations on encrypted data.
+
+Virtual cooridinates(Vivaldi).
+- based on latency - decentralised - based on pings.
+
+Read a book on Cryptography.
+
+
+- Protocol stack design: scalanility, accessiblit, adoption
+- Crypto:
+
+
+Only advantage QUIC has over TCP:
+- Encrypts headers.
+
+
+- Congestion control in TOR.
+
+# READ - gives you some idea of the different types of routing - geographic based.
+- Vivaldi virtual co-ordinates
+- Beacon
+
+- Learn how to evaluate systems.
+
+- Come up with 3 things you want to do. Routing, anonymity, security: Talk with others and bounce off ideas.
+
+
+
+- Systems and evaluation.
+- See whatever is implemented and how theyve done it.
+- How do people evaluate and deploy the system.
+- What code is available and where you can start with.
+- Ask ASAD and connor about Red Belly evaluation system. ODSBR has good evaluation of systems under attack.
+* shows you how and what to quantify.
+
+- Understand paper submitted with Antony.
+
+- Good thesis HAS to be a paper!!!
+
+- Meet 1st day after Spring break.
