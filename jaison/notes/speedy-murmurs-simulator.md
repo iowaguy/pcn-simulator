@@ -68,7 +68,8 @@ in (complete-parsed-trust-lines-2016-nov-7.txt).
 - parse_trust_set_transactions.py: parses the create link transactions in file (trust-set-transactions.txt), parsed content in (links-created-in-USD-jan-2013-dec-2016.txt).
 
 ## Data Set Construction:
--
+- ParseFilesToGTNA.java converts the above sets into the required format for GTNA.
+*More details required here*
 
 
 # How are results evaluated and plotted
