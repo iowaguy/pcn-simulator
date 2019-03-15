@@ -15,17 +15,17 @@
 
 
 # Algorithms Supported
-0:  LM-MUL-PER - SilentWhispers
-1:  LM-RAND-PER
-2:  LM-MUL-OND
-3:  LM-RAND-OND
-4:  GE-MUL-PER
-5:  GE-RAND-PER
-6:  GE-MUL-OND
-7:  GE-RAND-OND - SpeedyMurmurs
-8:  ONLY-MUL-PER
-9:  ONLY-RAND-OND
-10: max flow
+- 0:  LM-MUL-PER - SilentWhispers
+- 1:  LM-RAND-PER
+- 2:  LM-MUL-OND
+- 3:  LM-RAND-OND
+- 4:  GE-MUL-PER
+- 5:  GE-RAND-PER
+- 6:  GE-MUL-OND
+- 7:  GE-RAND-OND - SpeedyMurmurs
+- 8:  ONLY-MUL-PER
+- 9:  ONLY-RAND-OND
+- 10: max flow
 
 ## Routing algorithm
 * LM: Landmark
