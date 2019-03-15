@@ -1,19 +1,23 @@
 # Work Plan
 I've split what I want to do into the following steps:
-## Simulator Overview:
+**Simulator Overview**
 - What are the Algorithms Supported?
 - Understand the algorithms for SpeedyMurmurs and SilentWhispers to greater depth.
-## Simulation Data:
+**Simulation Data**
 - Understand how simuation data is constructed from the data set provided. (Ripple data from Jan 2013 - Aug 2016).
 - What are the final list of files used in the evaluation and what are each of them used for?
-## Simulation Results:
+**Simulation Results**
 - Running the simulation outputs a set of files, what do each of those files have/mean?
 - How are the results evaluated? Graphs plotted etc
-## Paper evaluation verification:
+**Paper evaluation verification**
 - After understanding the data and the results. Try reproducing the results from the paper.
 - Run the simulation on an updated data set (Ripple data from 2016 - Present). This is interesting because Ripple had a transaction surge in 2017.
     * What is the expected result?
     * What is the actual result? was SpeedyMurmurs still more performant than Silent Whispers in the presence of high transactional load which probably resulted in frequent tree rebalancing.
+**Exploring Byzantine behaviour**
+- Make a theorectical plan on the type of attacks you want to make. This involves clearly defining the model.
+- Understand how EXACTLY the algorithm is implemented and run these attacks in the simulator.
+- Will it be possible to modularize/improve the simulator to simulate byzantine behaviour with a simple config file?
 
 
 # 1.Algorithms Supported
@@ -82,14 +86,6 @@ in (complete-parsed-trust-lines-2016-nov-7.txt).
 - Path Length  : length of discovered path between sender and receiver (lower better).
 - Stabilization: number of messages sent per epoch to stabilize trees (lower better).
 
-
-
-
-
-
-
-# 4.Evaluation Ideas
-- Run evaluation on updated Ripple Data set - after 2016 to present date and compare results with results from the currently used data set (jan 2013 - oct 2016). This is interesting because there was a major increase in ripple transactions from 2017 - early 2018.
 
 # 5.Ideas
 - Evaluate conditions where Silent Whispers is better and when Speedy Murmurs is and ford fulkerson, suggest hybrid based on network state.
