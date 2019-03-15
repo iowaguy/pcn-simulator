@@ -10,8 +10,8 @@
 ## Paper evaluation verification:
 - After understanding the data and the results. Try reproducing the results from the paper.
 - Run the simulation on an updated data set (Ripple data from 2016 - Present). This is interesting because Ripple had a transaction surge in 2017.
-* What is the expected result?
-* What is the actual result? was SpeedyMurmurs still more performant than Silent Whispers in the presence of high transactional load which probably resulted in frequent tree rebalancing.
+    * What is the expected result?
+    * What is the actual result? was SpeedyMurmurs still more performant than Silent Whispers in the presence of high transactional load which probably resulted in frequent tree rebalancing.
 
 
 # 1.Algorithms Supported
@@ -48,20 +48,20 @@
 ## 2.Data Set
 
 ### Transaction Data: (ripple-transactions-jan-2013-aug-2016.txt)
-- Format: tx_hash, sdr, rev, currency, amount1, amount2, ledger, tag1, tag2, crawl_id, unix_timestamp
+- Format: `tx_hash, sdr, rev, currency, amount1, amount2, ledger, tag1, tag2, crawl_id, unix_timestamp`
 - Above format is then converted to tx_hash, sdr, rcv, USD_amount, unix_timestamp in (transactions-in-USD-jan-2013-aug-2016.txt) using known currencies and converting them to USD (based on rate on Nov 9th).
-Moreover, total amount = amount1 * amount2/10^8
+Moreover, `total amount = amount1 * amount2/10^8`
 
 ### Trust Lines: (raw-trust-lines-2016-nov-7.txt):
 - Ripple network allows IOU's. Alice can pay Bob 10$ as an IOU. Bob can then pay Claire 5$ using Alice's IOU. Alice now has to pay 5$ to Bob and 5$ to Claire when they redeem their IOU's. This feature requires both Claire and Bob to trust Alice, which is tougher in the real world. "Trust Lines" are used to create a chain of such trusted intermediatories.
 - Explanation links: https://medium.com/@AlexCarrithers/xrp-vs-ious-on-ripple-what-are-they-and-which-are-banks-using-257023fc578e, https://developers.ripple.com/issued-currencies-overview.html
-- Format: account(address), lines: [], status, type
-- Lines Format: account(address), balance, currency, limit(upper_bound), limit_peer(lower_bound), no_ripple, quality_in, quality_out
+- Format: `account(address), lines: [], status, type`
+- Lines Format: `account(address), balance, currency, limit(upper_bound), limit_peer(lower_bound), no_ripple, quality_in, quality_out`
 
-- These are now converted as: src, dest, lower_bound, balance, currency, upper_bound
+- These are now converted as: `src, dest, lower_bound, balance, currency, upper_bound`
 in (complete-parsed-trust-lines-2016-nov-7.txt).
 
-- Finally, converting each currency to its equivalent USD amount (based on rate on Nov 9th), format: src, dest, lower_bound, balance, upper_bound in (all-in-USD-trust-lines-2016-nov-7.txt).
+- Finally, converting each currency to its equivalent USD amount (based on rate on Nov 9th), `format: src, dest, lower_bound, balance, upper_bound` in (all-in-USD-trust-lines-2016-nov-7.txt).
 
 ### Scripts Used
 - parse_trust_lines.py: parses the crawled ripple graph in file (ripple-graph-jan-2013.txt)parsed content in (all-in-USD-trust-lines-2013-jan.txt).
@@ -73,7 +73,8 @@ in (complete-parsed-trust-lines-2016-nov-7.txt).
 
 
 # 3.How are results evaluated and plotted
-## Metrics used
+## Metrics used 
+*This is what the paper mentions is being used while evaluating*
 - Success Ratio: fraction of successful transations (higher better).
 - Delay        : longest chain of messages (lower better).
 - Path Length  : length of discovered path between sender and receiver (lower better).
