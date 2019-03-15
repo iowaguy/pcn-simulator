@@ -14,7 +14,7 @@
 * What is the actual result? was SpeedyMurmurs still more performant than Silent Whispers in the presence of high transactional load which probably resulted in frequent tree rebalancing.
 
 
-# Algorithms Supported
+# 1.Algorithms Supported
 - 0:  LM-MUL-PER - SilentWhispers
 - 1:  LM-RAND-PER
 - 2:  LM-MUL-OND
@@ -45,7 +45,7 @@
 * RL: Random Landmark
 
 
-## Data Set
+## 2.Data Set
 
 ### Transaction Data: (ripple-transactions-jan-2013-aug-2016.txt)
 - Format: tx_hash, sdr, rev, currency, amount1, amount2, ledger, tag1, tag2, crawl_id, unix_timestamp
@@ -67,12 +67,12 @@ in (complete-parsed-trust-lines-2016-nov-7.txt).
 - parse_trust_lines.py: parses the crawled ripple graph in file (ripple-graph-jan-2013.txt)parsed content in (all-in-USD-trust-lines-2013-jan.txt).
 - parse_trust_set_transactions.py: parses the create link transactions in file (trust-set-transactions.txt), parsed content in (links-created-in-USD-jan-2013-dec-2016.txt).
 
-## Data Set Construction:
+### Data Set Construction:
 - ParseFilesToGTNA.java converts the above sets into the required format for GTNA.
 *More details required here*
 
 
-# How are results evaluated and plotted
+# 3.How are results evaluated and plotted
 ## Metrics used
 - Success Ratio: fraction of successful transations (higher better).
 - Delay        : longest chain of messages (lower better).
@@ -85,14 +85,14 @@ in (complete-parsed-trust-lines-2016-nov-7.txt).
 
 
 
-# Evaluation Ideas
+# 4.Evaluation Ideas
 - Run evaluation on updated Ripple Data set - after 2016 to present date and compare results with results from the currently used data set (jan 2013 - oct 2016). This is interesting because there was a major increase in ripple transactions from 2017 - early 2018.
 
-# Idea
+# 5.Ideas
 - Evaluate conditions where Silent Whispers is better and when Speedy Murmurs is and ford fulkerson, suggest hybrid based on network state.
 - Rayo and Fulgor handles privacy and concurrency but not path selection, Speedy Murmurs handles that, combine them.
 
-# Read
+# 6.To Read
 - Flare
 - Canal
 - Priv Pay
