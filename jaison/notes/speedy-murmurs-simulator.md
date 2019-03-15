@@ -1,6 +1,8 @@
 # Work Plan
+I've split what I want to do into the following steps:
 ## Simulator Overview:
-- Algorithms Supported
+- What are the Algorithms Supported?
+- Understand the algorithms for SpeedyMurmurs and SilentWhispers to greater depth.
 ## Simulation Data:
 - Understand how simuation data is constructed from the data set provided. (Ripple data from Jan 2013 - Aug 2016).
 - What are the final list of files used in the evaluation and what are each of them used for?
