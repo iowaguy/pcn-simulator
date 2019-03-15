@@ -1,5 +1,4 @@
 # Work Plan
-I've split what I want to do into the following steps:
 **Simulator Overview**
 - What are the Algorithms Supported?
 - Understand the algorithms for SpeedyMurmurs and SilentWhispers to greater depth.
