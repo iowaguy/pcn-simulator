@@ -16,8 +16,8 @@
 **Paper evaluation verification**
 - After understanding the data and the results. Try reproducing the results from the paper.
 - Run the simulation on an updated data set (Ripple data from 2016 - Present). This is interesting because Ripple had a transaction surge in 2017.
-    * What is the expected result?
-    * What is the actual result? was SpeedyMurmurs still more performant than Silent Whispers in the presence of high transactional load which probably resulted in frequent tree rebalancing.
+* What is the expected result?
+* What is the actual result? was SpeedyMurmurs still more performant than Silent Whispers in the presence of high transactional load which probably resulted in frequent tree rebalancing.
 
 **Exploring Byzantine behaviour**
 - Make a theorectical plan on the type of attacks you want to make. This involves clearly defining the model.
@@ -75,22 +75,42 @@ in (complete-parsed-trust-lines-2016-nov-7.txt).
 - Finally, converting each currency to its equivalent USD amount (based on rate on Nov 9th), `format: src, dest, lower_bound, balance, upper_bound` in (all-in-USD-trust-lines-2016-nov-7.txt).
 
 ### Scripts Used
-- parse_trust_lines.py: parses the crawled ripple graph in file (ripple-graph-jan-2013.txt)parsed content in (all-in-USD-trust-lines-2013-jan.txt).
-- parse_trust_set_transactions.py: parses the create link transactions in file (trust-set-transactions.txt), parsed content in (links-created-in-USD-jan-2013-dec-2016.txt).
+- `parse_trust_lines.py`: parses the crawled ripple graph in file (ripple-graph-jan-2013.txt), parsed content in (all-in-USD-trust-lines-2013-jan.txt).
+- `parse_trust_set_transactions.py`: parses the create link transactions in file (trust-set-transactions.txt), parsed content in (links-created-in-USD-jan-2013-dec-2016.txt).
 
 ### Data Set Construction:
-- ParseFilesToGTNA.java converts the above sets into the required format for GTNA.
-*More details required here*
+- Step 1: Sort `transactions-in-USD-jan-2013-aug-2016` according to timestamp. Bash script: `sort -k5 -n <filename> > <output-filename>`
+- Step 2: Run `ParseFilesToGTNA.java` with params editted in code.*commited to git*
+- Output will be in `data/gtna/`
+#### Files created by running the above:
+- ripple-degBi.txt: degOrder-bi.txt in final data set.
+- ripple-degUni.txt: degOrder-uni.txt in final data set.
+- ripple-lcc.graph: same as final data set.
+- ripple-lcc.graph_CREDIT_LINKS: same as final data set.
+- ripple-newlinks-lcc-sorted.txt: used by intermediate step.
+- ripple-newlinks-lcc.txt: used by intermediate step.
+- ripple-newlinks.txt: used by intermediate step.
+- ripple-trans-lcc-noself.txt: Final list of transactions used in fianal data step. This file is split into 20 separete files for static simulation, named "sampleTr-x.txt".
+- ripple-trans-lcc.txt: used by intermediate step.
+- ripple-trans.txt: used by intermediate step.
+- ripple.graph: used by intermediate step.
+- ripple.graph_CREDIT_LINKS: used by intermediate step.
+- setLinkEpoch.txt: *figure out what this is*
 
+#### Final list of files used in simulation:
+- degOrder-bi.txt
+- degOrder-uni.txt
+- ripple-lcc.graph
+- ripple-lcc.graph_CREDIT_LINKS
+- sampleTr-x.txt
 
 # 3.How are results evaluated and plotted
-## Metrics used 
+## Metrics used
 *This is what the paper mentions is being used while evaluating*
 - Success Ratio: fraction of successful transations (higher better).
 - Delay        : longest chain of messages (lower better).
 - Path Length  : length of discovered path between sender and receiver (lower better).
 - Stabilization: number of messages sent per epoch to stabilize trees (lower better).
-
 
 # 5.Ideas
 - Evaluate conditions where Silent Whispers is better and when Speedy Murmurs is and ford fulkerson, suggest hybrid based on network state.
