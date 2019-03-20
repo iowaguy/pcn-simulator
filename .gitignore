@@ -6,3 +6,7 @@
 speedy-datasets/
 **/.svn/*
 **/trash/*
+speedy-murmurs-simulator/data/*
+speedy-murmurs-simulator/bin/
+speedy-murmurs-simulator/plots/
+speedy-murmurs-simulator/temp/
