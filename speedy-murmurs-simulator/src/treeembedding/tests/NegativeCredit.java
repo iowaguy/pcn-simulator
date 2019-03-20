@@ -8,6 +8,7 @@ import gtna.util.Config;
 
 import java.util.Random;
 
+import gtna.util.Util;
 import treeembedding.credit.CreditNetwork;
 import treeembedding.credit.partioner.NormalDistPartitioner;
 import treeembedding.credit.partioner.Partitioner;
@@ -32,7 +33,7 @@ public class NegativeCredit {
 			int trees,String degs, int run, int mean, double sigma){
 		Partitioner part = new NormalDistPartitioner(mean, sigma);
 		Treeroute voute = new TreerouteTDRAP();
-		int[] roots = CreditTests.selectRoots(degs, false, trees, run);
+		int[] roots = Misc.selectRoots(degs, false, trees, run);
 		
 		CreditNetwork credit = new CreditNetwork(transactions, name, 1.0, voute,
 				true, false, 1.0, part, roots, tries, false);
