@@ -4,6 +4,7 @@ import gtna.data.Series;
 import gtna.metrics.Metric;
 import gtna.networks.Network;
 import gtna.networks.util.ReadableFile;
+import gtna.plot.Plotting;
 import gtna.util.Config;
 import treeembedding.credit.CreditMaxFlow;
 import treeembedding.credit.CreditNetwork;
@@ -104,7 +105,8 @@ public class Static {
 
 			Network network = new ReadableFile(com[config], com[config], graph,
 					null);
-			Series.generate(network, new Metric[] { m[config] }, i, i);
+      Series s = Series.generate(network, new Metric[] { m[config] }, i, i);
+      Plotting.multi(s, new Metric[] { m[config] }, com[config]);
 		}
 
 	}
