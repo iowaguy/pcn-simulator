@@ -11,12 +11,12 @@
 
 # Network Model:
 - Intrusion-tolerant network:
-* intrusion-tolerant messaging protocols running on top of resilient networking architecture which uses an overlay network to make use of several IP networks (ISP backbones).
+    * intrusion-tolerant messaging protocols running on top of resilient networking architecture which uses an overlay network to make use of several IP networks (ISP backbones).
 - Overlay network:
-* overlay node and logical edges (links).
-* overlay nodes have a set of neighbors.
+    * overlay node and logical edges (links).
+    * overlay nodes have a set of neighbors.
 - Communication is authenticated using a PKI
-* System admin and each node in the overlay network has a pub/private key and knows of all other public keys.
+    * System admin and each node in the overlay network has a pub/private key and knows of all other public keys.
 - Overlay network topology is known by all nodes and changes are made by sys admin.
 
 # Considered Attacks:
