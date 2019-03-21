@@ -1,31 +1,44 @@
 # Work Plan
 **Simulator Overview**
-- What are the Algorithms Supported?
-- Understand the algorithms for SpeedyMurmurs and SilentWhispers to greater depth.
+- [x] [What are the Algorithms Supported?](#algorithms-supported)
+- [ ] Understand the algorithms for SpeedyMurmurs and SilentWhispers to greater depth.
 
 **Simulation Data**
-- Understand how simuation data is constructed from the data set provided. (Ripple data from Jan 2013 - Aug 2016).
-- What are the final list of files used in the evaluation and what are each of them used for?
+- [x] [Understand how simuation data is constructed from the data set provided. (Ripple data from Jan 2013 - Aug 2016)](#data-set)
+- [ ] What are the [final list of files used in the evaluation](#final-list-of-files-used-in-simulation) and what are each of them used for?
 
 
 **Simulation Results**
-- Running the simulation outputs a set of files, what do each of those files have/mean?
-- How are the results evaluated? Graphs plotted etc
+- [x] [Running the simulation outputs a set of files, what do each of those files have/mean?](#simuation-output)
+- [ ] [How are the results evaluated? Graphs plotted](#graphs-plotted)
 
 
 **Paper evaluation verification**
-- After understanding the data and the results. Try reproducing the results from the paper.
-- Run the simulation on an updated data set (Ripple data from 2016 - Present). This is interesting because Ripple had a transaction surge in 2017.
+- [ ] After understanding the data and the results. Try reproducing the results from the paper.
+- [ ] Run the simulation on an updated data set (Ripple data from 2016 - Present). This is interesting because Ripple had a transaction surge in 2017.
     * What is the expected result?
     * What is the actual result? was SpeedyMurmurs still more performant than Silent Whispers in the presence of high transactional load which probably resulted in frequent tree rebalancing.
 
 **Exploring Byzantine behaviour**
-- Make a theorectical plan on the type of attacks you want to make. This involves clearly defining the model.
-- Understand how EXACTLY the algorithm is implemented and run these attacks in the simulator.
-- Will it be possible to modularize/improve the simulator to simulate byzantine behaviour with a simple config file?
+- [ ] Make a theorectical plan on the type of attacks you want to make. This involves clearly defining the model.
+- [ ] Understand how EXACTLY the algorithm is implemented and run these attacks in the simulator.
+- [ ] Will it be possible to modularize/improve the simulator to simulate byzantine behaviour with a simple config file?
+
+**Papers to read**
+- [ ] Flare
+- [ ] Canal
+- [ ] Priv Pay
+- [ ] Rayo and Fulgor
+
+## Ideas
+- Evaluate conditions where Silent Whispers is better and when Speedy Murmurs is and ford fulkerson, suggest hybrid based on network state.
+- Rayo and Fulgor handles privacy and concurrency but not path selection, Speedy Murmurs handles that, combine them.
+- The network simulator is not that great. Work on a specific simulator for Payment Channels?
 
 
-# 1.Algorithms Supported
+# Work Progress
+
+## Algorithms Supported
 - 0:  LM-MUL-PER - SilentWhispers
 - 1:  LM-RAND-PER
 - 2:  LM-MUL-OND
@@ -38,25 +51,25 @@
 - 9:  ONLY-RAND-OND
 - 10: max flow
 
-## Routing algorithm
+#### Routing algorithm
 * LM: Landmark
 * GE: Greedy Embedding
 * TO: Tree only
 
-## Stabilization Method
+#### Stabilization Method
 * PER: Periodic
 * OND: On Demand
 
-## Assignment of credit on paths
+#### Assignment of credit on paths
 * MUL : Multi party computation
 * RAND: Random computation
 
-## Landmark Selection
+#### Landmark Selection
 * HD: Highest Degree
 * RL: Random Landmark
 
 
-## 2.Data Set
+## Data Set
 
 ### Transaction Data: (ripple-transactions-jan-2013-aug-2016.txt)
 - Format: `tx_hash, sdr, rev, currency, amount1, amount2, ledger, tag1, tag2, crawl_id, unix_timestamp`
@@ -104,20 +117,19 @@ in (complete-parsed-trust-lines-2016-nov-7.txt).
 - ripple-lcc.graph_CREDIT_LINKS
 - sampleTr-x.txt
 
-# 3.How are results evaluated and plotted
+# How are results evaluated and plotted
+
+## Simuation Output
+- A set of files are created by running the simulation. These contain various types of data like messages sent, messages failed, total messages sent etc. These files are used by the underlying GTNA framework to plot various graphs. 
+- The filesnames are self-explanatory on what values they hold.
+
+## Graphs Plotted
+- The set of files created by the simulation are plotted using GTNA.
+- **TODO** The code is a little uncertain here as the context for each of the plots to be drawn from the above mentioned files are missing from the config file provided. For the time being we are infering the values.
+
 ## Metrics used
 *This is what the paper mentions is being used while evaluating*
 - Success Ratio: fraction of successful transations (higher better).
 - Delay        : longest chain of messages (lower better).
 - Path Length  : length of discovered path between sender and receiver (lower better).
 - Stabilization: number of messages sent per epoch to stabilize trees (lower better).
-
-# 5.Ideas
-- Evaluate conditions where Silent Whispers is better and when Speedy Murmurs is and ford fulkerson, suggest hybrid based on network state.
-- Rayo and Fulgor handles privacy and concurrency but not path selection, Speedy Murmurs handles that, combine them.
-
-# 6.To Read
-- Flare
-- Canal
-- Priv Pay
-- Rayo and Fulgor
