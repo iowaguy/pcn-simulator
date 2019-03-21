@@ -1,7 +1,9 @@
 # Work Plan
 **Simulator Overview**
 - [x] [What are the Algorithms Supported?](#algorithms-supported)
-- [ ] Understand the algorithms for SpeedyMurmurs and SilentWhispers to greater depth.
+- [ ] Understand routing code for SpeedyMurmurs 
+- [ ] Understand routing code for SilentWhispers
+- [ ] Understand routing code for SpiderNetwork
 
 **Simulation Data**
 - [x] [Understand how simuation data is constructed from the data set provided. (Ripple data from Jan 2013 - Aug 2016)](#data-set)
