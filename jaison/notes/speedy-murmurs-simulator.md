@@ -16,8 +16,8 @@
 **Paper evaluation verification**
 - After understanding the data and the results. Try reproducing the results from the paper.
 - Run the simulation on an updated data set (Ripple data from 2016 - Present). This is interesting because Ripple had a transaction surge in 2017.
-* What is the expected result?
-* What is the actual result? was SpeedyMurmurs still more performant than Silent Whispers in the presence of high transactional load which probably resulted in frequent tree rebalancing.
+    * What is the expected result?
+    * What is the actual result? was SpeedyMurmurs still more performant than Silent Whispers in the presence of high transactional load which probably resulted in frequent tree rebalancing.
 
 **Exploring Byzantine behaviour**
 - Make a theorectical plan on the type of attacks you want to make. This involves clearly defining the model.
