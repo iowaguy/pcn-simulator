@@ -38,6 +38,7 @@
 - AMP
 
 
+# Other
 - Circuit switched network -> Telephony
 - Packet switched network -> Internet
 
