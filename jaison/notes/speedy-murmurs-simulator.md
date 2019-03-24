@@ -27,6 +27,7 @@
 - [ ] Will it be possible to modularize/improve the simulator to simulate byzantine behaviour with a simple config file?
 
 **Papers to read**
+- [ ] Voute
 - [ ] Flare
 - [ ] Canal
 - [ ] Priv Pay
