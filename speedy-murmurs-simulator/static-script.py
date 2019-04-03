@@ -60,6 +60,13 @@ trees  sr_sw sr_sm
 import os
 import sys
 import _thread
+import signal
+import sys
+
+def signal_handler(sig, frame):
+        print('You pressed Ctrl+C!')
+        sys.exit(0)
+
 
 def get_filename_with_path(algo, tree, attempts):
     root = 'data/static/'
@@ -87,7 +94,7 @@ def run_static(transaction_num, algo, num_attempts, num_trees):
     print ('\nRunning static sim: Transaction Num: %d; Algorithm: %s; Number of Attempts: %d; Number of trees: %d\n' % (
             transaction_num, algo_name, num_attempts, num_trees))
     args = str(transaction_num) + ' ' + str(algo) + ' ' + str(num_attempts) + ' ' + str(num_trees)
-    os.system('java -cp ~/Documents/masters/CS8982-Reading/credit-networks/speedy-murmurs-simulator/out/production/speedy-murmurs-simulator/ treeembedding.tests.Static ' + args)
+    os.system('java -cp bin/ treeembedding.tests.Static ' + args)
 
 def run_for_algo(algo):
     for t_num in range(0, max_transactions):
@@ -149,10 +156,9 @@ def plot_2ab(filename, metric_txt, attempts):
         column_names = ['trees']
         create_plot_for_config(filename, tree, attempts, entry, column_names, metric_txt)
 
-# Fig.2a
-plot_2ab('fig2a_vals.txt', 'CREDIT_NETWORK_SUCCESS=', 1)
-# Fig.2b
-plot_2ab('fig2b_vals.txt', 'CREDIT_NETWORK_DELAY_AV=', 1)
-
-
-
+if  __name__ =='__main__':
+    signal.signal(signal.SIGINT, signal_handler)
+    # Fig.2a
+    plot_2ab('fig2a_vals.txt', 'CREDIT_NETWORK_SUCCESS=', 1)
+    # Fig.2b
+    plot_2ab('fig2b_vals.txt', 'CREDIT_NETWORK_DELAY_AV=', 1)
