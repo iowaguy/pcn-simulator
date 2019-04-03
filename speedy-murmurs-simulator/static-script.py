@@ -86,6 +86,9 @@ def get_algo_name(algo):
         return 'sw'
     return 'sm'
 
+# got from cmd arg
+class_path = 'bin/'
+
 def run_static(transaction_num, algo, num_attempts, num_trees):
     if algo == 7:
         algo_name = 'Speedy Murmurs'
@@ -94,7 +97,7 @@ def run_static(transaction_num, algo, num_attempts, num_trees):
     print ('\nRunning static sim: Transaction Num: %d; Algorithm: %s; Number of Attempts: %d; Number of trees: %d\n' % (
             transaction_num, algo_name, num_attempts, num_trees))
     args = str(transaction_num) + ' ' + str(algo) + ' ' + str(num_attempts) + ' ' + str(num_trees)
-    os.system('java -cp bin/ treeembedding.tests.Static ' + args)
+    os.system('java -cp ' + class_path + ' treeembedding.tests.Static ' + args)
 
 def run_for_algo(algo):
     for t_num in range(0, max_transactions):
@@ -143,22 +146,63 @@ def create_plot_for_config(w_filename, tree, attempts, entry, column_names, metr
 
 
 algo_list = [7, 0]
-max_transactions = 3
-max_trees = 7
-max_attempts = 2
+max_transactions = 1
+max_trees = 2
+max_attempts = 4
 
-def plot_2ab(filename, metric_txt, attempts):
-    os_cmd = 'rm {}'.format(filename)
-    print(os_cmd)
+def create_plt(data_filename, plot_filename, title, xlabel, ylabel):
+    with open(plot_filename, 'w') as p:
+        p.write('#!/usr/bin/gnuplot -persist\n')
+        p.write('set title "{}"\n'.format(title))
+        p.write('set xlabel "{}"\n'.format(xlabel))
+        p.write('set ylabel "{}"\n'.format(ylabel))
+        p.write('set grid\n')
+        p.write('plot "{0}" u (column(0)):2:xtic(1) w l title "","{0}" u (column(0)):3:xtic(1) w l title ""\n'.format(data_filename))
+
+def plot_2ab(filename, metric_txt, attempts, plot_title, xlabel, ylabel):
+    # Generate file with data points
+    data_filename = filename + '.txt'
+    # delete previous files
+    os_cmd = 'rm {}'.format(filename + '.*')
     os.system(os_cmd)
     for tree in range(1, max_trees):
         entry = {'trees': str(tree)}
         column_names = ['trees']
-        create_plot_for_config(filename, tree, attempts, entry, column_names, metric_txt)
+        create_plot_for_config(data_filename, tree, attempts, entry, column_names, metric_txt)
+    # Generate plotting script
+    plot_filename = filename + '.plt'
+    create_plt(data_filename, plot_filename, plot_title, xlabel, ylabel)
+
+
+def plot_2c(filename, metric_txt, tree, plot_title, xlabel, ylabel):
+    # Generate file with data points
+    data_filename = filename + '.txt'
+    # delete previous files
+    os_cmd = 'rm {}'.format(filename + '.*')
+    os.system(os_cmd)
+    for attempts in range(1, max_attempts):
+        entry = {'attempts': str(attempts)}
+        column_names = ['attempts']
+        create_plot_for_config(data_filename, tree, attempts, entry, column_names, metric_txt)
+    # Generate plotting script
+    plot_filename = filename + '.plt'
+    create_plt(data_filename, plot_filename, plot_title, xlabel, ylabel)
+
+def plot_all_static_figs():
+    # Fig.2a
+    plot_2ab(root + 'fig2a', 'CREDIT_NETWORK_SUCCESS=', 1, 'Fig 2a', 'Trees', 'Success Ratio')
+    # Fig.2b
+    plot_2ab(root + 'fig2b', 'CREDIT_NETWORK_DELAY_AV=', 1, 'Fig 2b', 'Trees', 'Hops(Delay)')
+    # Fig.2c
+    plot_2c(root + 'fig2c', 'CREDIT_NETWORK_SUCCESS=', 3, 'Fig 2c', 'Attempts', 'Success Ratio')
 
 if  __name__ =='__main__':
     signal.signal(signal.SIGINT, signal_handler)
-    # Fig.2a
-    plot_2ab('fig2a_vals.txt', 'CREDIT_NETWORK_SUCCESS=', 1)
-    # Fig.2b
-    plot_2ab('fig2b_vals.txt', 'CREDIT_NETWORK_DELAY_AV=', 1)
+    if len(sys.argv) > 1:
+        class_path = sys.argv[1]
+        print('Class path provided: ' + class_path)
+    else:
+        print('No class path provided, defaulting to bin/')
+    root = 'plot/'
+    plot_all_static_figs()
+    
