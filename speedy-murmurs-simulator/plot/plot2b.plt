@@ -3,6 +3,8 @@
 set title "Fig 2b"
 set xlabel "Trees"
 set ylabel "(Hop)Delay"
+set xrange [0:8]
+set yrange [0:30]
+set pointsize 1
 set grid
-plot "fig2b_vals.txt" u (column(0)):2:xtic(1) w l title "","fig2b_vals.txt" u (column(0)):3:xtic(1) w l title ""
-
+plot "fig2b_vals.txt" using 1:2:xtic(5) with linespoints title "SpeedyMurmurs","fig2b_vals.txt" using 1:3:xtic(5) with linespoints title "SilentWhispers"

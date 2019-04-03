@@ -3,6 +3,8 @@
 set title "Fig 2c"
 set xlabel "Attempts"
 set ylabel "Success Ratio"
+set xrange [0:10]
+set yrange [0:1]
+set pointsize 1
 set grid
-plot "fig2c_vals.txt" u (column(0)):2:xtic(1) w l title "","fig2c_vals.txt" u (column(0)):3:xtic(1) w l title ""
-
+plot "fig2c_vals.txt" using 1:2:xtic(5) with linespoints title "SpeedyMurmurs","fig2c_vals.txt" using 1:3:xtic(5) with linespoints title "SilentWhispers"
