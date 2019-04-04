@@ -150,7 +150,7 @@ max_transactions = 1
 max_trees = 2
 max_attempts = 4
 
-def create_plt(data_filename, plot_filename, title, xlabel, ylabel, xrange, yrange, title_a="", title_b="", show_grid=True, xtic=1):
+def create_plt(data_filename, plot_filename, title, xlabel, ylabel, xrange, yrange, title_a="", title_b="", show_grid=True, xtic=1, pointstyle="linespoints"):
     with open(plot_filename, 'w') as p:
         p.write('#!/usr/bin/gnuplot -persist\n')
         p.write('set title "{}"\n'.format(title))
@@ -161,7 +161,7 @@ def create_plt(data_filename, plot_filename, title, xlabel, ylabel, xrange, yran
         p.write('set pointsize 1\n')
         if show_grid:
             p.write('set grid\n')
-        p.write('plot "{0}" using (column(0)):2:xtic({3}) with linespoints title "{1}","{0}" using (column(0)):3:xtic(1) with linespoints title "{2}"\n'.format(data_filename, title_a, title_b, xtic))
+        p.write('plot "{0}" using (column(0)):2:xtic({3}) with {4} title "{1}","{0}" using (column(0)):3:xtic({3}) with {4} title "{2}"\n'.format(data_filename, title_a, title_b, xtic, pointstyle))
 
 def plot_2ab(filename, metric_txt, attempts, plot_title, xlabel, ylabel, xrange, yrange, title_a="", title_b=""):
     # Generate file with data points
@@ -192,35 +192,62 @@ def plot_2c(filename, metric_txt, tree, plot_title, xlabel, ylabel, xrange, yran
     plot_filename = filename + '.plt'
     create_plt(data_filename, plot_filename, plot_title, xlabel, ylabel, xrange, yrange, title_a, title_b)
 
-def plot_3a(output_filename, transactions_file, link_changes_file):
+def plot_3a(output_filename, transactions_file, link_changes_filename):
     epoch_length, transactions = get_epoch_length(transactions_file)
+    link_changes = read_link_changes_files(link_changes_filename)
 
-    cur_epoch = 1
-    next_epoch_starts = epoch_length
 
-    transactions_in_current_epoch = 0
-    transactions_per_epoch = {}
-    for transaction in transactions:
-        if transaction[0] < next_epoch_starts:
-            transactions_in_current_epoch += 1
+    transactions_per_epoch = calculate_events_per_epoch(epoch_length, transactions)
+    link_changes_per_epoch = calculate_events_per_epoch(epoch_length, link_changes)
+
+    data_dict = {}
+    for k, v in transactions_per_epoch.items():
+        if k in link_changes_per_epoch:
+            # if an epoch includes both transactions and link changes, include both in tuple
+            data_dict[k] = (v, link_changes_per_epoch[k])
         else:
-            transactions_per_epoch[cur_epoch] = transactions_in_current_epoch
-            next_epoch_starts += epoch_length
-            cur_epoch += 1
-            # should be 1 because it needs to include the current transaction
-            transactions_in_current_epoch = 1
+            # if an epoch only has transactions, then set link changes to zero
+            data_dict[k] = (v, 0)
+
+    for k, v in link_changes_per_epoch.items():
+        if k in data_dict:
+            # if an epoch containing a link change is already in the dict, then don't add it again
+            # it will already include the transactions if there were any
+            continue
+        else:
+            # if an epoch with a link change is not in the dict, add it and assume zero transactions
+            # this is a safe assumption, because if there were transactions in the epoch, it would have
+            # been included in the previous loop
+            data_dict[k] = (0, v)
 
     data_filename = output_filename + '.txt'
     plot_filename = output_filename + '.plt'
-    save_data_points(data_filename, transactions_per_epoch, ["epoch", "count"])
-    create_plt(data_filename, plot_filename, "Figure 3a", "Epoch Number", "Count", "[0:700]", "[0:25000]", "Transactions", "Set Link", show_grid=False, xtic=100)
+    save_data_points(data_filename, data_dict, ["epoch", "transactions", "link-changes"])
+    create_plt(data_filename, plot_filename, "Figure 3a", "Epoch Number", "Count", "[0:700]", "[0:25000]", "Transactions", "Set Link", show_grid=False, xtic=100, pointstyle="points")
+
+def calculate_events_per_epoch(epoch_length, events):
+    cur_epoch = 1
+    next_epoch_starts = epoch_length
+
+    events_in_current_epoch = 0
+    events_per_epoch = {}
+    for event in events:
+        if event[0] < next_epoch_starts:
+            events_in_current_epoch += 1
+        else:
+            events_per_epoch[cur_epoch] = events_in_current_epoch
+            next_epoch_starts += epoch_length
+            cur_epoch += 1
+            # should be 1 because it needs to include the current transaction
+            events_in_current_epoch = 1
+    return events_per_epoch
 
 def save_data_points(filename, data_points, column_names):
     with open(filename, 'w') as f:
-        op_str = '{0:8s} {1:20s}\n'.format(column_names[0], column_names[1])
+        op_str = '{0:8s} {1:20s} {2:20s}\n'.format(column_names[0], column_names[1], column_names[2])
         f.write(op_str)
-        for key, value in data_points.items():
-            op_str = '{0:8s} {1:20s}\n'.format(str(key), str(value))
+        for key, (v1, v2) in data_points.items():
+            op_str = '{0:8s} {1:20s} {2:20s}\n'.format(str(key), str(v1), str(v2))
             f.write(op_str)
 
 def read_transactions_file(transactions_file, transactions_list = []):
@@ -237,6 +264,22 @@ def read_transactions_file(transactions_file, transactions_list = []):
                 count += 1
 
         return transactions_list
+
+def read_link_changes_files(link_changes_file):
+    link_changes_list = []
+    for i in range(1, 10):
+        link_changes_list = read_link_changes_file(link_changes_file.format(i), link_changes_list)
+    return link_changes_list
+
+def read_link_changes_file(link_changes_file, link_changes_list = []):
+    with open(link_changes_file, 'r') as link_changes:
+        count = 0
+        for link_change in link_changes:
+            lc = link_change.split(" ")
+            # time, source, destination, amount
+            link_changes_list.append((int(lc[0]), lc[1], lc[2], lc[3]))
+
+        return link_changes_list
 
 def get_epoch_length(transactions_file):
     transactions_list = []
@@ -259,7 +302,7 @@ def plot_all_static_figs():
     plot_2c(root + 'fig2c', 'CREDIT_NETWORK_SUCCESS=', 3, 'Fig 2c', 'Attempts', 'Success Ratio', "[0:10]", "[0:1]", "SpeedyMurmurs", "SilentWhispers")
 
 def plot_all_dynamic_figs():
-    plot_3a(root + 'fig3a', "../data/finalSets/dynamic/jan2013-trans-lcc-noself-uniq-{0}.txt", "")
+    plot_3a(root + 'fig3a', "../data/finalSets/dynamic/jan2013-trans-lcc-noself-uniq-{0}.txt", "../data/finalSets/dynamic/jan2013-newlinks-lcc-sorted-uniq-t{0}.txt")
 
 
 if  __name__ =='__main__':
