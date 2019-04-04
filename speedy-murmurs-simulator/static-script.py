@@ -150,16 +150,20 @@ max_transactions = 1
 max_trees = 2
 max_attempts = 4
 
-def create_plt(data_filename, plot_filename, title, xlabel, ylabel):
+def create_plt(data_filename, plot_filename, title, xlabel, ylabel, xrange, yrange, title_a="", title_b="", show_grid=True, xtic=1):
     with open(plot_filename, 'w') as p:
         p.write('#!/usr/bin/gnuplot -persist\n')
         p.write('set title "{}"\n'.format(title))
         p.write('set xlabel "{}"\n'.format(xlabel))
         p.write('set ylabel "{}"\n'.format(ylabel))
-        p.write('set grid\n')
-        p.write('plot "{0}" u (column(0)):2:xtic(1) w l title "","{0}" u (column(0)):3:xtic(1) w l title ""\n'.format(data_filename))
+        p.write('set xrange {}\n'.format(xrange))
+        p.write('set yrange {}\n'.format(yrange))
+        p.write('set pointsize 1\n')
+        if show_grid:
+            p.write('set grid\n')
+        p.write('plot "{0}" using (column(0)):2:xtic({3}) with linespoints title "{1}","{0}" using (column(0)):3:xtic(1) with linespoints title "{2}"\n'.format(data_filename, title_a, title_b, xtic))
 
-def plot_2ab(filename, metric_txt, attempts, plot_title, xlabel, ylabel):
+def plot_2ab(filename, metric_txt, attempts, plot_title, xlabel, ylabel, xrange, yrange, title_a="", title_b=""):
     # Generate file with data points
     data_filename = filename + '.txt'
     # delete previous files
@@ -171,10 +175,10 @@ def plot_2ab(filename, metric_txt, attempts, plot_title, xlabel, ylabel):
         create_plot_for_config(data_filename, tree, attempts, entry, column_names, metric_txt)
     # Generate plotting script
     plot_filename = filename + '.plt'
-    create_plt(data_filename, plot_filename, plot_title, xlabel, ylabel)
+    create_plt(data_filename, plot_filename, plot_title, xlabel, ylabel, xrange, yrange, title_a, title_b)
 
 
-def plot_2c(filename, metric_txt, tree, plot_title, xlabel, ylabel):
+def plot_2c(filename, metric_txt, tree, plot_title, xlabel, ylabel, xrange, yrange, title_a="", title_b=""):
     # Generate file with data points
     data_filename = filename + '.txt'
     # delete previous files
@@ -186,15 +190,77 @@ def plot_2c(filename, metric_txt, tree, plot_title, xlabel, ylabel):
         create_plot_for_config(data_filename, tree, attempts, entry, column_names, metric_txt)
     # Generate plotting script
     plot_filename = filename + '.plt'
-    create_plt(data_filename, plot_filename, plot_title, xlabel, ylabel)
+    create_plt(data_filename, plot_filename, plot_title, xlabel, ylabel, xrange, yrange, title_a, title_b)
+
+def plot_3a(output_filename, transactions_file, link_changes_file):
+    epoch_length, transactions = get_epoch_length(transactions_file)
+
+    cur_epoch = 1
+    next_epoch_starts = epoch_length
+
+    transactions_in_current_epoch = 0
+    transactions_per_epoch = {}
+    for transaction in transactions:
+        if transaction[0] < next_epoch_starts:
+            transactions_in_current_epoch += 1
+        else:
+            transactions_per_epoch[cur_epoch] = transactions_in_current_epoch
+            next_epoch_starts += epoch_length
+            cur_epoch += 1
+            # should be 1 because it needs to include the current transaction
+            transactions_in_current_epoch = 1
+
+    data_filename = output_filename + '.txt'
+    plot_filename = output_filename + '.plt'
+    save_data_points(data_filename, transactions_per_epoch, ["epoch", "count"])
+    create_plt(data_filename, plot_filename, "Figure 3a", "Epoch Number", "Count", "[0:700]", "[0:25000]", "Transactions", "Set Link", show_grid=False, xtic=100)
+
+def save_data_points(filename, data_points, column_names):
+    with open(filename, 'w') as f:
+        op_str = '{0:8s} {1:20s}\n'.format(column_names[0], column_names[1])
+        f.write(op_str)
+        for key, value in data_points.items():
+            op_str = '{0:8s} {1:20s}\n'.format(str(key), str(value))
+            f.write(op_str)
+
+def read_transactions_file(transactions_file, transactions_list = []):
+    with open(transactions_file, 'r') as transactions:
+        count = 0
+        for transaction in transactions:
+            t = transaction.split(" ")
+            if len(t) == 4:
+                # time, amount, source, destination
+                transactions_list.append((int(t[0]), t[1], t[2], t[3]))
+            elif len(t) == 3:
+                # time, amount, source, destination
+                transactions_list.append((count, t[1], t[2], t[3]))
+                count += 1
+
+        return transactions_list
+
+def get_epoch_length(transactions_file):
+    transactions_list = []
+    for i in range(1, 10):
+        transactions_list = read_transactions_file(transactions_file.format(i), transactions_list)
+
+    # sum the time between subsequent transctions
+    sum_delta = 0
+    for i in range(1, len(transactions_list)):
+        sum_delta += transactions_list[i][0] - transactions_list[i - 1][0]
+    delta_av = sum_delta/len(transactions_list)
+    return (delta_av * 1000, transactions_list)
 
 def plot_all_static_figs():
     # Fig.2a
-    plot_2ab(root + 'fig2a', 'CREDIT_NETWORK_SUCCESS=', 1, 'Fig 2a', 'Trees', 'Success Ratio')
+    plot_2ab(root + 'fig2a', 'CREDIT_NETWORK_SUCCESS=', 1, 'Fig 2a', 'Trees', 'Success Ratio', "[0:8]", "[0:1]", "SpeedyMurmurs", "SilentWhispers")
     # Fig.2b
-    plot_2ab(root + 'fig2b', 'CREDIT_NETWORK_DELAY_AV=', 1, 'Fig 2b', 'Trees', 'Hops(Delay)')
+    plot_2ab(root + 'fig2b', 'CREDIT_NETWORK_DELAY_AV=', 1, 'Fig 2b', 'Trees', 'Hops(Delay)', "[0:8]", "[0:1]", "SpeedyMurmurs", "SilentWhispers")
     # Fig.2c
-    plot_2c(root + 'fig2c', 'CREDIT_NETWORK_SUCCESS=', 3, 'Fig 2c', 'Attempts', 'Success Ratio')
+    plot_2c(root + 'fig2c', 'CREDIT_NETWORK_SUCCESS=', 3, 'Fig 2c', 'Attempts', 'Success Ratio', "[0:10]", "[0:1]", "SpeedyMurmurs", "SilentWhispers")
+
+def plot_all_dynamic_figs():
+    plot_3a(root + 'fig3a', "../data/finalSets/dynamic/jan2013-trans-lcc-noself-uniq-{0}.txt", "")
+
 
 if  __name__ =='__main__':
     signal.signal(signal.SIGINT, signal_handler)
@@ -204,5 +270,6 @@ if  __name__ =='__main__':
     else:
         print('No class path provided, defaulting to bin/')
     root = 'plot/'
-    plot_all_static_figs()
-    
+
+    # plot_all_static_figs()
+    plot_all_dynamic_figs()
