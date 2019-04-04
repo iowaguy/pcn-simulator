@@ -150,7 +150,7 @@ max_transactions = 1
 max_trees = 2
 max_attempts = 4
 
-def create_plt(data_filename, plot_filename, title, xlabel, ylabel, xrange, yrange, title_a="", title_b="", show_grid=True, xtic=1, pointstyle="linespoints"):
+def create_plt(data_filename, plot_filename, title, xlabel, ylabel, xrange, yrange, title_a="", title_b="", show_grid=True, xtic=1, pointstyle="linespoints", y_logarithmic=False):
     with open(plot_filename, 'w') as p:
         p.write('#!/usr/bin/gnuplot -persist\n')
         p.write('set title "{}"\n'.format(title))
@@ -159,6 +159,8 @@ def create_plt(data_filename, plot_filename, title, xlabel, ylabel, xrange, yran
         p.write('set xrange {}\n'.format(xrange))
         p.write('set yrange {}\n'.format(yrange))
         p.write('set pointsize 1\n')
+        if y_logarithmic:
+            p.write('set logscale y\n')
         if show_grid:
             p.write('set grid\n')
         p.write('plot "{0}" using (column(0)):2:xtic({3}) with {4} title "{1}","{0}" using (column(0)):3:xtic({3}) with {4} title "{2}"\n'.format(data_filename, title_a, title_b, xtic, pointstyle))
@@ -223,7 +225,11 @@ def plot_3a(output_filename, transactions_file, link_changes_filename):
     data_filename = output_filename + '.txt'
     plot_filename = output_filename + '.plt'
     save_data_points(data_filename, data_dict, ["epoch", "transactions", "link-changes"])
-    create_plt(data_filename, plot_filename, "Figure 3a", "Epoch Number", "Count", "[0:700]", "[0:25000]", "Transactions", "Set Link", show_grid=False, xtic=100, pointstyle="points")
+    create_plt(data_filename, plot_filename, "Figure 3b", "Epoch Number", "Count", "[0:700]", "[0:25000]", "Transactions", "Set Link", show_grid=False, xtic=100, pointstyle="points")
+
+def plot_3b(output_filename, transactions_file, link_changes_filename, dynamic_output_dataset):
+    plot_filename = output_filename + '.plt'
+    create_plt(dynamic_output_dataset, plot_filename, "Figure 3a", "Epoch Number", "Stabilization", "[0:700]", "[0:1e10]", "SpeedyMurmurs", "Set Link", show_grid=False, xtic=100, pointstyle="points", y_logarithmic=True)
 
 def calculate_events_per_epoch(epoch_length, events):
     cur_epoch = 1
@@ -302,8 +308,12 @@ def plot_all_static_figs():
     plot_2c(root + 'fig2c', 'CREDIT_NETWORK_SUCCESS=', 3, 'Fig 2c', 'Attempts', 'Success Ratio', "[0:10]", "[0:1]", "SpeedyMurmurs", "SilentWhispers")
 
 def plot_all_dynamic_figs():
-    plot_3a(root + 'fig3a', "../data/finalSets/dynamic/jan2013-trans-lcc-noself-uniq-{0}.txt", "../data/finalSets/dynamic/jan2013-newlinks-lcc-sorted-uniq-t{0}.txt")
+    transactions_datasets = "../data/finalSets/dynamic/jan2013-trans-lcc-noself-uniq-{0}.txt"
+    link_changes_datasets = "../data/finalSets/dynamic/jan2013-newlinks-lcc-sorted-uniq-t{0}.txt"
+    plot_3a(root + 'fig3a', transactions_datasets, link_changes_datasets)
 
+    dynamic_output_dataset = "data/READABLE_FILE_SM-P1-93502/0/CREDIT_NETWORK-SM-P1-165552.45497208898-TREE_ROUTE_TDRAP-true-false-3-331.10490994417796-RANDOM_PARTITIONER-1/cnet-stab.txt"
+    plot_3b(root + 'fig3b', transactions_datasets, link_changes_datasets, dynamic_output_dataset)
 
 if  __name__ =='__main__':
     signal.signal(signal.SIGINT, signal_handler)
