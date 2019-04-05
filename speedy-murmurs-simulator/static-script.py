@@ -264,22 +264,26 @@ max_transactions = 1
 max_trees = 2
 max_attempts = 4
 
-def create_plt(data_filename, plot_filename, title, xlabel, ylabel, xrange, yrange, title_a="", title_b="", show_grid=True, xtic=1, pointstyle="linespoints", y_logarithmic=False):
+def create_plt(data_filename, plot_filename, title, xlabel, ylabel, xrange, yrange, title_a="", title_b="", show_grid=True, xtic=1, ytic=0.2, pointstyle="linespoints", y_logarithmic=False):
     with open(plot_filename, 'w') as p:
         p.write('#!/usr/bin/gnuplot -persist\n')
-        p.write('set title "{}"\n'.format(title))
-        p.write('set xlabel "{}"\n'.format(xlabel))
-        p.write('set ylabel "{}"\n'.format(ylabel))
-        p.write('set xrange {}\n'.format(xrange))
-        p.write('set yrange {}\n'.format(yrange))
+        p.write(f'set title "{title}"\n')
+        p.write(f'set xlabel "{xlabel}"\n')
+        p.write(f'set ylabel "{ylabel}"\n')
+        p.write(f'set xrange {xrange}\n')
+        p.write(f'set yrange {yrange}\n')
         p.write('set pointsize 1\n')
+        if ytic is not None:
+            p.write(f'set ytic {ytic}\n')
+        else:
+            p.write(f'unset ytic\n')
         if y_logarithmic:
             p.write('set logscale y\n')
         else:
             p.write('unset logscale y\n')
         if show_grid:
             p.write('set grid\n')
-        p.write('plot "{0}" using (column(0)):2:xtic({3}) with {4} title "{1}","{0}" using (column(0)):3:xtic({3}) with {4} title "{2}"\n'.format(data_filename, title_a, title_b, xtic, pointstyle))
+        p.write(f'plot "{data_filename}" using (column(0)):2:xtic({xtic}) with {pointstyle} title "{title_a}","{data_filename}" using (column(0)):3:xtic({xtic}) with {pointstyle} title "{title_b}"\n')
 
 def plot_2ab(filename, metric_txt, attempts, plot_title, xlabel, ylabel, xrange, yrange, title_a="", title_b=""):
     # Generate file with data points
@@ -293,7 +297,7 @@ def plot_2ab(filename, metric_txt, attempts, plot_title, xlabel, ylabel, xrange,
         create_plot_for_config(data_filename, tree, attempts, entry, column_names, metric_txt)
     # Generate plotting script
     plot_filename = filename + '.plt'
-    create_plt(data_filename, plot_filename, plot_title, xlabel, ylabel, xrange, yrange, title_a, title_b)
+    create_plt(data_filename, plot_filename, plot_title, xlabel, ylabel, xrange, yrange, title_a, title_b, ytic=None)
 
 
 def plot_2c(filename, metric_txt, tree, plot_title, xlabel, ylabel, xrange, yrange, title_a="", title_b=""):
@@ -322,7 +326,7 @@ def plot_3a(output_filename, transactions_file, link_changes_filename):
     data_filename = output_filename + '.txt'
     plot_filename = output_filename + '.plt'
     save_data_points(data_filename, data_dict, ["epoch", "transactions", "link-changes"])
-    create_plt(data_filename, plot_filename, "Figure 3b", "Epoch Number", "Count", "[0:700]", "[0:25000]", "Transactions", "Set Link", show_grid=False, xtic=100, pointstyle="points")
+    create_plt(data_filename, plot_filename, "Figure 3b", "Epoch Number", "Count", "[0:700]", "[0:25000]", "Transactions", "Set Link", show_grid=False, xtic=100, ytic=5000, pointstyle="points")
 
 def plot_3b(output_filename):
     plot_filename = output_filename + '.plt'
@@ -343,7 +347,7 @@ def plot_3b(output_filename):
     # output dicts to file
     save_data_points(data_filename, merged_stab_messages_dict, ["epoch", "sw", "sm"])
 
-    create_plt(data_filename, plot_filename, "Figure 3b", "Epoch Number", "Stabilization", "[0:700]", "[1:1e10]", "SilentWhispers", "SpeedyMurmurs", show_grid=False, xtic=100, pointstyle="points", y_logarithmic=True)
+    create_plt(data_filename, plot_filename, "Figure 3b", "Epoch Number", "Stabilization", "[0:700]", "[1:1e10]", "SilentWhispers", "SpeedyMurmurs", show_grid=False, xtic=100, ytic=100, pointstyle="points", y_logarithmic=True)
 
 def calculate_moving_average(d, moving_average_range):
     running_sum = 0

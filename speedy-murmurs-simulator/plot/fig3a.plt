@@ -5,5 +5,6 @@ set ylabel "Count"
 set xrange [0:700]
 set yrange [0:25000]
 set pointsize 1
+set ytic 5000
 unset logscale y
 plot "plot/fig3a.txt" using (column(0)):2:xtic(100) with points title "Transactions","plot/fig3a.txt" using (column(0)):3:xtic(100) with points title "Set Link"
