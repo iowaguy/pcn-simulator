@@ -68,7 +68,7 @@ def signal_handler(sig, frame):
         sys.exit(0)
 
 
-def get_filename_with_path(algo, tree, attempts):
+def get_filename_with_path_static(algo, tree, attempts):
     root = 'data/static/'
     if algo == 0:
         folder_name = 'READABLE_FILE_SW-PER-MUL-67149'
@@ -80,6 +80,22 @@ def get_filename_with_path(algo, tree, attempts):
         print('Error');
         sys.exit();
     return root + folder_name + '/CREDIT_NETWORK-STATIC-1000.0-TREE_ROUTE_' + algo_dr_mul + '-' + str(tree)+ '-2000.0-RANDOM_PARTITIONER-' + str(attempts) + '/_singles.txt'
+
+def get_filename_with_path_dynamic(algo, tree, step):
+    if algo == 0:
+        algo_str = 'SW'
+        folder_name = f'/1/CREDIT_NETWORK-{algo_str}-P{step}-165552.45497208898-TREE_ROUTE_SILENTW-false-true-{tree}-331.10490994417796-RANDOM_PARTITIONER-1'
+    elif algo == 7:
+        algo_str = 'SM'
+        folder_name = f'/0/CREDIT_NETWORK-{algo_str}-P{step}-165552.45497208898-TREE_ROUTE_TDRAP-true-false-{tree}-331.10490994417796-RANDOM_PARTITIONER-1'
+    elif algo == 10:
+        algo_str = 'M'
+        folder_name = f'CREDIT_MAX_FLOW-0.0-0'
+    else:
+        print(f'Error: invalid algorithm: {algo}');
+        sys.exit();
+    root = f'data/READABLE_FILE_{algo_str}-P{step}-93502'
+    return root + folder_name
 
 def get_algo_name(algo):
     if algo == 0:
@@ -129,10 +145,9 @@ def write_to_file(filename, column_names, entry):
             f.write(op_str)
         write_to_file(filename, column_names, entry)
 
-
 def create_plot_for_config(w_filename, tree, attempts, entry, column_names, metric_txt):
     for algo in algo_list:
-        filename = get_filename_with_path(algo, tree, attempts)
+        filename = get_filename_with_path_static(algo, tree, attempts)
         try:
             with open(filename, 'r') as singles:
                 for line in singles:
@@ -144,92 +159,37 @@ def create_plot_for_config(w_filename, tree, attempts, entry, column_names, metr
             create_plot_for_config(w_filename, tree, attempts, entry, column_names, metric_txt)
     write_to_file(w_filename, column_names, entry)
 
+def convert_kv_file_to_dict(filepath):
+    out_dict = {}
+    with open(filepath, 'r') as textfile:
+        for line in textfile:
+            k,v = line.rstrip().split('\t')
+            out_dict[k] = v
+    return out_dict
 
-algo_list = [7, 0]
-max_transactions = 1
-max_trees = 2
-max_attempts = 4
-
-def create_plt(data_filename, plot_filename, title, xlabel, ylabel, xrange, yrange, title_a="", title_b="", show_grid=True, xtic=1, pointstyle="linespoints", y_logarithmic=False):
-    with open(plot_filename, 'w') as p:
-        p.write('#!/usr/bin/gnuplot -persist\n')
-        p.write('set title "{}"\n'.format(title))
-        p.write('set xlabel "{}"\n'.format(xlabel))
-        p.write('set ylabel "{}"\n'.format(ylabel))
-        p.write('set xrange {}\n'.format(xrange))
-        p.write('set yrange {}\n'.format(yrange))
-        p.write('set pointsize 1\n')
-        if y_logarithmic:
-            p.write('set logscale y\n')
-        if show_grid:
-            p.write('set grid\n')
-        p.write('plot "{0}" using (column(0)):2:xtic({3}) with {4} title "{1}","{0}" using (column(0)):3:xtic({3}) with {4} title "{2}"\n'.format(data_filename, title_a, title_b, xtic, pointstyle))
-
-def plot_2ab(filename, metric_txt, attempts, plot_title, xlabel, ylabel, xrange, yrange, title_a="", title_b=""):
-    # Generate file with data points
-    data_filename = filename + '.txt'
-    # delete previous files
-    os_cmd = 'rm {}'.format(filename + '.*')
-    os.system(os_cmd)
-    for tree in range(1, max_trees):
-        entry = {'trees': str(tree)}
-        column_names = ['trees']
-        create_plot_for_config(data_filename, tree, attempts, entry, column_names, metric_txt)
-    # Generate plotting script
-    plot_filename = filename + '.plt'
-    create_plt(data_filename, plot_filename, plot_title, xlabel, ylabel, xrange, yrange, title_a, title_b)
-
-
-def plot_2c(filename, metric_txt, tree, plot_title, xlabel, ylabel, xrange, yrange, title_a="", title_b=""):
-    # Generate file with data points
-    data_filename = filename + '.txt'
-    # delete previous files
-    os_cmd = 'rm {}'.format(filename + '.*')
-    os.system(os_cmd)
-    for attempts in range(1, max_attempts):
-        entry = {'attempts': str(attempts)}
-        column_names = ['attempts']
-        create_plot_for_config(data_filename, tree, attempts, entry, column_names, metric_txt)
-    # Generate plotting script
-    plot_filename = filename + '.plt'
-    create_plt(data_filename, plot_filename, plot_title, xlabel, ylabel, xrange, yrange, title_a, title_b)
-
-def plot_3a(output_filename, transactions_file, link_changes_filename):
-    epoch_length, transactions = get_epoch_length(transactions_file)
-    link_changes = read_link_changes_files(link_changes_filename)
-
-
-    transactions_per_epoch = calculate_events_per_epoch(epoch_length, transactions)
-    link_changes_per_epoch = calculate_events_per_epoch(epoch_length, link_changes)
-
+def merge_dicts_for_plotting(dict1, dict2):
     data_dict = {}
-    for k, v in transactions_per_epoch.items():
-        if k in link_changes_per_epoch:
+    for k, v in dict1.items():
+        if k in dict2:
             # if an epoch includes both transactions and link changes, include both in tuple
-            data_dict[k] = (v, link_changes_per_epoch[k])
+            data_dict[k] = (v, dict2[k])
         else:
             # if an epoch only has transactions, then set link changes to zero
             data_dict[k] = (v, 0)
 
-    for k, v in link_changes_per_epoch.items():
+    for k, v in dict2.items():
         if k in data_dict:
-            # if an epoch containing a link change is already in the dict, then don't add it again
-            # it will already include the transactions if there were any
+            # if an epoch containing a link change is already in the dict, then
+            # don't add it again it will already include the transactions if
+            # there were any
             continue
         else:
-            # if an epoch with a link change is not in the dict, add it and assume zero transactions
-            # this is a safe assumption, because if there were transactions in the epoch, it would have
-            # been included in the previous loop
+            # if an epoch with a link change is not in the dict, add it and
+            # assume zero transactions this is a safe assumption, because if
+            # there were transactions in the epoch, it would have been included
+            # in the previous loop
             data_dict[k] = (0, v)
-
-    data_filename = output_filename + '.txt'
-    plot_filename = output_filename + '.plt'
-    save_data_points(data_filename, data_dict, ["epoch", "transactions", "link-changes"])
-    create_plt(data_filename, plot_filename, "Figure 3b", "Epoch Number", "Count", "[0:700]", "[0:25000]", "Transactions", "Set Link", show_grid=False, xtic=100, pointstyle="points")
-
-def plot_3b(output_filename, transactions_file, link_changes_filename, dynamic_output_dataset):
-    plot_filename = output_filename + '.plt'
-    create_plt(dynamic_output_dataset, plot_filename, "Figure 3a", "Epoch Number", "Stabilization", "[0:700]", "[0:1e10]", "SpeedyMurmurs", "Set Link", show_grid=False, xtic=100, pointstyle="points", y_logarithmic=True)
+    return data_dict
 
 def calculate_events_per_epoch(epoch_length, events):
     cur_epoch = 1
@@ -299,6 +259,93 @@ def get_epoch_length(transactions_file):
     delta_av = sum_delta/len(transactions_list)
     return (delta_av * 1000, transactions_list)
 
+algo_list = [7, 0]
+max_transactions = 1
+max_trees = 2
+max_attempts = 4
+
+def create_plt(data_filename, plot_filename, title, xlabel, ylabel, xrange, yrange, title_a="", title_b="", show_grid=True, xtic=1, pointstyle="linespoints", y_logarithmic=False):
+    with open(plot_filename, 'w') as p:
+        p.write('#!/usr/bin/gnuplot -persist\n')
+        p.write('set title "{}"\n'.format(title))
+        p.write('set xlabel "{}"\n'.format(xlabel))
+        p.write('set ylabel "{}"\n'.format(ylabel))
+        p.write('set xrange {}\n'.format(xrange))
+        p.write('set yrange {}\n'.format(yrange))
+        p.write('set pointsize 1\n')
+        if y_logarithmic:
+            p.write('set logscale y\n')
+        if show_grid:
+            p.write('set grid\n')
+        p.write('plot "{0}" using (column(0)):2:xtic({3}) with {4} title "{1}","{0}" using (column(0)):3:xtic({3}) with {4} title "{2}"\n'.format(data_filename, title_a, title_b, xtic, pointstyle))
+
+def plot_2ab(filename, metric_txt, attempts, plot_title, xlabel, ylabel, xrange, yrange, title_a="", title_b=""):
+    # Generate file with data points
+    data_filename = filename + '.txt'
+    # delete previous files
+    os_cmd = 'rm {}'.format(filename + '.*')
+    os.system(os_cmd)
+    for tree in range(1, max_trees):
+        entry = {'trees': str(tree)}
+        column_names = ['trees']
+        create_plot_for_config(data_filename, tree, attempts, entry, column_names, metric_txt)
+    # Generate plotting script
+    plot_filename = filename + '.plt'
+    create_plt(data_filename, plot_filename, plot_title, xlabel, ylabel, xrange, yrange, title_a, title_b)
+
+
+def plot_2c(filename, metric_txt, tree, plot_title, xlabel, ylabel, xrange, yrange, title_a="", title_b=""):
+    # Generate file with data points
+    data_filename = filename + '.txt'
+    # delete previous files
+    os_cmd = 'rm {}'.format(filename + '.*')
+    os.system(os_cmd)
+    for attempts in range(1, max_attempts):
+        entry = {'attempts': str(attempts)}
+        column_names = ['attempts']
+        create_plot_for_config(data_filename, tree, attempts, entry, column_names, metric_txt)
+    # Generate plotting script
+    plot_filename = filename + '.plt'
+    create_plt(data_filename, plot_filename, plot_title, xlabel, ylabel, xrange, yrange, title_a, title_b)
+
+def plot_3a(output_filename, transactions_file, link_changes_filename):
+    epoch_length, transactions = get_epoch_length(transactions_file)
+    link_changes = read_link_changes_files(link_changes_filename)
+
+
+    transactions_per_epoch = calculate_events_per_epoch(epoch_length, transactions)
+    link_changes_per_epoch = calculate_events_per_epoch(epoch_length, link_changes)
+
+    data_dict = merge_dicts_for_plotting(transactions_per_epoch, link_changes_per_epoch)
+    data_filename = output_filename + '.txt'
+    plot_filename = output_filename + '.plt'
+    save_data_points(data_filename, data_dict, ["epoch", "transactions", "link-changes"])
+    create_plt(data_filename, plot_filename, "Figure 3b", "Epoch Number", "Count", "[0:700]", "[0:25000]", "Transactions", "Set Link", show_grid=False, xtic=100, pointstyle="points")
+
+def plot_3b(output_filename):
+    plot_filename = output_filename + '.plt'
+    sw_file_path = get_filename_with_path_dynamic(0, 3, 1) + '/cnet-stab.txt'
+    sm_file_path = get_filename_with_path_dynamic(7, 3, 1) + '/cnet-stab.txt'
+
+
+    # create dict of stab message values for both sw and sm
+    sw_stab_messages_dict = convert_kv_file_to_dict(sw_file_path)
+    sm_stab_messages_dict = convert_kv_file_to_dict(sm_file_path)
+
+    # merge dicts
+    merged_stab_messages_dict = merge_dicts_for_plotting(sw_stab_messages_dict, sm_stab_messages_dict)
+
+    data_filename = output_filename + '.txt'
+    plot_filename = output_filename + '.plt'
+
+    # output dicts to file
+    save_data_points(data_filename, merged_stab_messages_dict, ["epoch", "sw", "sm"])
+
+    create_plt(data_filename, plot_filename, "Figure 3b", "Epoch Number", "Stabilization", "[0:700]", "[1:1e10]", "SilentWhispers", "SpeedyMurmurs", show_grid=False, xtic=100, pointstyle="points", y_logarithmic=True)
+
+def plot_3c(output_filename, transactions_file, link_changes_filename, dynamic_output_dataset):
+    m_file_path = get_filename_with_path_dynamic(10, 3, 1)
+
 def plot_all_static_figs():
     # Fig.2a
     plot_2ab(root + 'fig2a', 'CREDIT_NETWORK_SUCCESS=', 1, 'Fig 2a', 'Trees', 'Success Ratio', "[0:8]", "[0:1]", "SpeedyMurmurs", "SilentWhispers")
@@ -312,8 +359,7 @@ def plot_all_dynamic_figs():
     link_changes_datasets = "../data/finalSets/dynamic/jan2013-newlinks-lcc-sorted-uniq-t{0}.txt"
     plot_3a(root + 'fig3a', transactions_datasets, link_changes_datasets)
 
-    dynamic_output_dataset = "data/READABLE_FILE_SM-P1-93502/0/CREDIT_NETWORK-SM-P1-165552.45497208898-TREE_ROUTE_TDRAP-true-false-3-331.10490994417796-RANDOM_PARTITIONER-1/cnet-stab.txt"
-    plot_3b(root + 'fig3b', transactions_datasets, link_changes_datasets, dynamic_output_dataset)
+    plot_3b(root + 'fig3b')
 
 if  __name__ =='__main__':
     signal.signal(signal.SIGINT, signal_handler)
