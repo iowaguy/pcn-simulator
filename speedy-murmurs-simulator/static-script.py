@@ -90,7 +90,7 @@ def get_filename_with_path_dynamic(algo, tree, step):
         folder_name = f'/0/CREDIT_NETWORK-{algo_str}-P{step}-165552.45497208898-TREE_ROUTE_TDRAP-true-false-{tree}-331.10490994417796-RANDOM_PARTITIONER-1'
     elif algo == 10:
         algo_str = 'M'
-        folder_name = f'CREDIT_MAX_FLOW-0.0-0'
+        folder_name = f'/0/CREDIT_MAX_FLOW-0.0-0'
     else:
         print(f'Error: invalid algorithm: {algo}');
         sys.exit();
@@ -164,7 +164,7 @@ def convert_kv_file_to_dict(filepath):
     with open(filepath, 'r') as textfile:
         for line in textfile:
             k,v = line.rstrip().split('\t')
-            out_dict[k] = v
+            out_dict[int(k)] = float(v)
     return out_dict
 
 def merge_dicts_for_plotting(dict1, dict2):
@@ -275,6 +275,8 @@ def create_plt(data_filename, plot_filename, title, xlabel, ylabel, xrange, yran
         p.write('set pointsize 1\n')
         if y_logarithmic:
             p.write('set logscale y\n')
+        else:
+            p.write('unset logscale y\n')
         if show_grid:
             p.write('set grid\n')
         p.write('plot "{0}" using (column(0)):2:xtic({3}) with {4} title "{1}","{0}" using (column(0)):3:xtic({3}) with {4} title "{2}"\n'.format(data_filename, title_a, title_b, xtic, pointstyle))
@@ -343,8 +345,66 @@ def plot_3b(output_filename):
 
     create_plt(data_filename, plot_filename, "Figure 3b", "Epoch Number", "Stabilization", "[0:700]", "[1:1e10]", "SilentWhispers", "SpeedyMurmurs", show_grid=False, xtic=100, pointstyle="points", y_logarithmic=True)
 
-def plot_3c(output_filename, transactions_file, link_changes_filename, dynamic_output_dataset):
-    m_file_path = get_filename_with_path_dynamic(10, 3, 1)
+def calculate_moving_average(d, moving_average_range):
+    running_sum = 0
+    i = 0
+    moving_avg_dict = {}
+    for k,v in d.items():
+        # add the succr for the current epoch
+        running_sum += d[k]
+        if i >= moving_average_range:
+            # subtract the succr from 50 epochs ago
+            running_sum -= d[k-moving_average_range]
+            current_avg = running_sum/moving_average_range
+            moving_avg_dict[k] = current_avg
+        i += 1
+
+    return moving_avg_dict
+
+def plot_3c(output_filename):
+    filename = '/cnet-succR.txt'
+    m_file_path = get_filename_with_path_dynamic(10, 3, 1) + filename
+    sw_file_path = get_filename_with_path_dynamic(0, 3, 1) + filename
+    sm_file_path = get_filename_with_path_dynamic(7, 3, 1) + filename
+
+    # get succR for SW for each epoch
+    sw_succr_dict = convert_kv_file_to_dict(sw_file_path)
+    sm_succr_dict = convert_kv_file_to_dict(sm_file_path)
+    m_succr_dict = convert_kv_file_to_dict(m_file_path)
+
+    # update SW dict by dividing each value by the corresponding value in the M dict
+    for k,v in sw_succr_dict.items():
+        if k in m_succr_dict:
+            if m_succr_dict[k] == 0:
+                sw_succr_dict[k] = 1
+            else:
+                sw_succr_dict[k] = v/m_succr_dict[k]
+
+    # update SM dict by dividing each value by the corresponding value in the M dict
+    for k,v in sm_succr_dict.items():
+        if k in m_succr_dict:
+            if m_succr_dict[k] == 0:
+                sm_succr_dict[k] = 1
+            else:
+                sm_succr_dict[k] = v/m_succr_dict[k]
+
+    # calculate moving average for sw
+    sw_moving_avg_dict = calculate_moving_average(sw_succr_dict, 50)
+
+    # calculate moving average for sm
+    sm_moving_avg_dict = calculate_moving_average(sm_succr_dict, 50)
+
+    # merge dicts
+    merged_succr_dict = merge_dicts_for_plotting(sw_moving_avg_dict, sm_moving_avg_dict)
+
+    data_filename = output_filename + '.txt'
+    plot_filename = output_filename + '.plt'
+
+    # output dicts to a file
+    save_data_points(data_filename, merged_succr_dict, ["epoch", "sw", "sm"])
+
+    # write plt file
+    create_plt(data_filename, plot_filename, "Figure 3c", "Epoch Number", "Success Ratio", "[0:700]", "[0:1]", "SilentWhispers", "SpeedyMurmurs", show_grid=False, xtic=100, pointstyle="lines")
 
 def plot_all_static_figs():
     # Fig.2a
@@ -358,8 +418,8 @@ def plot_all_dynamic_figs():
     transactions_datasets = "../data/finalSets/dynamic/jan2013-trans-lcc-noself-uniq-{0}.txt"
     link_changes_datasets = "../data/finalSets/dynamic/jan2013-newlinks-lcc-sorted-uniq-t{0}.txt"
     plot_3a(root + 'fig3a', transactions_datasets, link_changes_datasets)
-
     plot_3b(root + 'fig3b')
+    plot_3c(root + 'fig3c')
 
 if  __name__ =='__main__':
     signal.signal(signal.SIGINT, signal_handler)
