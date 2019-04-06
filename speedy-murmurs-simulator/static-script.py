@@ -84,7 +84,7 @@ def get_filename_with_path_static(algo, tree, attempts):
 def get_filename_with_path_dynamic(algo, tree, step):
     if algo == 0:
         algo_str = 'SW'
-        folder_name = f'/1/CREDIT_NETWORK-{algo_str}-P{step}-165552.45497208898-TREE_ROUTE_SILENTW-false-true-{tree}-331.10490994417796-RANDOM_PARTITIONER-1'
+        folder_name = f'/0/CREDIT_NETWORK-{algo_str}-P{step}-165552.45497208898-TREE_ROUTE_SILENTW-false-true-{tree}-331.10490994417796-RANDOM_PARTITIONER-1'
     elif algo == 7:
         algo_str = 'SM'
         folder_name = f'/0/CREDIT_NETWORK-{algo_str}-P{step}-165552.45497208898-TREE_ROUTE_TDRAP-true-false-{tree}-331.10490994417796-RANDOM_PARTITIONER-1'
@@ -107,13 +107,11 @@ class_path = 'bin/'
 
 def run_static(transaction_num, algo, num_attempts, num_trees):
     if algo == 7:
-        algo_name = 'Speedy Murmurs'
+        algo_name = 'SpeedyMurmurs'
     else:
-        algo_name = 'Silent Whispers'
-    print ('\nRunning static sim: Transaction Num: %d; Algorithm: %s; Number of Attempts: %d; Number of trees: %d\n' % (
-            transaction_num, algo_name, num_attempts, num_trees))
-    args = str(transaction_num) + ' ' + str(algo) + ' ' + str(num_attempts) + ' ' + str(num_trees)
-    os.system('java -cp ' + class_path + ' treeembedding.tests.Static ' + args)
+        algo_name = 'SilentWhispers'
+    print (f'\nRunning static sim: Transaction Num: {transaction_num}; Algorithm: {algo_name}; Number of Attempts: {num_attempts}; Number of trees: {num_trees}\n')
+    os.system(f'java -cp {class_path} treeembedding.tests.Static {transaction_num} {algo} {num_attempts} {num_trees}')
 
 def run_for_algo(algo):
     for t_num in range(0, max_transactions):
