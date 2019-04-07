@@ -324,7 +324,7 @@ def plot_3a(output_filename, transactions_file, link_changes_filename):
     data_filename = output_filename + '.txt'
     plot_filename = output_filename + '.plt'
     save_data_points(data_filename, data_dict, ["epoch", "transactions", "link-changes"])
-    create_plt(data_filename, plot_filename, "Figure 3b", "Epoch Number", "Count", "[0:700]", "[0:25000]", "Transactions", "Set Link", show_grid=False, xtic=100, ytic=5000, pointstyle="points")
+    create_plt(data_filename, plot_filename, "Figure 3a", "Epoch Number", "Count", "[0:700]", "[0:25000]", "Transactions", "Set Link", show_grid=False, xtic=100, ytic=5000, pointstyle="points")
 
 def plot_3b(output_filename):
     plot_filename = output_filename + '.plt'
