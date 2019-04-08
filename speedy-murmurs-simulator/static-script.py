@@ -259,7 +259,7 @@ def get_epoch_length(transactions_file):
 
 algo_list = [7, 0]
 max_transactions = 1
-max_trees = 2
+max_trees = 8
 max_attempts = 11
 
 def create_plt(data_filename, plot_filename, title, xlabel, ylabel, xrange, yrange, title_a="", title_b="", show_grid=True, xtic=1, ytic=0.2, pointstyle="linespoints", y_logarithmic=False):

@@ -31,7 +31,7 @@ public class Static {
 	 */
 	public static void main(String[] args) {
 		// General parameters
-		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "true");
+		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
 		Config.overwrite("MAIN_DATA_FOLDER", "./data/static/");
 		String path = "../abbreviated-data/";
 		// iteration
