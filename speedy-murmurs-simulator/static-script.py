@@ -411,9 +411,9 @@ def plot_3c(output_filename):
 def plot_all_static_figs():
     root = 'plot/'
     # Fig.2a
-    # plot_2ab(root + 'fig2a', 'CREDIT_NETWORK_SUCCESS=', 1, 'Fig 2a', 'Trees', 'Success Ratio', "[0:8]", "[0:1]", "SpeedyMurmurs", "SilentWhispers")
+    plot_2ab(root + 'fig2a', 'CREDIT_NETWORK_SUCCESS=', 1, 'Fig 2a', 'Trees', 'Success Ratio', "[0:8]", "[0:1]", "SpeedyMurmurs", "SilentWhispers")
     # Fig.2b
-    # plot_2ab(root + 'fig2b', 'CREDIT_NETWORK_DELAY_AV=', 1, 'Fig 2b', 'Trees', 'Hops(Delay)', "[0:8]", "[0:1]", "SpeedyMurmurs", "SilentWhispers")
+    plot_2ab(root + 'fig2b', 'CREDIT_NETWORK_DELAY_AV=', 1, 'Fig 2b', 'Trees', 'Hops(Delay)', "[0:8]", "[0:1]", "SpeedyMurmurs", "SilentWhispers")
     # Fig.2c
     # Args:filename, metric_txt, tree, plot_title, xlabel, ylabel, xrange, yrange, title_a="", title_b=""
     plot_2c(root + 'fig2c', 'CREDIT_NETWORK_SUCCESS=', 3, 'Fig 2c', 'Attempts', 'Success Ratio', "[0:10]", "[0:1]", "SpeedyMurmurs", "SilentWhispers")
