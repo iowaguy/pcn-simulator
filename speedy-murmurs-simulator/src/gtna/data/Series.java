@@ -234,10 +234,11 @@ public class Series {
 			}
 		}
 
-		if (startRun != 0) {
-			System.out.println("\n");
-			return s;
-		}
+//
+//		if (startRun != 0) {
+//			System.out.println("\n");
+//			return s;
+//		}
 
 		Timer timerAggregation = new Timer("\n===> " + s.getFolder());
 		boolean success = Aggregation.aggregate(s, endRun + 1);

@@ -31,9 +31,9 @@ public class Static {
 	 */
 	public static void main(String[] args) {
 		// General parameters
-		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
+		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "true");
 		Config.overwrite("MAIN_DATA_FOLDER", "./data/static/");
-		String path = "../data/";
+		String path = "../abbreviated-data/";
 		// iteration
 		int i = Integer.parseInt(args[0]);
 		// configuration in terms of routing algorithm 0-10, see below
@@ -106,7 +106,6 @@ public class Static {
 			Network network = new ReadableFile(com[config], com[config], graph,
 					null);
       Series s = Series.generate(network, new Metric[] { m[config] }, i, i);
-      Plotting.multi(s, new Metric[] { m[config] }, com[config]);
 		}
 
 	}

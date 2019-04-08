@@ -260,7 +260,7 @@ def get_epoch_length(transactions_file):
 algo_list = [7, 0]
 max_transactions = 1
 max_trees = 2
-max_attempts = 4
+max_attempts = 11
 
 def create_plt(data_filename, plot_filename, title, xlabel, ylabel, xrange, yrange, title_a="", title_b="", show_grid=True, xtic=1, ytic=0.2, pointstyle="linespoints", y_logarithmic=False):
     with open(plot_filename, 'w') as p:
@@ -409,11 +409,13 @@ def plot_3c(output_filename):
     create_plt(data_filename, plot_filename, "Figure 3c", "Epoch Number", "Success Ratio", "[0:700]", "[0:1]", "SilentWhispers", "SpeedyMurmurs", show_grid=False, xtic=100, pointstyle="lines")
 
 def plot_all_static_figs():
+    root = 'plot/'
     # Fig.2a
-    plot_2ab(root + 'fig2a', 'CREDIT_NETWORK_SUCCESS=', 1, 'Fig 2a', 'Trees', 'Success Ratio', "[0:8]", "[0:1]", "SpeedyMurmurs", "SilentWhispers")
+    # plot_2ab(root + 'fig2a', 'CREDIT_NETWORK_SUCCESS=', 1, 'Fig 2a', 'Trees', 'Success Ratio', "[0:8]", "[0:1]", "SpeedyMurmurs", "SilentWhispers")
     # Fig.2b
-    plot_2ab(root + 'fig2b', 'CREDIT_NETWORK_DELAY_AV=', 1, 'Fig 2b', 'Trees', 'Hops(Delay)', "[0:8]", "[0:1]", "SpeedyMurmurs", "SilentWhispers")
+    # plot_2ab(root + 'fig2b', 'CREDIT_NETWORK_DELAY_AV=', 1, 'Fig 2b', 'Trees', 'Hops(Delay)', "[0:8]", "[0:1]", "SpeedyMurmurs", "SilentWhispers")
     # Fig.2c
+    # Args:filename, metric_txt, tree, plot_title, xlabel, ylabel, xrange, yrange, title_a="", title_b=""
     plot_2c(root + 'fig2c', 'CREDIT_NETWORK_SUCCESS=', 3, 'Fig 2c', 'Attempts', 'Success Ratio', "[0:10]", "[0:1]", "SpeedyMurmurs", "SilentWhispers")
 
 def plot_all_dynamic_figs():
@@ -432,5 +434,5 @@ if  __name__ =='__main__':
         print('No class path provided, defaulting to bin/')
     root = 'plot/'
 
-    # plot_all_static_figs()
-    plot_all_dynamic_figs()
+    plot_all_static_figs()
+    # plot_all_dynamic_figs()
