@@ -122,7 +122,9 @@ in (complete-parsed-trust-lines-2016-nov-7.txt).
 
 # How are results evaluated and plotted
 
-## Static simulation args
+## Static Simulation
+
+### Program args
 
 1. Run for trees 1 - 7
 2. For all transactions (0 - 19)
@@ -131,7 +133,7 @@ in (complete-parsed-trust-lines-2016-nov-7.txt).
 
 program args: [transaction] [algo] [attempts] [trees]
 
-## Static Simulation Output Details:
+### Output folder/file structure:
 - Inside dir: data/static
 - Folder names: 
     - Silent Whispers:  READABLE_FILE_SW-PER-MUL-67149
@@ -155,6 +157,26 @@ Format: CREDIT_NETWORK-STATIC-[epoch_num]-TREE_ROUTE_[algo]-[dr]-[mul]-[trees]-[
 
 So, for SpeedyMurmurs sim run for transaction set 3, attempts: 2 and trees: 4 the data will be at:
 `data/static/READABLE_FILE_V-DYN-67149/3/CREDIT_NETWORK-STATIC-1000.0-TREE_ROUTE_TDRAP-true-false-4-2000.0-RANDOM_PARTITIONER-3/_singles.txt`
+
+## Dynamic Simulation
+
+### Program args:
+1. Run number: 0 - 19
+2. Algorithm: (0 - Silent Whispers, 7 - Speedy Murmurs, 10 - Max Flow)
+3. Steps: 0 - 8 (Since simulation takes a long time, each sim is split into 9 parts)
+
+### Output details:
+- root `data/READABLE_FILE_[algo]-[nodes]`
+    - algo: SM-P[step] for Speedy Murmurs, SW-P[step] - Silent Whispers, M-P[step] - Max Flow
+    - nodes: for their data set 93502
+- All runs are with `1 retry attempt` and `3 trees/landmarks`
+- For each transaction num, the output will be inside a directory with the transaction num. For eg: `0/CREDIT_NETWORK-SM-P1-165552.45497208898-TREE_ROUTE_TDRAP-true-false-3-331.10490994417796-RANDOM_PARTITIONER-1`   
+    - for transaction 0
+    - algo: Speedy Murmurs
+    - epoch: 165552.45497208898
+    - trees: 3
+    - attempts: 1
+    - **TODO** what is 331.10490994417796?
 
 ## Simuation Output
 - A set of files are created by running the simulation. These contain various types of data like messages sent, messages failed, total messages sent etc. These files are used by the underlying GTNA framework to plot various graphs. 
