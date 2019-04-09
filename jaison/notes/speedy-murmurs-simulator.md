@@ -7,16 +7,16 @@
 
 **Simulation Data**
 - [x] [Understand how simuation data is constructed from the data set provided. (Ripple data from Jan 2013 - Aug 2016)](#data-set)
-- [ ] What are the [final list of files used in the evaluation](#final-list-of-files-used-in-simulation) and what are each of them used for?
+- [x] What are the [final list of files used in the evaluation](#final-list-of-files-used-in-simulation) and what are each of them used for?
 
 
 **Simulation Results**
 - [x] [Running the simulation outputs a set of files, what do each of those files have/mean?](#simuation-output)
-- [ ] [How are the results evaluated? Graphs plotted](#graphs-plotted)
+- [x] [How are the results evaluated? Graphs plotted](#graphs-plotted)
 
 
 **Paper evaluation verification**
-- [ ] After understanding the data and the results. Try reproducing the results from the paper.
+- [x] After understanding the data and the results. Try reproducing the results from the paper.
 - [ ] Run the simulation on an updated data set (Ripple data from 2016 - Present). This is interesting because Ripple had a transaction surge in 2017.
     * What is the expected result?
     * What is the actual result? was SpeedyMurmurs still more performant than Silent Whispers in the presence of high transactional load which probably resulted in frequent tree rebalancing.
@@ -128,7 +128,7 @@ in (complete-parsed-trust-lines-2016-nov-7.txt).
 
 ## Graphs Plotted
 - The set of files created by the simulation are plotted using GTNA.
-- **TODO** The code is a little uncertain here as the context for each of the plots to be drawn from the above mentioned files are missing from the config file provided. For the time being we are infering the values.
+- Wrote script to recreate the plotted figures.
 
 ## Metrics used
 *This is what the paper mentions is being used while evaluating*
