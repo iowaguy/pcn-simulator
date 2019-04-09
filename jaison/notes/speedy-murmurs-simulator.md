@@ -122,6 +122,40 @@ in (complete-parsed-trust-lines-2016-nov-7.txt).
 
 # How are results evaluated and plotted
 
+## Static simulation args
+
+1. Run for trees 1 - 7
+2. For all transactions (0 - 19)
+3. Attempts: 1 - 10
+4. Algo: Speedy Murmursi(7), Silent Whispers(0)
+
+program args: [transaction] [algo] [attempts] [trees]
+
+## Static Simulation Output Details:
+- Inside dir: data/static
+- Folder names: 
+    - Silent Whispers:  READABLE_FILE_SW-PER-MUL-67149
+    - Speedy Murmurs :  READABLE_FILE_V-DYN-67149
+- Each folder inside the above will have directories numbered from 0-19 for transaction set
+- Created Folder name format: 
+Eg    : CREDIT_NETWORK-STATIC-1000.0-TREE_ROUTE_SILENTW-false-true-4-2000.0-RANDOM_PARTITIONER-3
+Format: CREDIT_NETWORK-STATIC-[epoch_num]-TREE_ROUTE_[algo]-[dr]-[mul]-[trees]-[ri]-RANDOM_PARTITIONER-[num_attempts]
+    - epoch_num: 1000.0
+    - algo:
+        - Silent Whispers: SILENTW
+        - Speedy Murmurs : TDRAP
+    - dr:
+        - Silent Whispers: false 
+        - Speedy Murmurs : true 
+    - mul:
+        - Silent Whispers: true
+        - Speedy Murmurs : false 
+    - ri: 2000.0
+- Finally, find file named: _singles.txt 
+
+So, for SpeedyMurmurs sim run for transaction set 3, attempts: 2 and trees: 4 the data will be at:
+data/static/READABLE_FILE_V-DYN-67149/3/CREDIT_NETWORK-STATIC-1000.0-TREE_ROUTE_TDRAP-true-false-4-2000.0-RANDOM_PARTITIONER-3/_singles.txt
+
 ## Simuation Output
 - A set of files are created by running the simulation. These contain various types of data like messages sent, messages failed, total messages sent etc. These files are used by the underlying GTNA framework to plot various graphs. 
 - The filesnames are self-explanatory on what values they hold.
