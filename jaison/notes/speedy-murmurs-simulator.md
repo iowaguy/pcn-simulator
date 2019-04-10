@@ -3,6 +3,7 @@
 - [x] [What are the Algorithms Supported?](#algorithms-supported)
 - [ ] Understand routing code for SpeedyMurmurs 
 - [ ] Understand routing code for SilentWhispers
+- [ ] Get the spider network simulator to compile and work
 - [ ] Understand routing code for SpiderNetwork
 
 **Simulation Data**
@@ -14,15 +15,16 @@
 - [x] [Running the simulation outputs a set of files, what do each of those files have/mean?](#simuation-output)
 - [x] [How are the results evaluated? Graphs plotted](#graphs-plotted)
 
-
 **Paper evaluation verification**
 - [x] After understanding the data and the results. Try reproducing the results from the paper.
-- [ ] Run the simulation on an updated data set (Ripple data from 2016 - Present). This is interesting because Ripple had a transaction surge in 2017.
-    * What is the expected result?
-    * What is the actual result? was SpeedyMurmurs still more performant than Silent Whispers in the presence of high transactional load which probably resulted in frequent tree rebalancing.
+- [ ] Look for other data sets that can be used in the simulator.
 
 **Exploring Byzantine behaviour**
-- [ ] Make a theorectical plan on the type of attacks you want to make. This involves clearly defining the model.
+- [ ] Note on the attacker model assumed. List assumptions.
+- [ ] Recreate the attacker model assumed in paper and observe behaviour.
+- [ ] List of attacks read until now (from the other papers).
+- [ ] Come up with a list of additional attacks that can be performed. Run them by Cristina and Ben.
+- [ ] What happens when a few transactions are missing or repeated in the data set? How do speedy murmurs and silent whispers behave?
 - [ ] Understand how EXACTLY the algorithm is implemented and run these attacks in the simulator.
 - [ ] Will it be possible to modularize/improve the simulator to simulate byzantine behaviour with a simple config file?
 
@@ -32,6 +34,12 @@
 - [ ] Canal
 - [ ] Priv Pay
 - [ ] Rayo and Fulgor
+
+**TODO later**
+- [ ] Run the simulation on an updated data set (Ripple data from 2016 - Present). This is interesting because Ripple had a transaction surge in 2017.
+    * What is the expected result?
+    * What is the actual result? was SpeedyMurmurs still more performant than Silent Whispers in the presence of high transactional load which probably resulted in frequent tree rebalancing.
+
 
 ## Ideas
 - Evaluate conditions where Silent Whispers is better and when Speedy Murmurs is and ford fulkerson, suggest hybrid based on network state.
