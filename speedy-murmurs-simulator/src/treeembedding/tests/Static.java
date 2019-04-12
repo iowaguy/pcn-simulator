@@ -6,6 +6,8 @@ import gtna.networks.Network;
 import gtna.networks.util.ReadableFile;
 import gtna.plot.Plotting;
 import gtna.util.Config;
+import treeembedding.byzantine.ByzantineNodeSelection;
+import treeembedding.byzantine.RandomByzantineNodeSelection;
 import treeembedding.credit.CreditMaxFlow;
 import treeembedding.credit.CreditNetwork;
 import treeembedding.credit.partioner.Partitioner;
@@ -52,6 +54,7 @@ public class Static {
 		// no updates
 		boolean up = false;
 
+
 		if (config == 10) {
 			// max flow
 			CreditMaxFlow m = new CreditMaxFlow(transList, name, tl, tries, up,
@@ -62,6 +65,9 @@ public class Static {
 
 			// number of embeddings
 			int trees = Integer.parseInt(args[3]);
+
+			int attack = Integer.parseInt(args[4]);
+
 			// partition transaction value randomly
 			Partitioner part = new RandomPartitioner();
 			// file with degree information + select highest degree nodes as
@@ -73,28 +79,33 @@ public class Static {
 			Treeroute voute = new TreerouteTDRAP();
 			Treeroute only = new TreerouteOnly();
 
+			ByzantineNodeSelection byz = null;
+			if (attack == 1) {
+				byz = new RandomByzantineNodeSelection(10);
+			}
+
 			// vary dynRepair, multi, routing algo -> 8 poss + 2 treeonly
 			// versions
 			CreditNetwork silentW = new CreditNetwork(transList, name, epoch,
-					sW, false, true, tl, part, roots, tries, up); 
+					sW, false, true, tl, part, roots, tries, up, byz, attack);
 			CreditNetwork silentWnoMul = new CreditNetwork(transList, name,
-					epoch, sW, false, false, tl, part, roots, tries, up); 
+					epoch, sW, false, false, tl, part, roots, tries, up, byz, attack);
 			CreditNetwork silentWdyn = new CreditNetwork(transList, name,
-					epoch, sW, true, true, tl, part, roots, tries, up); 
+					epoch, sW, true, true, tl, part, roots, tries, up, byz, attack);
 			CreditNetwork silentWdynNoMul = new CreditNetwork(transList, name,
-					epoch, sW, true, false, tl, part, roots, tries, up); 
+					epoch, sW, true, false, tl, part, roots, tries, up, byz, attack);
 			CreditNetwork vouteMulnoDyn = new CreditNetwork(transList, name,
-					epoch, voute, false, true, tl, part, roots, tries, up); 
+					epoch, voute, false, true, tl, part, roots, tries, up, byz, attack);
 			CreditNetwork voutenoDyn = new CreditNetwork(transList, name,
-					epoch, voute, false, false, tl, part, roots, tries, up); 
+					epoch, voute, false, false, tl, part, roots, tries, up, byz, attack);
 			CreditNetwork vouteMul = new CreditNetwork(transList, name, epoch,
-					voute, true, true, tl, part, roots, tries, up); 
+					voute, true, true, tl, part, roots, tries, up, byz, attack);
 			CreditNetwork voutenoMul = new CreditNetwork(transList, name,
-					epoch, voute, true, false, tl, part, roots, tries, up);
+					epoch, voute, true, false, tl, part, roots, tries, up, byz, attack);
 			CreditNetwork treeonly1 = new CreditNetwork(transList, name, epoch,
-					only, false, true, tl, part, roots, tries, up); 
+					only, false, true, tl, part, roots, tries, up, byz, attack);
 			CreditNetwork treeonly2 = new CreditNetwork(transList, name, epoch,
-					only, true, false, tl, part, roots, tries, up); 
+					only, true, false, tl, part, roots, tries, up, byz, attack);
 
 			Metric[] m = new Metric[] { silentW, silentWnoMul, silentWdyn,
 					silentWdynNoMul, vouteMulnoDyn, voutenoDyn, vouteMul,

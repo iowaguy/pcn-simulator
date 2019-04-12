@@ -31,8 +31,11 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
 import java.util.Vector;
 
+import treeembedding.byzantine.ByzantineNodeSelection;
+import treeembedding.byzantine.NoByzantineNodeSelection;
 import treeembedding.credit.partioner.Partitioner;
 import treeembedding.treerouting.TreeCoordinates;
 import treeembedding.treerouting.Treeroute;
@@ -91,10 +94,14 @@ public class CreditNetwork extends Metric {
 	double[] succs;
 	
 	boolean log = false;
+
+	ByzantineNodeSelection byzSelection;
+	Set<Integer> byzantineNodes;
+	int attack = 0;
 	
-	
-	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep, 
-			boolean multi, double requeueInt, Partitioner part, int[] roots, int max, String links, boolean up){
+	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
+											 boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
+											 String links, boolean up, ByzantineNodeSelection byzSelection, int attack){
 		super("CREDIT_NETWORK", new Parameter[]{new StringParameter("NAME", name), new DoubleParameter("EPOCH", epoch),
 				new StringParameter("RA", ra.getKey()), new BooleanParameter("DYN_REPAIR", dynRep), 
 				new BooleanParameter("MULTI", multi), new IntParameter("TREES", roots.length),
@@ -115,21 +122,30 @@ public class CreditNetwork extends Metric {
 			this.newLinks = new LinkedList<double[]>();
 		}
 		this.update = up;
+
+		if (byzSelection == null) {
+			this.byzSelection = new NoByzantineNodeSelection();
+		} else {
+			this.byzSelection = byzSelection;
+		}
+
+		this.attack = attack;
 	}
 	
 	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep, 
 			boolean multi, double requeueInt, Partitioner part, int[] roots, int max, String links){
-		this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, links, true);
+		this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, links, true, null, 0);
 	}
-	
-	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep, 
+
+	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
 			boolean multi, double requeueInt, Partitioner part, int[] roots, int max){
-		this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, null,true);
+		this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, null,true, null, 0);
 	}
-	
-	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep, 
-			boolean multi, double requeueInt, Partitioner part, int[] roots, int max, boolean up){
-		this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, null,up);
+
+	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
+											 boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
+											 boolean up, ByzantineNodeSelection byzSelection, int attack){
+		this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, null,up, byzSelection, attack);
 	}
 
 	@Override
@@ -171,7 +187,10 @@ public class CreditNetwork extends Metric {
 		Vector<Double> succR = new Vector<Double>();
 		Node[] nodes = g.getNodes();
 		boolean[] exclude = new boolean[nodes.length]; 
-		
+
+		// generate byzantine nodes
+		this.byzantineNodes = this.byzSelection.conscript(nodes);
+
 		//go over transactions
 		LinkedList<Transaction> toRetry = new LinkedList<Transaction>(); 
 		int epoch_old = 0;
@@ -786,7 +805,18 @@ public class CreditNetwork extends Metric {
 					s = dest;
 					d = src;
 				}
-			   paths[j] = this.ra.getRoute(s, d, j, g, nodes, exclude, edgeweights, vals[j]);
+				paths[j] = this.ra.getRoute(s, d, j, g, nodes, exclude, edgeweights, vals[j]);
+
+				if (attack == 1) {
+					// if byzantine node is on path, do byzantine action
+					for (int i = 1; i < paths[j].length; i++) {
+						if (this.byzantineNodes.contains(paths[j][i])) {
+							// do byzantine action
+							succ = false;
+						}
+					}
+				}
+
 			   if (paths[j][paths[j].length-1] == -1){
 				  succ = false;
 			   } else {
