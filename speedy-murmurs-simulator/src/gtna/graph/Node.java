@@ -350,4 +350,21 @@ public class Node implements Comparable<Node> {
 			temp[j] = 0;
 		return temp;
 	}
+
+	@Override
+	public int hashCode() {
+		return index;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null) {
+			return false;
+		}
+		if (!(o instanceof Node)) {
+			return false;
+		}
+
+		return o.hashCode() == this.hashCode();
+	}
 }
