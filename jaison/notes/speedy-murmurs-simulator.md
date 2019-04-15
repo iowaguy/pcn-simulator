@@ -128,6 +128,11 @@ in (complete-parsed-trust-lines-2016-nov-7.txt).
 - ripple-lcc.graph_CREDIT_LINKS
 - sampleTr-x.txt
 
+### Dynamic Simulation Files
+- `jan2013-trans-lcc-noself-uniq-*.txt`: time, value, source, destination
+- `jan2013-newlinks-lcc-sorted-uniq-t*.txt`: time, source, destination, weight
+- `jan2013-lcc-t0.graph`: graph of the network in GTNA understandable format
+
 # How are results evaluated and plotted
 
 ## Static Simulation
