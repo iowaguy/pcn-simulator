@@ -35,3 +35,7 @@
     - Speedy Murmurs just says that there is a list of well-known landmarks.
 - Can adversaries keep exhausting their links and forcing rebalancing of the spanning tree? Send it to and from
     - Compare performance btw SW and SM.
+
+## TODO:
+- Create a data set by hand for different scenarios:
+    - [ ] Run Dynamic sim for a VERY small data set (runtime < 1min) and compare/reproduce graph. 
