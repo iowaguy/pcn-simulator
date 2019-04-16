@@ -132,6 +132,7 @@ in (complete-parsed-trust-lines-2016-nov-7.txt).
 - `jan2013-trans-lcc-noself-uniq-*.txt`: time, value, source, destination
 - `jan2013-newlinks-lcc-sorted-uniq-t*.txt`: time, source, destination, weight
 - `jan2013-lcc-t0.graph`: graph of the network in GTNA understandable format
+- `jan2013-lcc-t0.graph_CREDIT_LINKS`: links between nodes and their respective weights. sourse, destination, value_low, value, value_high
 
 # How are results evaluated and plotted
 
