@@ -2,6 +2,7 @@ package treeembedding.byzantine;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 import gtna.graph.Node;
 
@@ -23,8 +24,13 @@ public class RandomByzantineNodeSelection extends ByzantineNodeSelection {
   @Override
   public Set<Integer> conscript(Node[] allNodes) {
     Set<Integer> ret = new HashSet<>();
+
     for (int i = 0; i < numByzantineNodes; i++) {
-      ret.add(i);
+      // generate random number between 0 and allNodes.length
+      int randomNum = ThreadLocalRandom.current().nextInt(0, allNodes.length);
+
+      // if that node is not in the set, add it
+      ret.add(randomNum);
     }
     return ret;
   }

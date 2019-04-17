@@ -34,6 +34,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
 
+import treeembedding.byzantine.Attack;
+import treeembedding.byzantine.AttackType;
 import treeembedding.byzantine.ByzantineNodeSelection;
 import treeembedding.byzantine.NoByzantineNodeSelection;
 import treeembedding.credit.partioner.Partitioner;
@@ -97,11 +99,11 @@ public class CreditNetwork extends Metric {
 
 	ByzantineNodeSelection byzSelection;
 	Set<Integer> byzantineNodes;
-	int attack = 0;
+	Attack attack;
 	
 	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
 											 boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
-											 String links, boolean up, ByzantineNodeSelection byzSelection, int attack){
+											 String links, boolean up, ByzantineNodeSelection byzSelection, Attack attack){
 		super("CREDIT_NETWORK", new Parameter[]{new StringParameter("NAME", name), new DoubleParameter("EPOCH", epoch),
 				new StringParameter("RA", ra.getKey()), new BooleanParameter("DYN_REPAIR", dynRep), 
 				new BooleanParameter("MULTI", multi), new IntParameter("TREES", roots.length),
@@ -134,17 +136,17 @@ public class CreditNetwork extends Metric {
 	
 	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep, 
 			boolean multi, double requeueInt, Partitioner part, int[] roots, int max, String links){
-		this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, links, true, null, 0);
+		this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, links, true, null, null);
 	}
 
 	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
 			boolean multi, double requeueInt, Partitioner part, int[] roots, int max){
-		this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, null,true, null, 0);
+		this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, null,true, null, null);
 	}
 
 	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
 											 boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
-											 boolean up, ByzantineNodeSelection byzSelection, int attack){
+											 boolean up, ByzantineNodeSelection byzSelection, Attack attack){
 		this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, null,up, byzSelection, attack);
 	}
 
@@ -807,7 +809,7 @@ public class CreditNetwork extends Metric {
 				}
 				paths[j] = this.ra.getRoute(s, d, j, g, nodes, exclude, edgeweights, vals[j]);
 
-				if (attack == 1) {
+				if (attack.getType() == AttackType.DROP_ALL) {
 					// if byzantine node is on path, do byzantine action
 					for (int i = 1; i < paths[j].length; i++) {
 						if (this.byzantineNodes.contains(paths[j][i])) {
