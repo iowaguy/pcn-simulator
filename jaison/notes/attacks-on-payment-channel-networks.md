@@ -10,21 +10,19 @@
 - For an attacker who knows the full topology, value privacy can still be preserved. 
 
 ## Attack Ideas:
-- Adversary A and B keep sending funds forward and back to congest and exhaust network.
+- Adversary A and B keep sending funds forward and back to congest and exhaust network; forcing rebalancing of the spanning tree
+    - Compare performance btw SW and SM.
 - Adversary (S and R) keeps trying large payments between them (targetting highly connected landmarks and nodes with high balances) 
   thereby locking funds and failing honest transactions.
     - How does this affect the success ratio of normal transactions?
     - Can S and R force routing of payments through them by doing this? and thereby collect more fees?
 - Analysis on how many attackers are needed and how easy it is for them to get on path for a certain % of payments to disrupt the network?
-- Can adversaries keep exhausting their links and forcing rebalancing of the spanning tree? Send it to and from
-    - Compare performance btw SW and SM.
 
 - Are there any non-verified assumptions in the model? Can adversaries lie about their connectivity? their balance 
   to attract more payments through them?
 - How does one get to be a landmark? Can an adversary become a landmark? 
     - [Read silent whispers to get a better understanding of this assumption]
     - Speedy Murmurs just says that there is a list of well-known landmarks.
-
 
 - Can the counter-raptor (TCP level attack) be used on PCN's to break privacy?
 
