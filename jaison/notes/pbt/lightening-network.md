@@ -22,10 +22,9 @@
 ## Setup
 - Same as unidirectional.
 
-##Payments
+## Payments
 - Alice now sends a signed transaction with a n-1 day lock-time. And for all transactions henceforth, keep updating the state with the n-1 day locktime. -> means that Bob can only broadcast this after n-1 days.
 - If Bob wants to pay Alice, he overwrites the state and sends Alice a transaction with a n-2 day lock time so that she can submit this before Bob can and therefore an order for transactions is maintained.
-
 - Alternatively, if both of them co-operate they can both sign a transaction without a locktime.
 
 ## Closing the channel
@@ -58,7 +57,6 @@ Alice wants to send 0.1 btc to Carol.
 - Alice creates a HTLC of 0.1 btc and sends it to Bob with a 3-day nLockTime. This means that if Bob produces R within 3 days, Bob can get the 0.1 from Alice, otherwise he cannot and Alice gets a refund of 0.1 btc.
 - Bob does same with Carol but with a 2-day nLockTime. 
 - Carol does the same with Dave with a 1-day nLockTime.
-
 - Dave can now pull the 0.1 from Carol by publishing R to Carol. 
 - Carol does the same with Bob and then Bob to Alice.
 - Thus completing the payment from Alice -> Dave.
