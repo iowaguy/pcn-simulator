@@ -1,5 +1,9 @@
 package treeembedding.tests;
 
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
 import gtna.data.Series;
 import gtna.metrics.Metric;
 import gtna.networks.Network;
@@ -9,6 +13,7 @@ import gtna.util.Config;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import treeembedding.RunConfig;
 import treeembedding.credit.CreditMaxFlow;
 import treeembedding.credit.CreditNetwork;
 import treeembedding.credit.partioner.Partitioner;
@@ -26,14 +31,32 @@ public class Dynamic {
 	 * 2: steps previously completed  
 	 */
 	public static void main(String[] args) {
+		String runDirPath = args[0] + '/';
+		String runConfigPath = runDirPath + "runconfig.yml";
+
+		ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+		mapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
+
+		RunConfig runConfig = null;
+		try {
+			runConfig = mapper.readValue(new File(runConfigPath), RunConfig.class);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
+		}
+
+		if (runConfig == null) {
+			System.out.println("Unable to parse run configuration file");
+			return;
+		}
+
 		// General parameters
-		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
-		String results = "./data/";
-		Config.overwrite("MAIN_DATA_FOLDER", results);
-		String path = "../data/";
+		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", Boolean.toString(!runConfig.isForceOverwrite()));
+		//String results = "./data/";
+		Config.overwrite("MAIN_DATA_FOLDER", runDirPath);
+		//String path = "../data/";
 		
-		int run = Integer.parseInt(args[0]);
-		int config = Integer.parseInt(args[1]);
+		int config = runConfig.getRoutingAlgorithm().getId(); // Integer.parseInt(args[1]);
 		int step = Integer.parseInt(args[2]);
 		String prefix;
 		switch (config){
@@ -44,11 +67,11 @@ public class Dynamic {
 		}
 		String graph, trans, newlinks;
 		if(step==0){
-			graph =  path+"finalSets/dynamic/jan2013-lcc-t0.graph";
-			trans = path+"finalSets/dynamic/jan2013-trans-lcc-noself-uniq-1.txt";
-			newlinks = path+"finalSets/dynamic/jan2013-newlinks-lcc-sorted-uniq-t0.txt";
+			graph =  runConfig.getBasePath()+"/finalSets/dynamic/jan2013-lcc-t0.graph";
+			trans = runConfig.getBasePath()+"/finalSets/dynamic/jan2013-trans-lcc-noself-uniq-1.txt";
+			newlinks = runConfig.getBasePath()+"/finalSets/dynamic/jan2013-newlinks-lcc-sorted-uniq-t0.txt";
 		} else {
-			graph = results+"READABLE_FILE_"+prefix+"-P"+step+"-93502/"+run+"/";
+			graph = runDirPath+"READABLE_FILE_"+prefix+"-P"+step+"-93502/0/";
 			 FilenameFilter fileNameFilter = new FilenameFilter() {
 				   
 		            @Override
@@ -61,12 +84,12 @@ public class Dynamic {
 		         };
 			String[] files = (new File(graph)).list(fileNameFilter);
 			graph = graph + files[0]+"/graph.txt";
-			trans = path+"finalSets/dynamic/jan2013-trans-lcc-noself-uniq-"+(step+1)+".txt";
-			newlinks = path+"finalSets/dynamic/jan2013-newlinks-lcc-sorted-uniq-t"+(step)+".txt";
+			trans = runConfig.getBasePath()+"/finalSets/dynamic/jan2013-trans-lcc-noself-uniq-"+(step+1)+".txt";
+			newlinks = runConfig.getBasePath()+"/finalSets/dynamic/jan2013-newlinks-lcc-sorted-uniq-t"+(step)+".txt";
 		}
 		switch (config){
-		   case 0: runDynSWSM(new String[] {graph, "SW-P"+(step+1),trans ,  newlinks, "0", ""+run}); break;
-		   case 7: runDynSWSM(new String[] {graph, "SM-P"+(step+1), trans ,  newlinks, "7", ""+run}); break;
+		   case 0: runDynSWSM(new String[] {graph, "SW-P"+(step+1),trans ,  newlinks, /* algo */ "0", /* run */ "0"}); break;
+		   case 7: runDynSWSM(new String[] {graph, "SM-P"+(step+1), trans ,  newlinks, /* algo */ "7", /* run */ "0"}); break;
 		   case 10: runMaxFlow(graph, trans, "M-P"+(step+1), newlinks, 165.55245497208898*1000); break; 
 		}
 

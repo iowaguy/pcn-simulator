@@ -62,7 +62,7 @@ public class Static {
 		}
 
 		// General parameters
-		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", Boolean.toString(runConfig.isForceOverwrite()));
+		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", Boolean.toString(!runConfig.isForceOverwrite()));
 		Config.overwrite("MAIN_DATA_FOLDER", runDirPath);
 		String path = runConfig.getBasePath();
 
@@ -153,7 +153,8 @@ public class Static {
 
 			Network network = new ReadableFile(com[config], com[config], graph,
 					null);
-      Series s = Series.generate(network, new Metric[] { m[config] }, iterations, iterations);
+      //Series s = Series.generate(network, new Metric[] { m[config] }, iterations, iterations);
+			Series s = Series.generate(network, new Metric[] { m[config] }, 0, iterations - 1);
 		}
 
 	}

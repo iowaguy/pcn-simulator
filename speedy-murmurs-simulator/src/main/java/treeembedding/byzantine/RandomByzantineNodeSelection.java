@@ -29,6 +29,11 @@ public class RandomByzantineNodeSelection extends ByzantineNodeSelection {
       // generate random number between 0 and allNodes.length
       int randomNum = ThreadLocalRandom.current().nextInt(0, allNodes.length);
 
+      // try again if the random node is already included
+      if (ret.contains(randomNum)) {
+        i--;
+        continue;
+      }
       // if that node is not in the set, add it
       ret.add(randomNum);
     }

@@ -631,6 +631,7 @@ public class CreditNetwork extends Metric {
 		double[] mins = new double[roots.length];
 		for (int j = 0; j < mins.length; j++){
 			paths[j] = ra.getRoute(src, dest, j, g, nodes, exclude);
+
 			String path = "";
 			for (int i = 0; i < paths[j].length; i++){
 				path = path + " " + paths[j][i];
@@ -657,37 +658,52 @@ public class CreditNetwork extends Metric {
 		vals = part.partition(g, src,dest,cur.val,mins);
 		
 		//check if transaction works
-		boolean succ = false;
-		if (vals != null) {
-			succ = true;
-			for (int j = 0; j < paths.length; j++) {
-				if (vals[j] > 0) {
-					int l = paths[j][0];
-					for (int i = 1; i < paths[j].length; i++) {
-						int k = paths[j][i];
-						Edge e = edgeweights.makeEdge(l, k);
-						double w = edgeweights.getWeight(e);
-						if (!originalWeight.containsKey(e)){
-							originalWeight.put(e, w);
-						}
-						
-						if (!edgeweights.setWeight(l, k, vals[j])) {
-							succ = false;
-							break;
-						} else {
-							if (log){
-								System.out.println("----Set weight of ("+l+","+k+") to " + edgeweights.getWeight(e)
-										+ "(previous " +w+ ")");
+			boolean succ = false;
+			if (vals != null) {
+				succ = true;
+				for (int j = 0; j < paths.length; j++) {
+
+					if (attack.getType() == AttackType.DROP_ALL) {
+						// if byzantine node is on path, do byzantine action
+						for (int i = 1; i < paths[j].length; i++) {
+							if (this.byzantineNodes.contains(paths[j][i])) {
+								// do byzantine action
+								succ = false;
+								break;
 							}
 						}
-						l = k;
-						
 					}
 					if (!succ) {
 						break;
 					}
+
+					if (vals[j] > 0) {
+						int l = paths[j][0];
+						for (int i = 1; i < paths[j].length; i++) {
+							int k = paths[j][i];
+							Edge e = edgeweights.makeEdge(l, k);
+							double w = edgeweights.getWeight(e);
+							if (!originalWeight.containsKey(e)){
+								originalWeight.put(e, w);
+							}
+
+							if (!edgeweights.setWeight(l, k, vals[j])) {
+								succ = false;
+								break;
+							} else {
+								if (log){
+									System.out.println("----Set weight of ("+l+","+k+") to " + edgeweights.getWeight(e)
+											+ "(previous " +w+ ")");
+								}
+							}
+							l = k;
+
+						}
+						if (!succ) {
+							break;
+						}
+					}
 				}
-			}
 			// update weights
 			if (succ) {
 				this.setZeros(edgeweights, originalWeight);
@@ -815,6 +831,7 @@ public class CreditNetwork extends Metric {
 						if (this.byzantineNodes.contains(paths[j][i])) {
 							// do byzantine action
 							succ = false;
+							break;
 						}
 					}
 				}
