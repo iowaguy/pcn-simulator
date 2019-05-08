@@ -34,6 +34,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
 
+import treeembedding.byzantine.Attack;
+import treeembedding.byzantine.AttackType;
 import treeembedding.byzantine.ByzantineNodeSelection;
 import treeembedding.byzantine.NoByzantineNodeSelection;
 import treeembedding.credit.partioner.Partitioner;
@@ -97,12 +99,12 @@ public class CreditNetwork extends Metric {
 
 	ByzantineNodeSelection byzSelection;
 	Set<Integer> byzantineNodes;
-	int attack = 0;
+  Attack attack;
 	
 	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
 											 boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
-											 String links, boolean up, ByzantineNodeSelection byzSelection, int attack){
-		super("CREDIT_NETWORK", new Parameter[]{new StringParameter("NAME", name), new DoubleParameter("EPOCH", epoch),
+											 String links, boolean up, ByzantineNodeSelection byzSelection, Attack attack){
+    super("CREDIT_NETWORK", new Parameter[]{new StringParameter("NAME", name), new DoubleParameter("EPOCH", epoch),
 				new StringParameter("RA", ra.getKey()), new BooleanParameter("DYN_REPAIR", dynRep), 
 				new BooleanParameter("MULTI", multi), new IntParameter("TREES", roots.length),
 				new DoubleParameter("REQUEUE_INTERVAL", requeueInt), new StringParameter("PARTITIONER", part.getName()),
@@ -134,18 +136,18 @@ public class CreditNetwork extends Metric {
 	
 	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep, 
 			boolean multi, double requeueInt, Partitioner part, int[] roots, int max, String links){
-		this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, links, true, null, 0);
-	}
+    this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, links, true, null, null);
+  }
 
 	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
 			boolean multi, double requeueInt, Partitioner part, int[] roots, int max){
-		this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, null,true, null, 0);
-	}
+    this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, null,true, null, null);
+  }
 
 	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
 											 boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
-											 boolean up, ByzantineNodeSelection byzSelection, int attack){
-		this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, null,up, byzSelection, attack);
+                       boolean up, ByzantineNodeSelection byzSelection, Attack attack){
+    this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, null,up, byzSelection, attack);
 	}
 
 	@Override
@@ -629,6 +631,7 @@ public class CreditNetwork extends Metric {
 		double[] mins = new double[roots.length];
 		for (int j = 0; j < mins.length; j++){
 			paths[j] = ra.getRoute(src, dest, j, g, nodes, exclude);
+
 			String path = "";
 			for (int i = 0; i < paths[j].length; i++){
 				path = path + " " + paths[j][i];
@@ -655,37 +658,52 @@ public class CreditNetwork extends Metric {
 		vals = part.partition(g, src,dest,cur.val,mins);
 		
 		//check if transaction works
-		boolean succ = false;
-		if (vals != null) {
-			succ = true;
-			for (int j = 0; j < paths.length; j++) {
-				if (vals[j] > 0) {
-					int l = paths[j][0];
-					for (int i = 1; i < paths[j].length; i++) {
-						int k = paths[j][i];
-						Edge e = edgeweights.makeEdge(l, k);
-						double w = edgeweights.getWeight(e);
-						if (!originalWeight.containsKey(e)){
-							originalWeight.put(e, w);
-						}
-						
-						if (!edgeweights.setWeight(l, k, vals[j])) {
-							succ = false;
-							break;
-						} else {
-							if (log){
-								System.out.println("----Set weight of ("+l+","+k+") to " + edgeweights.getWeight(e)
-										+ "(previous " +w+ ")");
+			boolean succ = false;
+			if (vals != null) {
+				succ = true;
+				for (int j = 0; j < paths.length; j++) {
+
+					if (attack.getType() == AttackType.DROP_ALL) {
+						// if byzantine node is on path, do byzantine action
+						for (int i = 1; i < paths[j].length; i++) {
+							if (this.byzantineNodes.contains(paths[j][i])) {
+								// do byzantine action
+								succ = false;
+								break;
 							}
 						}
-						l = k;
-						
 					}
 					if (!succ) {
 						break;
 					}
+
+					if (vals[j] > 0) {
+						int l = paths[j][0];
+						for (int i = 1; i < paths[j].length; i++) {
+							int k = paths[j][i];
+							Edge e = edgeweights.makeEdge(l, k);
+							double w = edgeweights.getWeight(e);
+							if (!originalWeight.containsKey(e)){
+								originalWeight.put(e, w);
+							}
+
+							if (!edgeweights.setWeight(l, k, vals[j])) {
+								succ = false;
+								break;
+							} else {
+								if (log){
+									System.out.println("----Set weight of ("+l+","+k+") to " + edgeweights.getWeight(e)
+											+ "(previous " +w+ ")");
+								}
+							}
+							l = k;
+
+						}
+						if (!succ) {
+							break;
+						}
+					}
 				}
-			}
 			// update weights
 			if (succ) {
 				this.setZeros(edgeweights, originalWeight);
@@ -807,13 +825,14 @@ public class CreditNetwork extends Metric {
 				}
 				paths[j] = this.ra.getRoute(s, d, j, g, nodes, exclude, edgeweights, vals[j]);
 
-				if (attack == 1) {
-					// if byzantine node is on path, do byzantine action
+        if (attack.getType() == AttackType.DROP_ALL) {
+          // if byzantine node is on path, do byzantine action
 					for (int i = 1; i < paths[j].length; i++) {
 						if (this.byzantineNodes.contains(paths[j][i])) {
 							// do byzantine action
 							succ = false;
-						}
+              break;
+            }
 					}
 				}
 
