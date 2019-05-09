@@ -41,6 +41,27 @@ public class RunConfig {
     @JsonProperty("iterations")
     private int iterations;
 
+    @JsonProperty("step")
+    private int step;
+
+    private String runDirPath;
+
+    public String getRunDirPath() {
+        return runDirPath;
+    }
+
+    public void setRunDirPath(String runDirPath) {
+        this.runDirPath = runDirPath;
+    }
+
+    public int getStep() {
+        return step;
+    }
+
+    public void setStep(int step) {
+        this.step = step;
+    }
+
     public int getIterations() {
         return iterations;
     }

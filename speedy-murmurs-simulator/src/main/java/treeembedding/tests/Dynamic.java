@@ -14,6 +14,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 import treeembedding.RunConfig;
+import treeembedding.byzantine.Attack;
+import treeembedding.byzantine.AttackerSelection;
+import treeembedding.byzantine.ByzantineNodeSelection;
+import treeembedding.byzantine.RandomByzantineNodeSelection;
 import treeembedding.credit.CreditMaxFlow;
 import treeembedding.credit.CreditNetwork;
 import treeembedding.credit.partioner.Partitioner;
@@ -50,6 +54,8 @@ public class Dynamic {
       return;
     }
 
+    runConfig.setRunDirPath(runDirPath);
+
     // General parameters
     Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", Boolean.toString(!runConfig.isForceOverwrite()));
     //String results = "./data/";
@@ -57,7 +63,7 @@ public class Dynamic {
     //String path = "../data/";
 
     int config = runConfig.getRoutingAlgorithm().getId(); // Integer.parseInt(args[1]);
-    int step = Integer.parseInt(args[2]);
+    int step = runConfig.getStep();
     String prefix;
     switch (config) {
       case 0:
@@ -74,42 +80,33 @@ public class Dynamic {
     }
     String graph, trans, newlinks;
     if (step == 0) {
-      graph = runConfig.getBasePath() + "/finalSets/dynamic/jan2013-lcc-t0.graph";
-      trans = runConfig.getBasePath() + "/finalSets/dynamic/jan2013-trans-lcc-noself-uniq-1.txt";
-      newlinks = runConfig.getBasePath() + "/finalSets/dynamic/jan2013-newlinks-lcc-sorted-uniq-t0.txt";
+      graph = runConfig.getBasePath() + "/jan2013-lcc-t0.graph";
+      trans = runConfig.getBasePath() + "/jan2013-trans-lcc-noself-uniq-1.txt";
+      newlinks = runConfig.getBasePath() + "/jan2013-newlinks-lcc-sorted-uniq-t0.txt";
     } else {
       graph = runDirPath + "READABLE_FILE_" + prefix + "-P" + step + "-93502/0/";
-      FilenameFilter fileNameFilter = new FilenameFilter() {
-
-        @Override
-        public boolean accept(File dir, String name) {
-          if (name.contains("CREDIT_NETWORK") || name.contains("CREDIT_MAX")) {
-            return true;
-          }
-          return false;
-        }
-      };
+      FilenameFilter fileNameFilter = (dir, name) -> name.contains("CREDIT_NETWORK") || name.contains("CREDIT_MAX");
       String[] files = (new File(graph)).list(fileNameFilter);
       graph = graph + files[0] + "/graph.txt";
-      trans = runConfig.getBasePath() + "/finalSets/dynamic/jan2013-trans-lcc-noself-uniq-" + (step + 1) + ".txt";
-      newlinks = runConfig.getBasePath() + "/finalSets/dynamic/jan2013-newlinks-lcc-sorted-uniq-t" + (step) + ".txt";
+      trans = runConfig.getBasePath() + "/jan2013-trans-lcc-noself-uniq-" + (step + 1) + ".txt";
+      newlinks = runConfig.getBasePath() + "/jan2013-newlinks-lcc-sorted-uniq-t" + (step) + ".txt";
     }
     switch (config) {
       case 0:
-        runDynSWSM(new String[]{graph, "SW-P" + (step + 1), trans, newlinks, /* algo */ "0", /* run */ "0"});
+        runDynSWSM(new String[]{graph, "SW-P" + (step + 1), trans, newlinks, /* algo */ "0", /* run */ "0"}, runConfig);
         break;
       case 7:
-        runDynSWSM(new String[]{graph, "SM-P" + (step + 1), trans, newlinks, /* algo */ "7", /* run */ "0"});
+        runDynSWSM(new String[]{graph, "SM-P" + (step + 1), trans, newlinks, /* algo */ "7", /* run */ "0"}, runConfig);
         break;
       case 10:
-        runMaxFlow(graph, trans, "M-P" + (step + 1), newlinks, 165.55245497208898 * 1000);
+        runMaxFlow(graph, trans, "M-P" + (step + 1), newlinks, runConfig);
         break;
     }
   }
 
-  public static void runDynSWSM(String[] args) {
+  private static void runDynSWSM(String[] args, RunConfig runConfig) {
     Config.overwrite("SERIES_GRAPH_WRITE", "" + true);
-    Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
+    Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", Boolean.toString(!runConfig.isForceOverwrite()));
     String graph = args[0];
     String name = args[1];
     String trans = args[2];
@@ -135,19 +132,25 @@ public class Dynamic {
     int[] roots = {64, 36, 43};
     Partitioner part = new RandomPartitioner();
 
+    Attack attackProperties = runConfig.getAttackProperties();
+    ByzantineNodeSelection byz = null;
+    if (attackProperties != null && attackProperties.getSelection() == AttackerSelection.RANDOM) {
+      byz = new RandomByzantineNodeSelection(attackProperties.getNumAttackers());
+    }
+
     Network net = new ReadableFile(name, name, graph, null);
     CreditNetwork cred = new CreditNetwork(trans, name, epoch, ra,
-        dyn, multi, req, part, roots, max, add);
+        dyn, multi, req, part, roots, max, add, byz, attackProperties);
     Series.generate(net, new Metric[]{cred}, i, i);
   }
 
-  public static void runMaxFlow(String graph, String transList, String name, String links,
-                                double epoch) {
+  private static void runMaxFlow(String graph, String transList, String name, String links,
+                                 RunConfig runConfig) {
     Config.overwrite("SERIES_GRAPH_WRITE", "" + true);
-    Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
-    Config.overwrite("MAIN_DATA_FOLDER", "./data/");
+    Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", Boolean.toString(!runConfig.isForceOverwrite()));
+    Config.overwrite("MAIN_DATA_FOLDER", runConfig.getRunDirPath());
     CreditMaxFlow m = new CreditMaxFlow(transList, name,
-        0, 0, links, epoch);
+        0, 0, links, 165552.45497208898);
     Network test = new ReadableFile(name, name, graph, null);
     Series.generate(test, new Metric[]{m}, 1);
   }

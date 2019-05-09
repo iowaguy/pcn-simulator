@@ -135,8 +135,8 @@ public class CreditNetwork extends Metric {
 	}
 	
 	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep, 
-			boolean multi, double requeueInt, Partitioner part, int[] roots, int max, String links){
-    this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, links, true, null, null);
+			boolean multi, double requeueInt, Partitioner part, int[] roots, int max, String links, ByzantineNodeSelection byz, Attack attack){
+    this(file,name,epoch,ra,dynRep, multi, requeueInt, part, roots, max, links, true, byz, attack);
   }
 
 	public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
