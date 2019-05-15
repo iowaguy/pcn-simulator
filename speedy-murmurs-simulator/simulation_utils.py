@@ -1,33 +1,6 @@
 #!/usr/local/bin/python3
 
-import ipyparallel
-
-global ipyclient
-ipyclient = ipyparallel.Client()
-with ipyclient[:].sync_imports(local=True):
-    import numpy
-    import matplotlib.pyplot
-    import subprocess
-    import networkx
-    import os
-    import shutil
-    import yaml
-    import ipyparallel
-    from networkx import __version__ as networkxversion
-
-print('networkx: '+networkxversion)
-%matplotlib inline
-
 ## General utility functions and variables
-global singles
-global classpath
-global ID
-global silentwhispers
-global speedymurmurs
-global max_steps
-global max_attempts
-global max_trees
-
 
 singles = '_singles.txt'
 classpath = 'target/pcn-simulator-1.0-SNAPSHOT-jar-with-dependencies.jar'
@@ -59,6 +32,7 @@ algo_info = {
         'id':10
     }
 }
+
 static_node_count = '67149'
 dynamic_node_count = '93502'
 
@@ -69,6 +43,9 @@ dynamic_data_root = f'{data_root}'
 dynamic_epoch = '165552.45497208898'
 static_epoch = '1000.0'
 
+def running_mean(x, N):
+    cumsum = numpy.cumsum(numpy.insert(x, 0, 0))
+    return (cumsum[N:] - cumsum[:-N]) / float(N)
 
 def get_static_data_path_config(config_dict):
     algo = config_dict["routing_algorithm"]
@@ -109,6 +86,8 @@ def extract_from_singles(algo, attempts, trees, key):
 
 # this will also calculate averages if there are multiple runs
 def extract_from_singles_config(config_dict_list, key, sorting_key1=None, sorting_key2=None):
+    import os
+    import numpy
     x_vs_key = []
     buckets = {}
 
@@ -182,6 +161,8 @@ def merge_dicts(dict1, dict2):
     return data_dict
 
 def create_output_dir(config_dict):
+    import os
+    import shutil
     dir = os.getcwd() + f'/{output_dir_default_base}/' + get_static_data_path_config(config_dict)[0]
     if not os.path.isdir(dir):
         os.makedirs(dir)
@@ -251,8 +232,33 @@ def read_transactions_file(transactions_file, transactions_list = []):
 
         return transactions_list
 
+def read_graph_file(graph_file):
+    g = networkx.Graph()
+    with open(graph_file, 'r') as graph_entries:
+        count = 0
+        for node in graph_entries:
+            count += 1
+            # skip meta data at beginning of file
+            if count < 8:
+                print(f"Skipping metadata, line: {count}")
+                continue
+            elif count > 15:
+                print("Done")
+                break
+
+            node_id, connections_str = node.split(':')
+            destinations = connections_str.split(';')
+            print(f"node_id: {node_id}")
+            for dest in destinations:
+                #print(f'src: {node_id}; dest: {dest}')
+                g.add_edge(node_id, dest)
+
+
+    return g
+
 ## Run a single simulation
 def run_static(transaction_set, algo, attempts, trees, attack, force=False):
+    import os
     # skip run if it has already happened
     if not force and os.path.isdir(get_static_data_path(algo, trees, attempts)):
         print('Run exists. Skipping...')
@@ -261,6 +267,7 @@ def run_static(transaction_set, algo, attempts, trees, attack, force=False):
     subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Static', f'{transaction_set}', f'{algo_info[algo][ID]}', f'{attempts}', f'{trees}', f'{attack}'], capture_output=True)
 
 def run_dynamic(transaction_set, algo, attempts, trees, step, force=False):
+    import os
     # skip run if it has already happened
     if not force and os.path.isdir(get_dynamic_data_path(algo, trees, attempts, step)):
         print('Run exists. Skipping...')
@@ -270,37 +277,41 @@ def run_dynamic(transaction_set, algo, attempts, trees, step, force=False):
         subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Dynamic', f'{transaction_set}', f'{algo_info[algo][ID]}', f'{step}'], capture_output=True)
 
 def run_static_config(config_dict, output_dir, force=False):
-    # import pdb; pdb.set_trace()
+    import os
+    import subprocess
     # skip run if it has already happened
     if not force and os.path.isdir(get_static_data_path(config_dict['routing_algorithm'], config_dict['trees'], config_dict['attempts'])):
         print('Run exists. Skipping...')
-        return
+        return 'Run exists. Skipping...'
     print(f'Running: java -cp {classpath} treeembedding.tests.Static {output_dir}')
     subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Static', f'{output_dir}'], capture_output=True)
+    return f'java -cp {classpath} treeembedding.tests.Static {output_dir}'
 
 def run_dynamic_config(transaction_set, algo, attempts, trees, step, force=False):
+    import os
+    import subprocess
     # skip run if it has already happened
     if not force and os.path.isdir(get_dynamic_data_path(algo, trees, attempts, step)):
         print('Run exists. Skipping...')
-        return
+        return 'Run exists. Skipping...'
     else:
         print(f'Running: java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {algo_info[algo][ID]} {step}')
         subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Dynamic', f'{transaction_set}', f'{algo_info[algo][ID]}', f'{step}'], capture_output=True)
 
 def parse_config(config_text):
+    import yaml
     try:
         return yaml.safe_load(config_text)
     except yaml.YAMLError as exc:
         print(exc)
 
 def do_experiment(config_dict):
-
+    import yaml
     output_dir = create_output_dir(config_dict)
-    return output_dir
     if output_dir == None:
         # don't perform a run
         print("Not performing run.")
-        return
+        return "Not performing run."
 
     # store a copy of the config in the directory
     config_file_path = output_dir + '/' + config_file_name
@@ -308,14 +319,6 @@ def do_experiment(config_dict):
         f.write(yaml.dump(config_dict))
 
     if config_dict["simulation_type"] == 'static':
-        run_static_config(config_dict, output_dir, config_dict['force_overwrite'])
+        return run_static_config(config_dict, output_dir, config_dict['force_overwrite'])
     elif config_dict["simulation_type"] == 'dynamic':
-        run_dynamic(config_dict, output_dir)
-
-def do_experiments(config_dict_list):
-    ipyclient[:].push(dict(create_output_dir=create_output_dir, output_dir_default_base=output_dir_default_base, get_static_data_path_config=get_static_data_path_config, algo_info=algo_info, static_node_count=static_node_count, static_epoch=static_epoch, config_file_name=config_file_name, run_static_config=run_static_config, get_static_data_path=get_static_data_path, static_data_root=static_data_root, classpath=classpath))
-    a = ipyclient[:].map_async(do_experiment, config_dict_list)
-
-    for i,r in enumerate(a):
-        print(f"task {i}; something: {r}")
-
+        return run_dynamic(config_dict, output_dir)
