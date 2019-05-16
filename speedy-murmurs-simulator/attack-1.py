@@ -4,21 +4,9 @@ import simulation_utils as su
 config_dict_list_srvna_sm = []
 config_dict_list_srvna_sw = []
 
-def setup():
-    import sys
-    import os
-    sys.path.append(os.getcwd())
-
-
-def generate_configs():
-    for data_set in range(0, 10):
-        for alg in [su.speedymurmurs, su.silentwhispers]:
-            # for alg in [silentwhispers]:
-            for attackers in range(0, 30001, 5000):
-                # for attackers in range(30000, 30001, 5000):
-                config = f'''
-data_set_name: tiny-{data_set}
-base: ../tiny-data/finalSets/static
+config = '''
+data_set_name: full-{data_set}
+base: ../data/finalSets/static
 topology: ripple-lcc.graph
 link_weights: ripple-lcc.graph_CREDIT_LINKS
 transaction_set: sampleTr-{data_set}.txt
@@ -33,17 +21,29 @@ attack_properties:
     attack_type: drop_all
 iterations: 1
 '''
-                if alg == su.speedymurmurs:
-                    config_dict_list_srvna_sm.append(su.parse_config(config))
-                elif alg == su.silentwhispers:
-                    config_dict_list_srvna_sw.append(su.parse_config(config))
 
+def setup():
+    import sys
+    import os
+    sys.path.append(os.getcwd())
+
+
+def generate_configs():
+    for data_set in range(0, 10):
+        for alg in [su.speedymurmurs, su.silentwhispers]:
+            # for alg in [silentwhispers]:
+            for attackers in range(0, 30001, 5000):
+                # for attackers in range(30000, 30001, 5000):
+                if alg == su.speedymurmurs:
+                    config_dict_list_srvna_sm.append(su.parse_config(config.format(data_set=data_set, alg=alg, attackers=attackers)))
+                elif alg == su.silentwhispers:
+                    config_dict_list_srvna_sw.append(su.parse_config(config.format(data_set=data_set, alg=alg, attackers=attackers)))
 def do_experiments(config_dict_list):
     lbv = ipyclient.load_balanced_view()
     result = lbv.map_sync(simulation_utils.do_experiment, config_dict_list)
 
     for i,r in enumerate(result):
-        print(f"Task ID #{i}; Command: {r}")
+      print(f"Task ID #{i}; Command: {r}")
 
 
 if __name__ == '__main__':
@@ -68,3 +68,4 @@ if __name__ == '__main__':
     do_experiments(config_dict_list_srvna_sm)
     do_experiments(config_dict_list_srvna_sw)
     print("Done.")
+
