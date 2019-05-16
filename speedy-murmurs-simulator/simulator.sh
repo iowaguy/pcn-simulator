@@ -3,7 +3,7 @@
 ENGINES=10
 
 usage() {
-    echo "Usage: $0 [-s|-t|-a]" 1>&2
+    echo "Usage: $0 [start|stop|status]" 1>&2
     exit 1
 }
 

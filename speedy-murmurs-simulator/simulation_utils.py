@@ -264,7 +264,7 @@ def run_static(transaction_set, algo, attempts, trees, attack, force=False):
         print('Run exists. Skipping...')
         return
     print(f'Running: java -cp {classpath} treeembedding.tests.Static {transaction_set} {algo_info[algo][ID]} {attempts} {trees} {attack}')
-    subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Static', f'{transaction_set}', f'{algo_info[algo][ID]}', f'{attempts}', f'{trees}', f'{attack}'], capture_output=True)
+    subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Static', f'{transaction_set}', f'{algo_info[algo][ID]}', f'{attempts}', f'{trees}', f'{attack}'])
 
 def run_dynamic(transaction_set, algo, attempts, trees, step, force=False):
     import os
@@ -274,7 +274,7 @@ def run_dynamic(transaction_set, algo, attempts, trees, step, force=False):
         return
     else:
         print(f'Running: java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {algo_info[algo][ID]} {step}')
-        subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Dynamic', f'{transaction_set}', f'{algo_info[algo][ID]}', f'{step}'], capture_output=True)
+        subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Dynamic', f'{transaction_set}', f'{algo_info[algo][ID]}', f'{step}'])
 
 def run_static_config(config_dict, output_dir, force=False):
     import os
@@ -284,7 +284,7 @@ def run_static_config(config_dict, output_dir, force=False):
         print('Run exists. Skipping...')
         return 'Run exists. Skipping...'
     print(f'Running: java -cp {classpath} treeembedding.tests.Static {output_dir}')
-    subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Static', f'{output_dir}'], capture_output=True)
+    subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Static', f'{output_dir}'])
     return f'java -cp {classpath} treeembedding.tests.Static {output_dir}'
 
 def run_dynamic_config(transaction_set, algo, attempts, trees, step, force=False):
@@ -296,7 +296,7 @@ def run_dynamic_config(transaction_set, algo, attempts, trees, step, force=False
         return 'Run exists. Skipping...'
     else:
         print(f'Running: java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {algo_info[algo][ID]} {step}')
-        subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Dynamic', f'{transaction_set}', f'{algo_info[algo][ID]}', f'{step}'], capture_output=True)
+        subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Dynamic', f'{transaction_set}', f'{algo_info[algo][ID]}', f'{step}'])
 
 def parse_config(config_text):
     import yaml
