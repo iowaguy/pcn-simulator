@@ -1,6 +1,7 @@
 #!/bin/bash
 
 ENGINES=10
+LOG_DIR=logs
 
 usage() {
     echo "Usage: $0 [start|stop|status]" 1>&2
@@ -33,17 +34,29 @@ status() {
     exit 0
 }
 
+start() {
+    nohup ipcluster start -n ${ENGINES} &> ${LOG_DIR}/ipcluster.out &
+    exec tailf ${LOG_DIR}/ipcluster.out            
+}
+
+attack() {
+    nohup python attack-1.py &> ${LOG_DIR}/attack-1.out
+    tailf ${LOG_DIR}/attack-1.out
+}
+
 while :; do
     case "$1" in
         start)
-	    nohup ipcluster start -n ${ENGINES} &>ipcluster.out &
-	    exec tailf ipcluster.out            
+	    start
             ;;
         stop)
 	    stop
             ;;
 	status)
 	    status
+	    ;;
+	attack)
+	    attack
 	    ;;
         *)
             usage
