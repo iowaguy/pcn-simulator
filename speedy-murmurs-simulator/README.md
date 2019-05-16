@@ -8,6 +8,6 @@
    7. yaml = "*"
    8. pyyaml = "*"
 9. start 10 engines with IP cluster, this task is memory bound--more than 20 ipengines causes severe thrashing
-   10. this can be done by running the script `./start-concurrent-simulation-setup.sh`
+   10. this can be done by running the script `./sim start`
 10. in speedy-murmurs-simulator/ run `mvn clean install`
-11. to start simulation, run `python attack-1.py`
+11. to start simulation, run `./sim attack`

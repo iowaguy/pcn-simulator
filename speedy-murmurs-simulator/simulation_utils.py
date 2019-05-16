@@ -280,7 +280,7 @@ def run_static_config(config_dict, output_dir, force=False):
     import os
     import subprocess
     # skip run if it has already happened
-    if not force and os.path.isdir(get_static_data_path(config_dict['routing_algorithm'], config_dict['trees'], config_dict['attempts'])):
+    if not force and os.path.isfile(get_static_data_path(config_dict['routing_algorithm'], config_dict['trees'], config_dict['attempts']) + '/_singles.txt'):
         print('Run exists. Skipping...')
         return 'Run exists. Skipping...'
     print(f'Running: java -cp {classpath} treeembedding.tests.Static {output_dir}')
@@ -291,12 +291,13 @@ def run_dynamic_config(transaction_set, algo, attempts, trees, step, force=False
     import os
     import subprocess
     # skip run if it has already happened
-    if not force and os.path.isdir(get_dynamic_data_path(algo, trees, attempts, step)):
+    if not force and os.path.isfile(get_dynamic_data_path(algo, trees, attempts, step) + '/_singles.txt'):
         print('Run exists. Skipping...')
         return 'Run exists. Skipping...'
     else:
         print(f'Running: java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {algo_info[algo][ID]} {step}')
         subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Dynamic', f'{transaction_set}', f'{algo_info[algo][ID]}', f'{step}'])
+        return f'java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {algo_info[algo][ID]} {step}'
 
 def parse_config(config_text):
     import yaml
