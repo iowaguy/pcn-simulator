@@ -1,3 +1,3 @@
 #!/bin/bash
 
-exec ipcluster start -n 10
+nohup ipcluster start -n 10 &

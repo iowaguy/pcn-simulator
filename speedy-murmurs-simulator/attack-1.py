@@ -40,13 +40,15 @@ def generate_configs():
                     config_dict_list_srvna_sw.append(su.parse_config(config.format(data_set=data_set, alg=alg, attackers=attackers)))
 def do_experiments(config_dict_list):
     lbv = ipyclient.load_balanced_view()
-    result = lbv.map_sync(simulation_utils.do_experiment, config_dict_list)
+    result = lbv.map_async(simulation_utils.do_experiment, config_dict_list)
 
     for i,r in enumerate(result):
       print(f"Task ID #{i}; Command: {r}")
 
 
 if __name__ == '__main__':
+    import time
+    start = time.time()
     ipyclient = ipyparallel.Client()
     ipyclient[:].apply_sync(setup)
 
@@ -67,5 +69,8 @@ if __name__ == '__main__':
     generate_configs()
     do_experiments(config_dict_list_srvna_sm)
     do_experiments(config_dict_list_srvna_sw)
-    print("Done.")
+    end = time.time()
+    elapsed = end - start
+    print(f"Done. Time: {elapsed}")
+    
 
