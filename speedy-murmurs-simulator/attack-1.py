@@ -11,7 +11,7 @@ topology: ripple-lcc.graph
 link_weights: ripple-lcc.graph_CREDIT_LINKS
 transaction_set: sampleTr-{data_set}.txt
 simulation_type: static
-force_overwrite: true
+force_overwrite: false
 routing_algorithm: "{alg}"
 attempts: 1
 trees: 3
@@ -40,10 +40,10 @@ def generate_configs():
                     config_dict_list_srvna_sw.append(su.parse_config(config.format(data_set=data_set, alg=alg, attackers=attackers)))
 def do_experiments(config_dict_list):
     lbv = ipyclient.load_balanced_view()
-    result = lbv.map_async(simulation_utils.do_experiment, config_dict_list)
+    result = lbv.map_sync(simulation_utils.do_experiment, config_dict_list)
 
     for i,r in enumerate(result):
-      print(f"Task ID #{i}; Command: {r}")
+        print(f"Task ID #{i}; Command: {r}")
 
 
 if __name__ == '__main__':

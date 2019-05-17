@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ENGINES=10
+ENGINES=11
 LOG_DIR=logs
 ATTACK=attack-1.py
 
@@ -41,8 +41,9 @@ start() {
 }
 
 attack() {
-    nohup python ${ATTACK} &> ${LOG_DIR}/attack-1.out
-    tailf ${LOG_DIR}/attack-1.out
+    nohup python ${ATTACK} &> ${LOG_DIR}/attack-1.out &
+    echo "${LOG_DIR}/attack-1.out"
+    exit 0
 }
 
 while :; do

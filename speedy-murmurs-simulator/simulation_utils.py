@@ -166,11 +166,10 @@ def create_output_dir(config_dict):
     dir = os.getcwd() + f'/{output_dir_default_base}/' + get_static_data_path_config(config_dict)[0]
     if not os.path.isdir(dir):
         os.makedirs(dir)
-        return dir
     elif config_dict["force_overwrite"]:
         shutil.rmtree(dir, ignore_errors=True)
         os.makedirs(dir)
-        return dir
+    return dir
 
 def get_epoch_length(transactions_file):
     transactions_list = []
@@ -279,10 +278,19 @@ def run_dynamic(transaction_set, algo, attempts, trees, step, force=False):
 def run_static_config(config_dict, output_dir, force=False):
     import os
     import subprocess
+    import shutil
     # skip run if it has already happened
     if not force and os.path.isfile(get_static_data_path(config_dict['routing_algorithm'], config_dict['trees'], config_dict['attempts']) + '/_singles.txt'):
         print('Run exists. Skipping...')
         return 'Run exists. Skipping...'
+
+    algo = config_dict['routing_algorithm']    
+    # if directory exists without file, then delete the directory
+    if os.path.isdir(os.getcwd() + f'/{data_root}/' + get_static_data_path_config(config_dict)[0] + f'/READABLE_FILE_{algo_info[algo]["token"]}-{static_node_count}/'):
+        static_data_path = get_static_data_path_config(config_dict)
+        if not os.path.isfile(os.getcwd() + f'/{data_root}/' + static_data_path[0] + static_data_path[1] + '/_singles.txt'):
+            shutil.rmtree(os.getcwd() + f'/{data_root}/' + get_static_data_path_config(config_dict)[0] + f'/READABLE_FILE_{algo_info[algo]["token"]}-{static_node_count}/')
+
     print(f'Running: java -cp {classpath} treeembedding.tests.Static {output_dir}')
     subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Static', f'{output_dir}'])
     return f'java -cp {classpath} treeembedding.tests.Static {output_dir}'
@@ -309,10 +317,6 @@ def parse_config(config_text):
 def do_experiment(config_dict):
     import yaml
     output_dir = create_output_dir(config_dict)
-    if output_dir == None:
-        # don't perform a run
-        print("Not performing run.")
-        return "Not performing run."
 
     # store a copy of the config in the directory
     config_file_path = output_dir + '/' + config_file_name
