@@ -24,7 +24,7 @@
  * SourceSelection.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,37 +35,36 @@
  */
 package gtna.routing.selection.source;
 
+import java.util.Random;
+
 import gtna.graph.Graph;
 import gtna.util.parameter.Parameter;
 import gtna.util.parameter.ParameterList;
 
-import java.util.Random;
-
 /**
  * @author benni
- * 
  */
 public abstract class SourceSelection extends ParameterList {
 
-	protected Graph graph;
+  protected Graph graph;
 
-	protected Random rand;
+  protected Random rand;
 
-	public SourceSelection(String key) {
-		super(key);
-		this.rand = new Random();
-	}
+  public SourceSelection(String key) {
+    super(key);
+    this.rand = new Random();
+  }
 
-	public SourceSelection(String key, Parameter[] parameters) {
-		super(key, parameters);
-	}
+  public SourceSelection(String key, Parameter[] parameters) {
+    super(key, parameters);
+  }
 
-	public void init(Graph graph) {
-		this.graph = graph;
-	}
+  public void init(Graph graph) {
+    this.graph = graph;
+  }
 
-	public abstract int getNextSource();
+  public abstract int getNextSource();
 
-	public abstract boolean applicable(Graph graph);
+  public abstract boolean applicable(Graph graph);
 
 }

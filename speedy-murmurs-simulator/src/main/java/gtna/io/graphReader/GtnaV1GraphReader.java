@@ -24,7 +24,7 @@
  * GtnaV1GraphReader.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -43,45 +43,44 @@ import gtna.util.Config;
 
 /**
  * @author benni
- * 
  */
 public class GtnaV1GraphReader extends GraphReader {
 
-	public GtnaV1GraphReader() {
-		super("GTNA_V1");
-	}
+  public GtnaV1GraphReader() {
+    super("GTNA_V1");
+  }
 
-	@Override
-	public Graph read(String filename) {
-		String delimiter = Config.get("GRAPH_WRITER_DELIMITER");
-		Filereader fr = new Filereader(filename);
+  @Override
+  public Graph read(String filename) {
+    String delimiter = Config.get("GRAPH_WRITER_DELIMITER");
+    Filereader fr = new Filereader(filename);
 
-		String name = fr.readLine();
-		int N = Integer.parseInt(fr.readLine());
-		int E = Integer.parseInt(fr.readLine());
+    String name = fr.readLine();
+    int N = Integer.parseInt(fr.readLine());
+    int E = Integer.parseInt(fr.readLine());
 
-		Graph graph = new Graph(name);
-		Node[] nodes = Node.init(N, graph);
-		Edges edges = new Edges(nodes, E);
+    Graph graph = new Graph(name);
+    Node[] nodes = Node.init(N, graph);
+    Edges edges = new Edges(nodes, E);
 
-		String line = null;
-		while ((line = fr.readLine()) != null) {
-			String[] temp = line.split(delimiter);
-			edges.add(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]));
-		}
-		edges.fill();
-		graph.setNodes(nodes);
-		fr.close();
-		return graph;
-	}
+    String line = null;
+    while ((line = fr.readLine()) != null) {
+      String[] temp = line.split(delimiter);
+      edges.add(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]));
+    }
+    edges.fill();
+    graph.setNodes(nodes);
+    fr.close();
+    return graph;
+  }
 
-	@Override
-	public int nodes(String filename) {
-		Filereader fr = new Filereader(filename);
-		fr.readLine();
-		int N = Integer.parseInt(fr.readLine());
-		fr.close();
-		return N;
-	}
+  @Override
+  public int nodes(String filename) {
+    Filereader fr = new Filereader(filename);
+    fr.readLine();
+    int N = Integer.parseInt(fr.readLine());
+    fr.close();
+    return N;
+  }
 
 }

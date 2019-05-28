@@ -24,7 +24,7 @@
  * RoutingTable.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -39,12 +39,11 @@ import gtna.id.Identifier;
 
 /**
  * @author benni
- * 
  */
 public abstract class RoutingTable {
-	public abstract String asString();
+  public abstract String asString();
 
-	public abstract void fromString(String str);
+  public abstract void fromString(String str);
 
-	public abstract int getNextHop(Identifier target);
+  public abstract int getNextHop(Identifier target);
 }

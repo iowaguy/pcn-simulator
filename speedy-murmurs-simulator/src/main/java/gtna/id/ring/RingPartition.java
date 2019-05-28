@@ -24,7 +24,7 @@
  * RingPartition.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,146 +35,140 @@
  */
 package gtna.id.ring;
 
+import java.util.Random;
+
 import gtna.id.DoubleIdentifier;
 import gtna.id.DoublePartition;
 import gtna.id.Identifier;
 import gtna.id.Partition;
 
-import java.util.Random;
-
 /**
- * Implements a partition in the wrapping ID space [0,1). A partition is
- * represented as an interval (start, end] with start beeing excluded from the
- * set of contained identifiers.
- * 
+ * Implements a partition in the wrapping ID space [0,1). A partition is represented as an interval
+ * (start, end] with start beeing excluded from the set of contained identifiers.
+ *
  * @author benni
- * 
  */
 public class RingPartition extends DoublePartition {
-	protected RingIdentifier start;
+  protected RingIdentifier start;
 
-	protected RingIdentifier end;
+  protected RingIdentifier end;
 
-	public RingPartition(RingIdentifier start, RingIdentifier end) {
-		this.start = start;
-		this.end = end;
-	}
+  public RingPartition(RingIdentifier start, RingIdentifier end) {
+    this.start = start;
+    this.end = end;
+  }
 
-	public RingPartition(String string) {
-		String[] temp = string.split(Partition.delimiter);
-		boolean wrapAround = Boolean.parseBoolean(temp[2]);
-		this.start = new RingIdentifier(Double.parseDouble(temp[0]), wrapAround);
-		this.end = new RingIdentifier(Double.parseDouble(temp[1]), wrapAround);
-	}
+  public RingPartition(String string) {
+    String[] temp = string.split(Partition.delimiter);
+    boolean wrapAround = Boolean.parseBoolean(temp[2]);
+    this.start = new RingIdentifier(Double.parseDouble(temp[0]), wrapAround);
+    this.end = new RingIdentifier(Double.parseDouble(temp[1]), wrapAround);
+  }
 
-	public String toString() {
-		return "R (" + this.start.position + ", " + this.end.position
-				+ "]";
-	}
+  public String toString() {
+    return "R (" + this.start.position + ", " + this.end.position
+            + "]";
+  }
 
-	@Override
-	public double distance(DoubleIdentifier id) {
-		if (this.contains(id)) {
-			return 0;
-		}
-		return Math.min(this.start.distance(id), this.end.distance(id));
-	}
+  @Override
+  public double distance(DoubleIdentifier id) {
+    if (this.contains(id)) {
+      return 0;
+    }
+    return Math.min(this.start.distance(id), this.end.distance(id));
+  }
 
-	@Override
-	public double distance(DoublePartition p) {
-		return this.distance((DoubleIdentifier) p.getRepresentativeIdentifier());
-	}
+  @Override
+  public double distance(DoublePartition p) {
+    return this.distance((DoubleIdentifier) p.getRepresentativeIdentifier());
+  }
 
-	@Override
-	public String asString() {
-		return this.start.position + Partition.delimiter
-				+ this.end.position + Partition.delimiter
-				+ this.start.wrapAround;
-	}
+  @Override
+  public String asString() {
+    return this.start.position + Partition.delimiter
+            + this.end.position + Partition.delimiter
+            + this.start.wrapAround;
+  }
 
-	@Override
-	public boolean contains(Identifier id) {
-		double pos = ((RingIdentifier) id).position;
-		if (this.isWrapping()) {
-			return this.start.position < pos
-					&& pos <= this.end.position;
-		}
-		return this.start.position < pos || pos <= this.end.position;
-	}
+  @Override
+  public boolean contains(Identifier id) {
+    double pos = ((RingIdentifier) id).position;
+    if (this.isWrapping()) {
+      return this.start.position < pos
+              && pos <= this.end.position;
+    }
+    return this.start.position < pos || pos <= this.end.position;
+  }
 
-	@Override
-	public Identifier getRepresentativeIdentifier() {
-		return this.end;
-	}
+  @Override
+  public Identifier getRepresentativeIdentifier() {
+    return this.end;
+  }
 
-	@Override
-	public Identifier getRandomIdentifier(Random rand) {
-		if (this.start.position == this.end.position) {
-			return new RingIdentifier(this.start.position,
-					this.start.wrapAround);
-		}
-		double r = rand.nextDouble();
-		while (r == 0.0) {
-			r = rand.nextDouble();
-		}
-		return new RingIdentifier(
-				(this.start.position + this.getIntervalWidth() * r) % 1.0,
-				this.start.wrapAround);
-	}
+  @Override
+  public Identifier getRandomIdentifier(Random rand) {
+    if (this.start.position == this.end.position) {
+      return new RingIdentifier(this.start.position,
+              this.start.wrapAround);
+    }
+    double r = rand.nextDouble();
+    while (r == 0.0) {
+      r = rand.nextDouble();
+    }
+    return new RingIdentifier(
+            (this.start.position + this.getIntervalWidth() * r) % 1.0,
+            this.start.wrapAround);
+  }
 
-	@Override
-	public boolean equals(Partition p) {
-		return this.start.equals(((RingPartition) p).start)
-				&& this.end.equals(((RingPartition) p).end);
-	}
+  @Override
+  public boolean equals(Partition p) {
+    return this.start.equals(((RingPartition) p).start)
+            && this.end.equals(((RingPartition) p).end);
+  }
 
-	/**
-	 * 
-	 * @return width of the interval (start, end], i.e. end - start
-	 */
-	public double getIntervalWidth() {
-		if (this.isWrapping()) {
-			return this.end.position - this.start.position;
-		}
-		return 1 + this.end.position - this.start.position;
-	}
+  /**
+   * @return width of the interval (start, end], i.e. end - start
+   */
+  public double getIntervalWidth() {
+    if (this.isWrapping()) {
+      return this.end.position - this.start.position;
+    }
+    return 1 + this.end.position - this.start.position;
+  }
 
-	/**
-	 * 
-	 * @return true if this partition wraps around 0.0, i.e., end <= start
-	 */
-	public boolean isWrapping() {
-		return this.end.position <= this.start.position;
-	}
+  /**
+   * @return true if this partition wraps around 0.0, i.e., end <= start
+   */
+  public boolean isWrapping() {
+    return this.end.position <= this.start.position;
+  }
 
-	/**
-	 * @return the start
-	 */
-	public RingIdentifier getStart() {
-		return this.start;
-	}
+  /**
+   * @return the start
+   */
+  public RingIdentifier getStart() {
+    return this.start;
+  }
 
-	/**
-	 * @param start
-	 *            the start to set
-	 */
-	public void setStart(RingIdentifier start) {
-		this.start = start;
-	}
+  /**
+   * @param start the start to set
+   */
+  public void setStart(RingIdentifier start) {
+    this.start = start;
+  }
 
-	/**
-	 * @return the end
-	 */
-	public RingIdentifier getEnd() {
-		return this.end;
-	}
+  /**
+   * @return the end
+   */
+  public RingIdentifier getEnd() {
+    return this.end;
+  }
 
-	/**
-	 * @param end
-	 *            the end to set
-	 */
-	public void setEnd(RingIdentifier end) {
-		this.end = end;
-	}
+  /**
+   * @param end the end to set
+   */
+  public void setEnd(RingIdentifier end) {
+    this.end = end;
+  }
 
 }

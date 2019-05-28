@@ -24,7 +24,7 @@
  * NodeWeights.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -39,50 +39,49 @@ import gtna.graph.GraphProperty;
 import gtna.util.ArrayUtils;
 
 /**
- * Implements a graph property to hold node weights, i.e., a double value for
- * each node in a network.
- * 
+ * Implements a graph property to hold node weights, i.e., a double value for each node in a
+ * network.
+ *
  * @author benni
- * 
  */
 public class NodeWeights extends GraphProperty {
 
-	private double[] weights;
+  private double[] weights;
 
-	public NodeWeights(int nodes) {
-		this.weights = new double[nodes];
-	}
+  public NodeWeights(int nodes) {
+    this.weights = new double[nodes];
+  }
 
-	public NodeWeights(double[] weights) {
-		this.weights = weights;
-	}
+  public NodeWeights(double[] weights) {
+    this.weights = weights;
+  }
 
-	public NodeWeights(int nodes, double weight) {
-		this.weights = ArrayUtils.initDoubleArray(nodes, weight);
-	}
+  public NodeWeights(int nodes, double weight) {
+    this.weights = ArrayUtils.initDoubleArray(nodes, weight);
+  }
 
-	public double[] getWeights() {
-		return this.weights;
-	}
+  public double[] getWeights() {
+    return this.weights;
+  }
 
-	public double getWeight(int index) {
-		return this.weights[index];
-	}
+  public double getWeight(int index) {
+    return this.weights[index];
+  }
 
-	public void setWeight(int index, double weight) {
-		this.weights[index] = weight;
-	}
+  public void setWeight(int index, double weight) {
+    this.weights[index] = weight;
+  }
 
-	@Override
-	public boolean write(String filename, String key) {
-		// TODO implement GraphProperty.write(...)
-		return false;
-	}
+  @Override
+  public boolean write(String filename, String key) {
+    // TODO implement GraphProperty.write(...)
+    return false;
+  }
 
-	@Override
-	public String read(String filename) {
-		// TODO implement GraphProperty.read(...)
-		return null;
-	}
+  @Override
+  public String read(String filename) {
+    // TODO implement GraphProperty.read(...)
+    return null;
+  }
 
 }

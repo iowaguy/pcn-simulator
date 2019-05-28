@@ -24,7 +24,7 @@
  * LargestWeaklyConnectedComponent.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -40,19 +40,18 @@ import gtna.graph.partition.Partition;
 
 /**
  * @author benni
- * 
  */
 public class LargestWeaklyConnectedComponent extends LargestConnectedComponent {
 
-	public LargestWeaklyConnectedComponent() {
-		super("LARGEST_WEAKLY_CONNECTED_COMPONENT");
-	}
+  public LargestWeaklyConnectedComponent() {
+    super("LARGEST_WEAKLY_CONNECTED_COMPONENT");
+  }
 
-	@Override
-	protected int[] getLargestComponent(Graph g) {
-		WeakConnectivityPartition t = new WeakConnectivityPartition();
-		Partition p = t.getWeakPartition(g);
-		return p.getLargestComponent();
-	}
+  @Override
+  protected int[] getLargestComponent(Graph g) {
+    WeakConnectivityPartition t = new WeakConnectivityPartition();
+    Partition p = t.getWeakPartition(g);
+    return p.getLargestComponent();
+  }
 
 }

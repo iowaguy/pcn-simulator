@@ -24,7 +24,7 @@
  * RestDFSGreedy.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: stefanie;
  * Contributors:    -;
@@ -35,86 +35,84 @@
  */
 package gtna.routing.greedyVariations;
 
+import java.math.BigInteger;
+import java.util.Random;
+
 import gtna.graph.Node;
 import gtna.id.BigIntegerIdentifier;
 import gtna.id.DoubleIdentifier;
 
-import java.math.BigInteger;
-import java.util.Random;
-
 /**
  * @author stefanie
- *
  */
 public class RestrictDFSGreedy extends NodeGreedy {
-	
-	public RestrictDFSGreedy(){
-		super("RESTDFS_GREEDY");
-	}
-	
-	public RestrictDFSGreedy(int ttl){
-		super(ttl,"RESTDFS_GREEDY");
-	}
 
-	/* (non-Javadoc)
-	 * @see gtna.routing.greddyStef.GreedyTemplate#getNextD(int, gtna.id.DIdentifier, java.util.Random, gtna.graph.Node[])
-	 */
-	@Override
-	public int getNextD(int current, DoubleIdentifier target, Random rand,
-			Node[] nodes) {
-		
-		double minDist = this.idSpaceD.getMaxDistance();
-		double curDist = this.pD[current].distance(target);
-		int minNode = -1;
-		double minDec = Double.MAX_VALUE;
-		if (!from.containsKey(current)){
-			from.put(current, -1);
-		}
-		for (int out : nodes[current].getOutgoingEdges()) {
-			double dist = this.pD[out].distance(target);
-			if (dist < minDist  && !from.containsKey(out)) {
-				minDist = dist;
-				minNode = out;
-			}
-			if (dist >= curDist && dist < minDec){
-				minDec = dist;
-			}
-		}
-		if (minDist > minDec ){
-			minNode = -1;
-			
-		}
-		//ystem.out.println("Going from " + current + " to " + minNode);
-		if (minNode == -1 && from.containsKey(current)) {
-	       return from.get(current);
-		}
-		
-		from.put(minNode, current);
-		return minNode;
-	}
+  public RestrictDFSGreedy() {
+    super("RESTDFS_GREEDY");
+  }
 
-	/* (non-Javadoc)
-	 * @see gtna.routing.greddyStef.GreedyTemplate#getNextBI(int, gtna.id.BIIdentifier, java.util.Random, gtna.graph.Node[])
-	 */
-	@Override
-	public int getNextBI(int current, BigIntegerIdentifier target, Random rand,
-			Node[] nodes) {
-        BigInteger minDist = this.idSpaceBI.getMaxDistance();
-		int minNode = -1;
-		for (int out : nodes[current].getOutgoingEdges()) {
-			BigInteger dist = this.pBI[out].distance(target);
-			if (dist.compareTo(minDist) == -1 && !from.containsKey(out)) {
-				minDist = dist;
-				minNode = out;
-			}
-		}
-		if (minNode == -1 && from.containsKey(current)) {
-	       return from.get(current);
-		}
-		from.put(minNode, current);
-		return minNode;
-	}
+  public RestrictDFSGreedy(int ttl) {
+    super(ttl, "RESTDFS_GREEDY");
+  }
 
-	
+  /* (non-Javadoc)
+   * @see gtna.routing.greddyStef.GreedyTemplate#getNextD(int, gtna.id.DIdentifier, java.util.Random, gtna.graph.Node[])
+   */
+  @Override
+  public int getNextD(int current, DoubleIdentifier target, Random rand,
+                      Node[] nodes) {
+
+    double minDist = this.idSpaceD.getMaxDistance();
+    double curDist = this.pD[current].distance(target);
+    int minNode = -1;
+    double minDec = Double.MAX_VALUE;
+    if (!from.containsKey(current)) {
+      from.put(current, -1);
+    }
+    for (int out : nodes[current].getOutgoingEdges()) {
+      double dist = this.pD[out].distance(target);
+      if (dist < minDist && !from.containsKey(out)) {
+        minDist = dist;
+        minNode = out;
+      }
+      if (dist >= curDist && dist < minDec) {
+        minDec = dist;
+      }
+    }
+    if (minDist > minDec) {
+      minNode = -1;
+
+    }
+    //ystem.out.println("Going from " + current + " to " + minNode);
+    if (minNode == -1 && from.containsKey(current)) {
+      return from.get(current);
+    }
+
+    from.put(minNode, current);
+    return minNode;
+  }
+
+  /* (non-Javadoc)
+   * @see gtna.routing.greddyStef.GreedyTemplate#getNextBI(int, gtna.id.BIIdentifier, java.util.Random, gtna.graph.Node[])
+   */
+  @Override
+  public int getNextBI(int current, BigIntegerIdentifier target, Random rand,
+                       Node[] nodes) {
+    BigInteger minDist = this.idSpaceBI.getMaxDistance();
+    int minNode = -1;
+    for (int out : nodes[current].getOutgoingEdges()) {
+      BigInteger dist = this.pBI[out].distance(target);
+      if (dist.compareTo(minDist) == -1 && !from.containsKey(out)) {
+        minDist = dist;
+        minNode = out;
+      }
+    }
+    if (minNode == -1 && from.containsKey(current)) {
+      return from.get(current);
+    }
+    from.put(minNode, current);
+    return minNode;
+  }
+
 
 }

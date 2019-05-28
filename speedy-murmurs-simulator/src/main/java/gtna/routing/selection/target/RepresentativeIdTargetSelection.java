@@ -24,7 +24,7 @@
  * RepresentativeIdentifierTargetSelection.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -41,30 +41,29 @@ import gtna.id.IdentifierSpace;
 
 /**
  * @author benni
- * 
  */
 public class RepresentativeIdTargetSelection extends TargetSelection {
 
-	protected IdentifierSpace ids;
+  protected IdentifierSpace ids;
 
-	public RepresentativeIdTargetSelection() {
-		super("TARGET_SELECTION_REPRESENTATIVE_ID");
-	}
+  public RepresentativeIdTargetSelection() {
+    super("TARGET_SELECTION_REPRESENTATIVE_ID");
+  }
 
-	public void init(Graph graph) {
-		super.init(graph);
-		this.ids = (IdentifierSpace) this.graph.getProperty("ID_SPACE_0");
-	}
+  public void init(Graph graph) {
+    super.init(graph);
+    this.ids = (IdentifierSpace) this.graph.getProperty("ID_SPACE_0");
+  }
 
-	@Override
-	public Identifier getNextTarget() {
-		if (this.ids.getPartitions() == null) throw new IllegalArgumentException();
-		return this.ids.getPartitions()[this.rand.nextInt(this.ids
-				.getPartitions().length)].getRepresentativeIdentifier();
-	}
+  @Override
+  public Identifier getNextTarget() {
+    if (this.ids.getPartitions() == null) throw new IllegalArgumentException();
+    return this.ids.getPartitions()[this.rand.nextInt(this.ids
+            .getPartitions().length)].getRepresentativeIdentifier();
+  }
 
-	@Override
-	public boolean applicable(Graph graph) {
-		return graph.hasProperty("ID_SPACE_0", IdentifierSpace.class);
-	}
+  @Override
+  public boolean applicable(Graph graph) {
+    return graph.hasProperty("ID_SPACE_0", IdentifierSpace.class);
+  }
 }

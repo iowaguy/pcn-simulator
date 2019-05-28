@@ -24,7 +24,7 @@
  * VarianceData.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -39,38 +39,37 @@ import gtna.plot.Gnuplot.Style;
 
 /**
  * @author benni
- * 
  */
 public class VarianceData extends Data {
 
-	public VarianceData(String data, Style style, String title) {
-		super(data, style, title);
-	}
+  public VarianceData(String data, Style style, String title) {
+    super(data, style, title);
+  }
 
-	@Override
-	public boolean isStyleValid() {
-		return this.style.equals(Style.yerrorbars);
-	}
+  @Override
+  public boolean isStyleValid() {
+    return this.style.equals(Style.yerrorbars);
+  }
 
-	@Override
-	public String getEntry(int lt, int lw, double offsetX, double offsetY) {
-		StringBuffer buff = new StringBuffer();
-		// 2 avg
-		// 3 med
-		// 4 min
-		// 5 max
-		// 6 var
-		// 7 varLow
-		// 8 varUp
-		// 9 confLow
-		// 10 confUp
-		buff.append("'" + this.data + "' using ($1 + " + offsetX + "):($2 + "
-				+ offsetY + "):($2 - $7 + " + offsetY + "):($2 + $8 + "
-				+ offsetY + ") with " + this.style);
-		buff.append(" lt " + lt + " lw " + lw);
-		buff.append(title == null ? " notitle" : " title \"" + this.title
-				+ "\"");
-		return buff.toString();
-	}
+  @Override
+  public String getEntry(int lt, int lw, double offsetX, double offsetY) {
+    StringBuffer buff = new StringBuffer();
+    // 2 avg
+    // 3 med
+    // 4 min
+    // 5 max
+    // 6 var
+    // 7 varLow
+    // 8 varUp
+    // 9 confLow
+    // 10 confUp
+    buff.append("'" + this.data + "' using ($1 + " + offsetX + "):($2 + "
+            + offsetY + "):($2 - $7 + " + offsetY + "):($2 + $8 + "
+            + offsetY + ") with " + this.style);
+    buff.append(" lt " + lt + " lw " + lw);
+    buff.append(title == null ? " notitle" : " title \"" + this.title
+            + "\"");
+    return buff.toString();
+  }
 
 }

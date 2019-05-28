@@ -24,7 +24,7 @@
  * DIdentifierSpace.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -37,26 +37,23 @@ package gtna.id;
 
 /**
  * @author benni
- * 
  */
 public abstract class DoubleIdentifierSpace extends IdentifierSpace {
 
-	protected DoubleIdentifierSpace(Partition[] partitions) {
-		super(partitions);
-	}
+  protected DoubleIdentifierSpace(Partition[] partitions) {
+    super(partitions);
+  }
 
-	/**
-	 * @return maximum distance between any two identifier in this identifier
-	 *         space
-	 */
-	public abstract double getMaxDistance();
+  /**
+   * @return maximum distance between any two identifier in this identifier space
+   */
+  public abstract double getMaxDistance();
 
-	/**
-	 * Addded for AttackableEmbedding
-	 * @param parts
-	 */
-	public void setPartitions(DoublePartition[] parts) {
-		this.partitions = parts;
-	}
+  /**
+   * Addded for AttackableEmbedding
+   */
+  public void setPartitions(DoublePartition[] parts) {
+    this.partitions = parts;
+  }
 
 }

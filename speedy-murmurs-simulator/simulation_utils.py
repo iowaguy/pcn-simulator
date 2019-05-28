@@ -15,21 +15,21 @@ config_file_name = 'runconfig.yml'
 output_dir_default_base = 'data'
 
 algo_info = {
-    'silentwhispers':{
-        'token':'SW-PER-MUL',
-        'run_token':'SILENTW-false-true',
-        'short_name':'SW',
-        'id':0
+    'silentwhispers': {
+        'token': 'SW-PER-MUL',
+        'run_token': 'SILENTW-false-true',
+        'short_name': 'SW',
+        'id': 0
     },
-    'speedymurmurs':{
-        'token':'V-DYN',
-        'run_token':'TDRAP-true-false',
-        'short_name':'SM',
-        'id':7
+    'speedymurmurs': {
+        'token': 'V-DYN',
+        'run_token': 'TDRAP-true-false',
+        'short_name': 'SM',
+        'id': 7
     },
-    'maxflow':{
-        'short_name':'M',
-        'id':10
+    'maxflow': {
+        'short_name': 'M',
+        'id': 10
     }
 }
 
@@ -43,46 +43,66 @@ dynamic_data_root = f'{data_root}'
 dynamic_epoch = '165552.45497208898'
 static_epoch = '1000.0'
 
+
 def running_mean(x, N):
     cumsum = numpy.cumsum(numpy.insert(x, 0, 0))
     return (cumsum[N:] - cumsum[:-N]) / float(N)
 
+
 def get_static_data_path_config(config_dict):
     algo = config_dict["routing_algorithm"]
-    dir = f'{config_dict["simulation_type"]}-{config_dict["data_set_name"]}-{algo}-{config_dict["trees"]}-{config_dict["attempts"]}-{config_dict["iterations"]}'
-    if not config_dict["attack_properties"] == None and config_dict["attack_properties"]["attackers"] != 0:
-        dir += f'-{config_dict["attack_properties"]["attack_type"]}-{config_dict["attack_properties"]["attacker_selection"]}-{config_dict["attack_properties"]["attackers"]}'
+    dir = f'{config_dict["simulation_type"]}-{config_dict["data_set_name"]}-{algo}-{config_dict[
+        "trees"]}-{config_dict["attempts"]}-{config_dict["iterations"]}'
+    if not config_dict["attack_properties"] == None and config_dict["attack_properties"][
+        "attackers"] != 0:
+        dir += f'-{config_dict["attack_properties"]["attack_type"]}-{
+        config_dict["attack_properties"]["attacker_selection"]}-{config_dict["attack_properties"][
+            "attackers"]}'
 
-    dir2 = f'/READABLE_FILE_{algo_info[algo]["token"]}-{static_node_count}/0/CREDIT_NETWORK-STATIC-{static_epoch}-TREE_ROUTE_{algo_info[algo]["run_token"]}-{config_dict["trees"]}-2000.0-RANDOM_PARTITIONER-{config_dict["attempts"]}/'
+    dir2 = f'/READABLE_FILE_{algo_info[algo][
+        "token"]}-{static_node_count}/0/CREDIT_NETWORK-STATIC-{static_epoch}-TREE_ROUTE_{
+    algo_info[algo]["run_token"]}-{config_dict["trees"]}-2000.0-RANDOM_PARTITIONER-{config_dict[
+        "attempts"]}/'
 
     return (dir, dir2)
 
+
 def get_static_data_path(algo, tree, attempts):
-    return f'{static_data_root}/READABLE_FILE_{algo_info[algo]["token"]}-{static_node_count}/0/CREDIT_NETWORK-STATIC-{static_epoch}-TREE_ROUTE_{algo_info[algo]["run_token"]}-{tree}-2000.0-RANDOM_PARTITIONER-{attempts}'
+    return f'{static_data_root}/READABLE_FILE_{algo_info[algo][
+        "token"]}-{static_node_count}/0/CREDIT_NETWORK-STATIC-{static_epoch}-TREE_ROUTE_{
+    algo_info[algo]["run_token"]}-{tree}-2000.0-RANDOM_PARTITIONER-{attempts}'
+
 
 def get_dynamic_data_path(algo, tree, attempts, step):
     step += 1
     retries = attempts - 1
     if algo == maxflow:
-        return f'{dynamic_data_root}/READABLE_FILE_{algo_info[algo]["short_name"]}-P{step}-{dynamic_node_count}/0/CREDIT_MAX_FLOW-0.0-0'
+        return f'{dynamic_data_root}/READABLE_FILE_{algo_info[algo][
+            "short_name"]}-P{step}-{dynamic_node_count}/0/CREDIT_MAX_FLOW-0.0-0'
     else:
-        return f'{dynamic_data_root}{algo_info[algo]["short_name"]}-P{step}-{dynamic_node_count}/0/CREDIT_NETWORK-{algo_info[algo]["short_name"]}-P{step}-{dynamic_epoch}-TREE_ROUTE_{algo_info[algo]["run_token"]}-{tree}-331.10490994417796-RANDOM_PARTITIONER-{retries}'
+        return f'{dynamic_data_root}{algo_info[algo][
+            "short_name"]}-P{step}-{dynamic_node_count}/0/CREDIT_NETWORK-{algo_info[algo][
+            "short_name"]}-P{step}-{dynamic_epoch}-TREE_ROUTE_{algo_info[algo][
+            "run_token"]}-{tree}-331.10490994417796-RANDOM_PARTITIONER-{retries}'
+
 
 def extract_kv_pairs_from_singles(singles_path):
     ret = {}
     with open(singles_path, 'r') as f:
         for line in f:
-            k,v = line.rstrip().split('=')
+            k, v = line.rstrip().split('=')
             ret[k] = v
     return ret
 
+
 def extract_from_singles(algo, attempts, trees, key):
     x_vs_key = []
-    for tree in range(1,trees+1):
+    for tree in range(1, trees + 1):
         data_path = get_static_data_path(algo, tree, attempts) + '/' + singles
         singles_pairs = extract_kv_pairs_from_singles(data_path)
         x_vs_key.append(float(singles_pairs[key]))
     return x_vs_key
+
 
 # this will also calculate averages if there are multiple runs
 def extract_from_singles_config(config_dict_list, key, sorting_key1=None, sorting_key2=None):
@@ -118,37 +138,42 @@ def extract_from_singles_config(config_dict_list, key, sorting_key1=None, sortin
         vals = []
         for config_dict in buckets[bucket]:
             static_data_path = get_static_data_path_config(config_dict)
-            data_path = os.getcwd() + f'/{data_root}/' + static_data_path[0] + static_data_path[1] + singles
+            data_path = os.getcwd() + f'/{data_root}/' + static_data_path[0] + static_data_path[
+                1] + singles
             singles_pairs = extract_kv_pairs_from_singles(data_path)
             vals.append(float(singles_pairs[key]))
         x_vs_key.append(numpy.mean(vals))
 
     return x_vs_key
 
+
 def extract_from_singles_attempts(algo, num_attempts, trees, key):
     x_vs_key = []
-    for attempts in range(1,num_attempts+1):
+    for attempts in range(1, num_attempts + 1):
         data_path = get_static_data_path(algo, trees, attempts) + '/' + singles
         singles_pairs = extract_kv_pairs_from_singles(data_path)
         x_vs_key.append(float(singles_pairs[key]))
     return x_vs_key
 
+
 def convert_kv_file_to_dict(filepath):
     out_dict = {}
     with open(filepath, 'r') as textfile:
         for line in textfile:
-            k,v = line.rstrip().split('\t')
+            k, v = line.rstrip().split('\t')
             out_dict[int(k)] = float(v)
     return out_dict
 
+
 def dict_to_list(d, xrange):
     out_list = []
-    for i in range(1,xrange):
+    for i in range(1, xrange):
         if i in d:
             out_list.append(d[i])
         else:
             out_list.append(0)
     return out_list
+
 
 # repeated values are ignored
 def merge_dicts(dict1, dict2):
@@ -159,6 +184,7 @@ def merge_dicts(dict1, dict2):
         else:
             data_dict[k] = dict1[k]
     return data_dict
+
 
 def create_output_dir(config_dict):
     import os
@@ -171,6 +197,7 @@ def create_output_dir(config_dict):
         os.makedirs(dir)
     return dir
 
+
 def get_epoch_length(transactions_file):
     transactions_list = []
     for i in range(1, 10):
@@ -180,8 +207,9 @@ def get_epoch_length(transactions_file):
     sum_delta = 0
     for i in range(1, len(transactions_list)):
         sum_delta += transactions_list[i][0] - transactions_list[i - 1][0]
-    delta_av = sum_delta/len(transactions_list)
+    delta_av = sum_delta / len(transactions_list)
     return (delta_av * 1000, transactions_list)
+
 
 def read_link_changes_files(link_changes_file):
     link_changes_list = []
@@ -189,7 +217,8 @@ def read_link_changes_files(link_changes_file):
         link_changes_list = read_link_changes_file(link_changes_file.format(i), link_changes_list)
     return link_changes_list
 
-def read_link_changes_file(link_changes_file, link_changes_list = []):
+
+def read_link_changes_file(link_changes_file, link_changes_list=[]):
     with open(link_changes_file, 'r') as link_changes:
         count = 0
         for link_change in link_changes:
@@ -198,6 +227,7 @@ def read_link_changes_file(link_changes_file, link_changes_list = []):
             link_changes_list.append((int(lc[0]), lc[1], lc[2], lc[3]))
 
         return link_changes_list
+
 
 def calculate_events_per_epoch(epoch_length, events):
     cur_epoch = 1
@@ -216,7 +246,8 @@ def calculate_events_per_epoch(epoch_length, events):
             events_in_current_epoch = 1
     return events_per_epoch
 
-def read_transactions_file(transactions_file, transactions_list = []):
+
+def read_transactions_file(transactions_file, transactions_list=[]):
     with open(transactions_file, 'r') as transactions:
         count = 0
         for transaction in transactions:
@@ -230,6 +261,7 @@ def read_transactions_file(transactions_file, transactions_list = []):
                 count += 1
 
         return transactions_list
+
 
 def read_graph_file(graph_file):
     g = networkx.Graph()
@@ -249,11 +281,11 @@ def read_graph_file(graph_file):
             destinations = connections_str.split(';')
             print(f"node_id: {node_id}")
             for dest in destinations:
-                #print(f'src: {node_id}; dest: {dest}')
+                # print(f'src: {node_id}; dest: {dest}')
                 g.add_edge(node_id, dest)
 
-
     return g
+
 
 ## Run a single simulation
 def run_static(transaction_set, algo, attempts, trees, attack, force=False):
@@ -262,8 +294,12 @@ def run_static(transaction_set, algo, attempts, trees, attack, force=False):
     if not force and os.path.isdir(get_static_data_path(algo, trees, attempts)):
         print('Run exists. Skipping...')
         return
-    print(f'Running: java -cp {classpath} treeembedding.tests.Static {transaction_set} {algo_info[algo][ID]} {attempts} {trees} {attack}')
-    subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Static', f'{transaction_set}', f'{algo_info[algo][ID]}', f'{attempts}', f'{trees}', f'{attack}'])
+    print(f'Running: java -cp {classpath} treeembedding.tests.Static {transaction_set} {
+    algo_info[algo][ID]} {attempts} {trees} {attack}')
+    subprocess.run(
+        ['java', '-cp', f'{classpath}', 'treeembedding.tests.Static', f'{transaction_set}',
+         f'{algo_info[algo][ID]}', f'{attempts}', f'{trees}', f'{attack}'])
+
 
 def run_dynamic(transaction_set, algo, attempts, trees, step, force=False):
     import os
@@ -272,40 +308,57 @@ def run_dynamic(transaction_set, algo, attempts, trees, step, force=False):
         print('Run exists. Skipping...')
         return
     else:
-        print(f'Running: java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {algo_info[algo][ID]} {step}')
-        subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Dynamic', f'{transaction_set}', f'{algo_info[algo][ID]}', f'{step}'])
+        print(f'Running: java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {
+        algo_info[algo][ID]} {step}')
+        subprocess.run(
+            ['java', '-cp', f'{classpath}', 'treeembedding.tests.Dynamic', f'{transaction_set}',
+             f'{algo_info[algo][ID]}', f'{step}'])
+
 
 def run_static_config(config_dict, output_dir, force=False):
     import os
     import subprocess
     import shutil
     # skip run if it has already happened
-    if not force and os.path.isfile(get_static_data_path(config_dict['routing_algorithm'], config_dict['trees'], config_dict['attempts']) + '/_singles.txt'):
+    if not force and os.path.isfile(
+            get_static_data_path(config_dict['routing_algorithm'], config_dict['trees'],
+                                 config_dict['attempts']) + '/_singles.txt'):
         print('Run exists. Skipping...')
         return 'Run exists. Skipping...'
 
-    algo = config_dict['routing_algorithm']    
+    algo = config_dict['routing_algorithm']
     # if directory exists without file, then delete the directory
-    if os.path.isdir(os.getcwd() + f'/{data_root}/' + get_static_data_path_config(config_dict)[0] + f'/READABLE_FILE_{algo_info[algo]["token"]}-{static_node_count}/'):
+    if os.path.isdir(os.getcwd() + f'/{data_root}/' + get_static_data_path_config(config_dict)[
+        0] + f'/READABLE_FILE_{algo_info[algo]["token"]}-{static_node_count}/'):
         static_data_path = get_static_data_path_config(config_dict)
-        if not os.path.isfile(os.getcwd() + f'/{data_root}/' + static_data_path[0] + static_data_path[1] + '/_singles.txt'):
-            shutil.rmtree(os.getcwd() + f'/{data_root}/' + get_static_data_path_config(config_dict)[0] + f'/READABLE_FILE_{algo_info[algo]["token"]}-{static_node_count}/')
+        if not os.path.isfile(
+                os.getcwd() + f'/{data_root}/' + static_data_path[0] + static_data_path[
+                    1] + '/_singles.txt'):
+            shutil.rmtree(os.getcwd() + f'/{data_root}/' + get_static_data_path_config(config_dict)[
+                0] + f'/READABLE_FILE_{algo_info[algo]["token"]}-{static_node_count}/')
 
     print(f'Running: java -cp {classpath} treeembedding.tests.Static {output_dir}')
     subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Static', f'{output_dir}'])
     return f'java -cp {classpath} treeembedding.tests.Static {output_dir}'
 
+
 def run_dynamic_config(transaction_set, algo, attempts, trees, step, force=False):
     import os
     import subprocess
     # skip run if it has already happened
-    if not force and os.path.isfile(get_dynamic_data_path(algo, trees, attempts, step) + '/_singles.txt'):
+    if not force and os.path.isfile(
+            get_dynamic_data_path(algo, trees, attempts, step) + '/_singles.txt'):
         print('Run exists. Skipping...')
         return 'Run exists. Skipping...'
     else:
-        print(f'Running: java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {algo_info[algo][ID]} {step}')
-        subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Dynamic', f'{transaction_set}', f'{algo_info[algo][ID]}', f'{step}'])
-        return f'java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {algo_info[algo][ID]} {step}'
+        print(f'Running: java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {
+        algo_info[algo][ID]} {step}')
+        subprocess.run(
+            ['java', '-cp', f'{classpath}', 'treeembedding.tests.Dynamic', f'{transaction_set}',
+             f'{algo_info[algo][ID]}', f'{step}'])
+        return f'java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {
+        algo_info[algo][ID]} {step}'
+
 
 def parse_config(config_text):
     import yaml
@@ -313,6 +366,7 @@ def parse_config(config_text):
         return yaml.safe_load(config_text)
     except yaml.YAMLError as exc:
         print(exc)
+
 
 def do_experiment(config_dict):
     import yaml

@@ -24,7 +24,7 @@
  * EdgeWeights.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,99 +35,95 @@
  */
 package gtna.graph.weights;
 
-import gtna.graph.Edge;
-import gtna.graph.GraphProperty;
-import gtna.graph.spanningTree.ParentChild;
-import gtna.io.Filereader;
-import gtna.io.Filewriter;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import gtna.graph.Edge;
+import gtna.graph.GraphProperty;
+import gtna.io.Filereader;
+import gtna.io.Filewriter;
+
 /**
- * Implements a graph property to hold edge weights, i.e., a weight assigned to
- * each edge in the network. If the weight of a node is requested that has not
- * yet been assigned, the defaultWeight is returned.
- * 
+ * Implements a graph property to hold edge weights, i.e., a weight assigned to each edge in the
+ * network. If the weight of a node is requested that has not yet been assigned, the defaultWeight
+ * is returned.
+ *
  * @author benni
- * 
  */
 public class EdgeWeights extends GraphProperty {
 
-	private Map<Edge, Double> weights;
+  private Map<Edge, Double> weights;
 
-	private double defaultWeight;
+  private double defaultWeight;
 
-	public EdgeWeights() {
-		this(-1);
-	}
+  public EdgeWeights() {
+    this(-1);
+  }
 
-	public EdgeWeights(double defaultWeight) {
-		this(new Edge[0], 0, defaultWeight);
-	}
+  public EdgeWeights(double defaultWeight) {
+    this(new Edge[0], 0, defaultWeight);
+  }
 
-	public EdgeWeights(Edge[] edges, double weight, double defaultWeight) {
-		this.weights = new HashMap<Edge, Double>();
-		this.defaultWeight = defaultWeight;
-		for (Edge edge : edges) {
-			this.weights.put(edge, weight);
-		}
-	}
+  public EdgeWeights(Edge[] edges, double weight, double defaultWeight) {
+    this.weights = new HashMap<Edge, Double>();
+    this.defaultWeight = defaultWeight;
+    for (Edge edge : edges) {
+      this.weights.put(edge, weight);
+    }
+  }
 
-	public Set<Entry<Edge, Double>> getWeights() {
-		return this.weights.entrySet();
-	}
+  public Set<Entry<Edge, Double>> getWeights() {
+    return this.weights.entrySet();
+  }
 
-	public void setWeight(Edge edge, double weight) {
-		this.weights.put(edge, weight);
-	}
+  public void setWeight(Edge edge, double weight) {
+    this.weights.put(edge, weight);
+  }
 
-	public double getWeight(Edge edge) {
-		try {
-			return this.weights.get(edge);
-		} catch (NullPointerException e) {
-			return this.defaultWeight;
-		}
-	}
-	
-	
+  public double getWeight(Edge edge) {
+    try {
+      return this.weights.get(edge);
+    } catch (NullPointerException e) {
+      return this.defaultWeight;
+    }
+  }
 
-	@Override
-	public boolean write(String filename, String key) {
-		Filewriter fw = new Filewriter(filename);
 
-		this.writeHeader(fw, this.getClass(), key);
+  @Override
+  public boolean write(String filename, String key) {
+    Filewriter fw = new Filewriter(filename);
 
-        Iterator<Entry<Edge, Double>> it = this.weights.entrySet().iterator();
-        while (it.hasNext()){
-        	Entry<Edge, Double> entry = it.next();
-        	fw.writeln(entry.getKey().getSrc()+ " " + entry.getKey().getDst() + " " + entry.getValue());
-        }
+    this.writeHeader(fw, this.getClass(), key);
 
-		return fw.close();
-	}
+    Iterator<Entry<Edge, Double>> it = this.weights.entrySet().iterator();
+    while (it.hasNext()) {
+      Entry<Edge, Double> entry = it.next();
+      fw.writeln(entry.getKey().getSrc() + " " + entry.getKey().getDst() + " " + entry.getValue());
+    }
 
-	@Override
-	public String read(String filename) {
-		Filereader fr = new Filereader(filename);
+    return fw.close();
+  }
 
-		String key = this.readHeader(fr);
-        this.weights = new HashMap<Edge, Double>();
-		String line = null;
-		while ((line = fr.readLine()) != null) {
-			String[] parts = line.split(" ");
-			Edge e = new Edge(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
-			double val = Double.parseDouble(parts[2]);
-			this.weights.put(e, val);
-		}
+  @Override
+  public String read(String filename) {
+    Filereader fr = new Filereader(filename);
 
-		fr.close();
+    String key = this.readHeader(fr);
+    this.weights = new HashMap<Edge, Double>();
+    String line = null;
+    while ((line = fr.readLine()) != null) {
+      String[] parts = line.split(" ");
+      Edge e = new Edge(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+      double val = Double.parseDouble(parts[2]);
+      this.weights.put(e, val);
+    }
 
-		return key;
-	}
+    fr.close();
+
+    return key;
+  }
 
 }

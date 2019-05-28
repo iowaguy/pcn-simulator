@@ -24,7 +24,7 @@
  * LargestStronglyConnectedComponent.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -40,20 +40,19 @@ import gtna.graph.partition.Partition;
 
 /**
  * @author benni
- * 
  */
 public class LargestStronglyConnectedComponent extends
-		LargestConnectedComponent {
+        LargestConnectedComponent {
 
-	public LargestStronglyConnectedComponent() {
-		super("LARGEST_STRONGLY_CONNECTED_COMPONENT");
-	}
+  public LargestStronglyConnectedComponent() {
+    super("LARGEST_STRONGLY_CONNECTED_COMPONENT");
+  }
 
-	@Override
-	protected int[] getLargestComponent(Graph g) {
-		StrongConnectivityPartition t = new StrongConnectivityPartition();
-		Partition p = t.getStrongPartition(g);
-		return p.getLargestComponent();
-	}
+  @Override
+  protected int[] getLargestComponent(Graph g) {
+    StrongConnectivityPartition t = new StrongConnectivityPartition();
+    Partition p = t.getStrongPartition(g);
+    return p.getLargestComponent();
+  }
 
 }

@@ -24,7 +24,7 @@
  * GirvanAndNewman.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: Flipp;
  * Contributors:    -;
@@ -40,24 +40,22 @@ import gtna.networks.Network;
 import gtna.transformation.Transformation;
 import gtna.util.parameter.DoubleParameter;
 import gtna.util.parameter.Parameter;
-import gtna.util.parameter.ParameterList;
 
 /**
  * @author Philipp Neubrand
- *
  */
 public class GirvanAndNewman extends Network {
-	
-	private CondonAndKarp nw;
 
-	public GirvanAndNewman(double pin, Transformation[] t){
-		super("GIRVAN_NEWMAN", 128, new Parameter[]{new DoubleParameter("Pin", pin)}, t);
-		nw = new CondonAndKarp(128, 4, pin, (0.5 - pin) / 3.0, t);
-	}
+  private CondonAndKarp nw;
 
-	@Override
-	public Graph generate() {
-		return nw.generate();
-	}
+  public GirvanAndNewman(double pin, Transformation[] t) {
+    super("GIRVAN_NEWMAN", 128, new Parameter[]{new DoubleParameter("Pin", pin)}, t);
+    nw = new CondonAndKarp(128, 4, pin, (0.5 - pin) / 3.0, t);
+  }
+
+  @Override
+  public Graph generate() {
+    return nw.generate();
+  }
 
 }

@@ -24,7 +24,7 @@
  * RandomWalk.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,6 +35,9 @@
  */
 package gtna.routing.random;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 import gtna.graph.Graph;
 import gtna.graph.Node;
 import gtna.id.Identifier;
@@ -44,54 +47,50 @@ import gtna.routing.RoutingAlgorithm;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 
-import java.util.ArrayList;
-import java.util.Random;
-
 /**
  * @author benni
- * 
  */
-@SuppressWarnings({ "rawtypes" })
+@SuppressWarnings({"rawtypes"})
 public class RandomWalk extends RoutingAlgorithm {
 
-	private int ttl;
+  private int ttl;
 
-	public RandomWalk(int ttl) {
-		super("RANDOM_WALK", new Parameter[] { new IntParameter("TTL", ttl) });
-		this.ttl = ttl;
-	}
+  public RandomWalk(int ttl) {
+    super("RANDOM_WALK", new Parameter[]{new IntParameter("TTL", ttl)});
+    this.ttl = ttl;
+  }
 
-	@Override
-	public Route routeToTarget(Graph graph, int start, Identifier target,
-			Random rand) {
-		return this.route(new ArrayList<Integer>(), start, target, rand,
-				graph.getNodes());
-	}
+  @Override
+  public Route routeToTarget(Graph graph, int start, Identifier target,
+                             Random rand) {
+    return this.route(new ArrayList<Integer>(), start, target, rand,
+            graph.getNodes());
+  }
 
-	private Route route(ArrayList<Integer> route, int current,
-			Identifier target, Random rand, Node[] nodes) {
-		route.add(current);
-		if (this.isEndPoint(current, target)) {
-			return new Route(route, true);
-		}
-		if (route.size() > this.ttl) {
-			return new Route(route, false);
-		}
+  private Route route(ArrayList<Integer> route, int current,
+                      Identifier target, Random rand, Node[] nodes) {
+    route.add(current);
+    if (this.isEndPoint(current, target)) {
+      return new Route(route, true);
+    }
+    if (route.size() > this.ttl) {
+      return new Route(route, false);
+    }
 
-		if (nodes[current].getOutDegree() == 0) {
-			return new Route(route, false);
-		}
+    if (nodes[current].getOutDegree() == 0) {
+      return new Route(route, false);
+    }
 
-		int nextIndex = rand.nextInt(nodes[current].getOutDegree());
-		int nextHop = nodes[current].getOutgoingEdges()[nextIndex];
+    int nextIndex = rand.nextInt(nodes[current].getOutDegree());
+    int nextHop = nodes[current].getOutgoingEdges()[nextIndex];
 
-		return this.route(route, nextHop, target, rand, nodes);
+    return this.route(route, nextHop, target, rand, nodes);
 
-	}
+  }
 
-	@Override
-	public boolean applicable(Graph graph) {
-		return graph.hasProperty("ID_SPACE_0", IdentifierSpace.class);
-	}
+  @Override
+  public boolean applicable(Graph graph) {
+    return graph.hasProperty("ID_SPACE_0", IdentifierSpace.class);
+  }
 
 }

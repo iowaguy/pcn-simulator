@@ -24,7 +24,7 @@
  * DPartition.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -37,42 +37,39 @@ package gtna.id;
 
 /**
  * @author benni
- * 
  */
 public abstract class DoublePartition extends Partition {
-	/**
-	 * @param id
-	 * @return distance from this partition to the identifier $id
-	 */
-	public abstract double distance(DoubleIdentifier id);
+  /**
+   * @return distance from this partition to the identifier $id
+   */
+  public abstract double distance(DoubleIdentifier id);
 
-	/**
-	 * @param id
-	 * @return distance from this partition to the partition $p
-	 */
-	public abstract double distance(DoublePartition p);
+  /**
+   * @return distance from this partition to the partition $p
+   */
+  public abstract double distance(DoublePartition p);
 
-	@Override
-	public boolean isCloser(Identifier to, Identifier than) {
-		return this.distance((DoubleIdentifier) to) < this
-				.distance((DoubleIdentifier) than);
-	}
+  @Override
+  public boolean isCloser(Identifier to, Identifier than) {
+    return this.distance((DoubleIdentifier) to) < this
+            .distance((DoubleIdentifier) than);
+  }
 
-	@Override
-	public int getClosestNode(int[] nodes, Partition[] partitions) {
-		if (nodes.length <= 0) {
-			return -1;
-		}
-		int closest = nodes[0];
-		double distance = ((DoublePartition) partitions[closest]).distance(this);
+  @Override
+  public int getClosestNode(int[] nodes, Partition[] partitions) {
+    if (nodes.length <= 0) {
+      return -1;
+    }
+    int closest = nodes[0];
+    double distance = ((DoublePartition) partitions[closest]).distance(this);
 
-		for (int i = 1; i < nodes.length; i++) {
-			double d = ((DoublePartition) partitions[nodes[i]]).distance(this);
-			if (d < distance) {
-				closest = nodes[i];
-				distance = d;
-			}
-		}
-		return closest;
-	}
+    for (int i = 1; i < nodes.length; i++) {
+      double d = ((DoublePartition) partitions[nodes[i]]).distance(this);
+      if (d < distance) {
+        closest = nodes[i];
+        distance = d;
+      }
+    }
+    return closest;
+  }
 }

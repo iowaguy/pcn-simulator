@@ -4,15 +4,14 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
+import java.io.File;
+import java.io.FilenameFilter;
+
 import gtna.data.Series;
 import gtna.metrics.Metric;
 import gtna.networks.Network;
 import gtna.networks.util.ReadableFile;
 import gtna.util.Config;
-
-import java.io.File;
-import java.io.FilenameFilter;
-
 import treeembedding.RunConfig;
 import treeembedding.byzantine.Attack;
 import treeembedding.byzantine.AttackerSelection;
@@ -28,13 +27,11 @@ import treeembedding.treerouting.TreerouteTDRAP;
 
 public class Dynamic {
 
-	/**
-	 * @param args
-	 * 0: run
-	 * 1: config (0- SilentWhispers, 7- SpeedyMurmurs, 10-MaxFlow)
-	 * 2: steps previously completed  
-	 */
-	public static void main(String[] args) {
+  /**
+   * @param args 0: run 1: config (0- SilentWhispers, 7- SpeedyMurmurs, 10-MaxFlow) 2: steps
+   *             previously completed
+   */
+  public static void main(String[] args) {
     String runDirPath = args[0] + '/';
     String runConfigPath = runDirPath + "runconfig.yml";
 
@@ -140,7 +137,7 @@ public class Dynamic {
 
     Network net = new ReadableFile(name, name, graph, null);
     CreditNetwork cred = new CreditNetwork(trans, name, epoch, ra,
-        dyn, multi, req, part, roots, max, add, byz, attackProperties);
+            dyn, multi, req, part, roots, max, add, byz, attackProperties);
     Series.generate(net, new Metric[]{cred}, i, i);
   }
 
@@ -150,7 +147,7 @@ public class Dynamic {
     Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", Boolean.toString(!runConfig.isForceOverwrite()));
     Config.overwrite("MAIN_DATA_FOLDER", runConfig.getRunDirPath());
     CreditMaxFlow m = new CreditMaxFlow(transList, name,
-        0, 0, links, 165552.45497208898);
+            0, 0, links, 165552.45497208898);
     Network test = new ReadableFile(name, name, graph, null);
     Series.generate(test, new Metric[]{m}, 1);
   }

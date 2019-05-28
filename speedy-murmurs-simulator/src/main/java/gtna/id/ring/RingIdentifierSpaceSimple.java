@@ -24,7 +24,7 @@
  * RingIdentifierSpaceSimple.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,75 +35,71 @@
  */
 package gtna.id.ring;
 
+import java.util.Random;
+
 import gtna.id.DoubleIdentifierSpace;
 import gtna.id.Identifier;
 import gtna.io.Filereader;
 import gtna.io.Filewriter;
 
-import java.util.Random;
-
 /**
  * @author benni
- * 
  */
 public class RingIdentifierSpaceSimple extends DoubleIdentifierSpace {
 
-	protected boolean wrapAround;
+  protected boolean wrapAround;
 
-	/**
-	 * 
-	 * @param partitions
-	 * @param wrapAround
-	 */
-	public RingIdentifierSpaceSimple(RingPartitionSimple[] partitions,
-			boolean wrapAround) {
-		super(partitions);
-		this.wrapAround = wrapAround;
-	}
+  /**
+   *
+   */
+  public RingIdentifierSpaceSimple(RingPartitionSimple[] partitions,
+                                   boolean wrapAround) {
+    super(partitions);
+    this.wrapAround = wrapAround;
+  }
 
-	/**
-	 * 
-	 */
-	public RingIdentifierSpaceSimple() {
-		this(null, false);
-	}
+  /**
+   *
+   */
+  public RingIdentifierSpaceSimple() {
+    this(null, false);
+  }
 
-	@Override
-	public double getMaxDistance() {
-		if (this.wrapAround)
-			return 0.5;
+  @Override
+  public double getMaxDistance() {
+    if (this.wrapAround)
+      return 0.5;
 
-		return 1.0;
-	}
+    return 1.0;
+  }
 
-	@Override
-	protected void writeParameters(Filewriter fw) {
-		this.writeParameter(fw, "Wrap around", this.wrapAround);
-	}
+  @Override
+  protected void writeParameters(Filewriter fw) {
+    this.writeParameter(fw, "Wrap around", this.wrapAround);
+  }
 
-	@Override
-	protected void readParameters(Filereader fr) {
-		this.wrapAround = this.readBoolean(fr);
-	}
+  @Override
+  protected void readParameters(Filereader fr) {
+    this.wrapAround = this.readBoolean(fr);
+  }
 
-	@Override
-	public Identifier getRandomIdentifier(Random rand) {
-		return new RingIdentifier(rand.nextDouble(), this.wrapAround);
-	}
+  @Override
+  public Identifier getRandomIdentifier(Random rand) {
+    return new RingIdentifier(rand.nextDouble(), this.wrapAround);
+  }
 
-	/**
-	 * @return the wrapAround
-	 */
-	public boolean isWrapAround() {
-		return this.wrapAround;
-	}
+  /**
+   * @return the wrapAround
+   */
+  public boolean isWrapAround() {
+    return this.wrapAround;
+  }
 
-	/**
-	 * @param wrapAround
-	 *            the wrapAround to set
-	 */
-	public void setWrapAround(boolean wrapAround) {
-		this.wrapAround = wrapAround;
-	}
+  /**
+   * @param wrapAround the wrapAround to set
+   */
+  public void setWrapAround(boolean wrapAround) {
+    this.wrapAround = wrapAround;
+  }
 
 }

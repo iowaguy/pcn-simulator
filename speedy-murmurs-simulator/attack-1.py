@@ -1,4 +1,5 @@
 import ipyparallel
+
 import simulation_utils as su
 
 config_dict_list_srvna_sm = []
@@ -22,6 +23,7 @@ attack_properties:
 iterations: 1
 '''
 
+
 def setup():
     import sys
     import os
@@ -35,19 +37,24 @@ def generate_configs():
             for attackers in range(0, 30001, 5000):
                 # for attackers in range(30000, 30001, 5000):
                 if alg == su.speedymurmurs:
-                    config_dict_list_srvna_sm.append(su.parse_config(config.format(data_set=data_set, alg=alg, attackers=attackers)))
+                    config_dict_list_srvna_sm.append(su.parse_config(
+                        config.format(data_set=data_set, alg=alg, attackers=attackers)))
                 elif alg == su.silentwhispers:
-                    config_dict_list_srvna_sw.append(su.parse_config(config.format(data_set=data_set, alg=alg, attackers=attackers)))
+                    config_dict_list_srvna_sw.append(su.parse_config(
+                        config.format(data_set=data_set, alg=alg, attackers=attackers)))
+
+
 def do_experiments(config_dict_list):
     lbv = ipyclient.load_balanced_view()
     result = lbv.map_sync(simulation_utils.do_experiment, config_dict_list)
 
-    for i,r in enumerate(result):
+    for i, r in enumerate(result):
         print(f"Task ID #{i}; Command: {r}")
 
 
 if __name__ == '__main__':
     import time
+
     start = time.time()
     ipyclient = ipyparallel.Client()
     ipyclient[:].apply_sync(setup)
@@ -55,16 +62,10 @@ if __name__ == '__main__':
     with ipyclient[:].sync_imports(local=True):
         import simulation_utils
         import sys
-        import numpy
-        import matplotlib.pyplot
-        import subprocess
-        import networkx
         import os
-        import shutil
-        import yaml
         import ipyparallel
         from networkx import __version__ as networkxversion
-    print('networkx: '+networkxversion)
+    print('networkx: ' + networkxversion)
 
     generate_configs()
     do_experiments(config_dict_list_srvna_sm)
@@ -72,5 +73,3 @@ if __name__ == '__main__':
     end = time.time()
     elapsed = end - start
     print(f"Done. Time: {elapsed}")
-    
-

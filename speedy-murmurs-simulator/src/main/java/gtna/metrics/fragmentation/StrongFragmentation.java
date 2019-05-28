@@ -24,7 +24,7 @@
  * FragmentationStrongConnectivity.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -42,18 +42,17 @@ import gtna.graph.sorting.NodeSorter;
 
 /**
  * @author benni
- * 
  */
 public class StrongFragmentation extends Fragmentation {
 
-	public StrongFragmentation(NodeSorter sorter, Resolution resolution) {
-		super(Fragmentation.Type.STRONG, sorter, resolution);
-	}
+  public StrongFragmentation(NodeSorter sorter, Resolution resolution) {
+    super(Fragmentation.Type.STRONG, sorter, resolution);
+  }
 
-	@Override
-	protected Partition partition(Graph g, Node[] sorted, boolean[] exclude) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+  @Override
+  protected Partition partition(Graph g, Node[] sorted, boolean[] exclude) {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
 }

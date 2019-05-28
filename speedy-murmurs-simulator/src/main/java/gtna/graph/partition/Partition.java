@@ -24,7 +24,7 @@
  * Partition.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,75 +35,74 @@
  */
 package gtna.graph.partition;
 
-import gtna.graph.GraphProperty;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import gtna.graph.GraphProperty;
+
 /**
  * @author benni
- * 
  */
 public class Partition extends GraphProperty {
 
-	private int[][] components;
+  private int[][] components;
 
-	public Partition() {
-		this.components = new int[0][0];
-	}
+  public Partition() {
+    this.components = new int[0][0];
+  }
 
-	public Partition(int[][] components) {
-		this.components = components;
-		this.sort();
-	}
+  public Partition(int[][] components) {
+    this.components = components;
+    this.sort();
+  }
 
-	public Partition(ArrayList<ArrayList<Integer>> list) {
-		this.components = new int[list.size()][];
-		for (int i = 0; i < list.size(); i++) {
-			this.components[i] = new int[list.get(i).size()];
-			for (int j = 0; j < list.get(i).size(); j++) {
-				this.components[i][j] = list.get(i).get(j);
-			}
-		}
-		this.sort();
-	}
+  public Partition(ArrayList<ArrayList<Integer>> list) {
+    this.components = new int[list.size()][];
+    for (int i = 0; i < list.size(); i++) {
+      this.components[i] = new int[list.get(i).size()];
+      for (int j = 0; j < list.get(i).size(); j++) {
+        this.components[i][j] = list.get(i).get(j);
+      }
+    }
+    this.sort();
+  }
 
-	private void sort() {
-		for (int[] p : this.components) {
-			Arrays.sort(p);
-		}
-		Arrays.sort(this.components, new SizeDesc());
-	}
+  private void sort() {
+    for (int[] p : this.components) {
+      Arrays.sort(p);
+    }
+    Arrays.sort(this.components, new SizeDesc());
+  }
 
-	private class SizeDesc implements Comparator<int[]> {
-		@Override
-		public int compare(int[] arg0, int[] arg1) {
-			return arg1.length - arg0.length;
-		}
-	}
+  private class SizeDesc implements Comparator<int[]> {
+    @Override
+    public int compare(int[] arg0, int[] arg1) {
+      return arg1.length - arg0.length;
+    }
+  }
 
-	/**
-	 * @return the components
-	 */
-	public int[][] getComponents() {
-		return this.components;
-	}
+  /**
+   * @return the components
+   */
+  public int[][] getComponents() {
+    return this.components;
+  }
 
-	public int[] getLargestComponent() {
-		return this.components[0];
-	}
+  public int[] getLargestComponent() {
+    return this.components[0];
+  }
 
-	@Override
-	public boolean write(String filename, String key) {
-		// TODO implement GraphProperty.write(...)
-		return false;
-	}
+  @Override
+  public boolean write(String filename, String key) {
+    // TODO implement GraphProperty.write(...)
+    return false;
+  }
 
-	@Override
-	public String read(String filename) {
-		// TODO implement GraphProperty.read(...)
-		return null;
-	}
+  @Override
+  public String read(String filename) {
+    // TODO implement GraphProperty.read(...)
+    return null;
+  }
 
 }

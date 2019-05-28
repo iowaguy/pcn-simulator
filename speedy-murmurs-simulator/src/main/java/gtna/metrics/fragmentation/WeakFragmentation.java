@@ -24,7 +24,7 @@
  * FragmentationWeakConnectivity.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -43,18 +43,17 @@ import gtna.transformation.partition.WeakConnectivityPartition;
 
 /**
  * @author benni
- * 
  */
 public class WeakFragmentation extends Fragmentation {
 
-	public WeakFragmentation(NodeSorter sorter,
-			Resolution resolution) {
-		super(Fragmentation.Type.WEAK, sorter, resolution);
-	}
+  public WeakFragmentation(NodeSorter sorter,
+                           Resolution resolution) {
+    super(Fragmentation.Type.WEAK, sorter, resolution);
+  }
 
-	@Override
-	protected Partition partition(Graph g, Node[] sorted, boolean[] exclude) {
-		return WeakConnectivityPartition.getWeakPartition(g, exclude);
-	}
+  @Override
+  protected Partition partition(Graph g, Node[] sorted, boolean[] exclude) {
+    return WeakConnectivityPartition.getWeakPartition(g, exclude);
+  }
 
 }

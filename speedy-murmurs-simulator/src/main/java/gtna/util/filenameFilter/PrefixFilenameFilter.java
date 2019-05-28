@@ -24,7 +24,7 @@
  * PrefixFilenameFilter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -39,21 +39,19 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 /**
- * Implements a filename filter that accepts only files with a given filename
- * prefix.
- * 
+ * Implements a filename filter that accepts only files with a given filename prefix.
+ *
  * @author benni
- * 
  */
 public class PrefixFilenameFilter implements FilenameFilter {
-	String prefix;
+  String prefix;
 
-	public PrefixFilenameFilter(String prefix) {
-		this.prefix = prefix;
-	}
+  public PrefixFilenameFilter(String prefix) {
+    this.prefix = prefix;
+  }
 
-	@Override
-	public boolean accept(File dir, String name) {
-		return name.startsWith(this.prefix);
-	}
+  @Override
+  public boolean accept(File dir, String name) {
+    return name.startsWith(this.prefix);
+  }
 }

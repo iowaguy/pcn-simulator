@@ -24,7 +24,7 @@
  * IIdentifierSpace.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -37,18 +37,16 @@ package gtna.id;
 
 /**
  * @author benni
- * 
  */
 public abstract class IntegerIdentifierSpace extends IdentifierSpace {
 
-	protected IntegerIdentifierSpace(Partition[] partitions) {
-		super(partitions);
-	}
+  protected IntegerIdentifierSpace(Partition[] partitions) {
+    super(partitions);
+  }
 
-	/**
-	 * @return maximum distance between any two identifier in this identifier
-	 *         space
-	 */
-	public abstract int getMaxDistance();
+  /**
+   * @return maximum distance between any two identifier in this identifier space
+   */
+  public abstract int getMaxDistance();
 
 }

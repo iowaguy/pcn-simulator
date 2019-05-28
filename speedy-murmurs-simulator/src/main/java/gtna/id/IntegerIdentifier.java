@@ -24,7 +24,7 @@
  * IIdentifier.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -37,12 +37,10 @@ package gtna.id;
 
 /**
  * @author benni
- *
  */
 public abstract class IntegerIdentifier extends Identifier {
-	/**
-	 * @param id
-	 * @return distance from this identifier to the identifier $id
-	 */
-	public abstract int distance(IntegerIdentifier id);
+  /**
+   * @return distance from this identifier to the identifier $id
+   */
+  public abstract int distance(IntegerIdentifier id);
 }

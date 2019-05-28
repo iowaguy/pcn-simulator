@@ -24,7 +24,7 @@
  * RestrictedBacktrack.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: stefanie;
  * Contributors:    -;
@@ -35,102 +35,101 @@
  */
 package gtna.routing.greedyVariations;
 
-import gtna.graph.Node;
-import gtna.id.BigIntegerIdentifier;
-import gtna.id.DoubleIdentifier;
-
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Random;
 
+import gtna.graph.Node;
+import gtna.id.BigIntegerIdentifier;
+import gtna.id.DoubleIdentifier;
+
 /**
  * a backtracking algorithm allowing one decline
- * 
+ *
  * @author stefanie
- * 
  */
 public class OneWorseGreedy extends GreedyTemplate {
-	HashMap<Integer, Integer> from;
-	boolean[] done;
+  HashMap<Integer, Integer> from;
+  boolean[] done;
 
-	public OneWorseGreedy() {
-		super("ONE_WORSE_GREEDY");
-	}
+  public OneWorseGreedy() {
+    super("ONE_WORSE_GREEDY");
+  }
 
-	public OneWorseGreedy(int ttl) {
-		super(ttl, "ONE_WORSE_GREEDY");
-	}
+  public OneWorseGreedy(int ttl) {
+    super(ttl, "ONE_WORSE_GREEDY");
+  }
 
-	@Override
-	public int getNextD(int current, DoubleIdentifier target, Random rand,
-			Node[] nodes) {
-		// System.out.println(current);
-		if (!from.containsKey(current)) {
-			from.put(current, -1);
-		}
-		double currentDist = this.pD[current].distance(target);
-		double minDist = this.idSpaceD.getMaxDistance();
-		int minNode = -1;
-		for (int out : nodes[current].getOutgoingEdges()) {
-			double dist = this.pD[out].distance(target);
-			if (dist < minDist && !done[out]) {
-				minDist = dist;
-				minNode = out;
-			}
-		}
-		if (minNode == -1 && from.containsKey(current)) {
-			done[current] = true;
-			return from.get(current);
-		}
-		if (minNode == -1) {
-			return minNode;
-		}
-		if (!from.containsKey(minNode)) {
-			from.put(minNode, current);
-		}
-		if (minDist >= currentDist) {
-			done[current] = true;
-		}
-		return minNode;
-	}
+  @Override
+  public int getNextD(int current, DoubleIdentifier target, Random rand,
+                      Node[] nodes) {
+    // System.out.println(current);
+    if (!from.containsKey(current)) {
+      from.put(current, -1);
+    }
+    double currentDist = this.pD[current].distance(target);
+    double minDist = this.idSpaceD.getMaxDistance();
+    int minNode = -1;
+    for (int out : nodes[current].getOutgoingEdges()) {
+      double dist = this.pD[out].distance(target);
+      if (dist < minDist && !done[out]) {
+        minDist = dist;
+        minNode = out;
+      }
+    }
+    if (minNode == -1 && from.containsKey(current)) {
+      done[current] = true;
+      return from.get(current);
+    }
+    if (minNode == -1) {
+      return minNode;
+    }
+    if (!from.containsKey(minNode)) {
+      from.put(minNode, current);
+    }
+    if (minDist >= currentDist) {
+      done[current] = true;
+    }
+    return minNode;
+  }
 
-	@Override
-	public int getNextBI(int current, BigIntegerIdentifier target, Random rand,
-			Node[] nodes) {
-		BigInteger currentDist = this.pBI[current].distance(target);
-		BigInteger minDist = this.idSpaceBI.getMaxDistance();
-		int minNode = -1;
-		for (int out : nodes[current].getOutgoingEdges()) {
-			BigInteger dist = this.pBI[out].distance(target);
-			if (dist.compareTo(minDist) == -1 && !done[out]) {
-				minDist = dist;
-				minNode = out;
-			}
-		}
-		if (minNode == -1 && from.containsKey(current)) {
-			return from.get(current);
-		}
-		if (minNode == -1) {
-			return minNode;
-		}
-		if (!from.containsKey(minNode)) {
-			from.put(minNode, current);
-		}
-		if (currentDist.compareTo(minDist) == 1) {
-			done[current] = true;
-		}
-		return minNode;
-	}
+  @Override
+  public int getNextBI(int current, BigIntegerIdentifier target, Random rand,
+                       Node[] nodes) {
+    BigInteger currentDist = this.pBI[current].distance(target);
+    BigInteger minDist = this.idSpaceBI.getMaxDistance();
+    int minNode = -1;
+    for (int out : nodes[current].getOutgoingEdges()) {
+      BigInteger dist = this.pBI[out].distance(target);
+      if (dist.compareTo(minDist) == -1 && !done[out]) {
+        minDist = dist;
+        minNode = out;
+      }
+    }
+    if (minNode == -1 && from.containsKey(current)) {
+      return from.get(current);
+    }
+    if (minNode == -1) {
+      return minNode;
+    }
+    if (!from.containsKey(minNode)) {
+      from.put(minNode, current);
+    }
+    if (currentDist.compareTo(minDist) == 1) {
+      done[current] = true;
+    }
+    return minNode;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see gtna.routing.greddyStef.GreedyTemplate#setSets(int)
-	 */
-	@Override
-	public void setSets(int nr) {
-		from = new HashMap<Integer, Integer>();
-		done = new boolean[nr];
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see gtna.routing.greddyStef.GreedyTemplate#setSets(int)
+   */
+  @Override
+  public void setSets(int nr) {
+    from = new HashMap<Integer, Integer>();
+    done = new boolean[nr];
+  }
 
 }

@@ -24,7 +24,7 @@
  * IntParameter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -37,18 +37,17 @@ package gtna.util.parameter;
 
 /**
  * @author benni
- * 
  */
 public class IntParameter extends Parameter {
-	private int intValue;
+  private int intValue;
 
-	public IntParameter(String key, int intValue) {
-		super(key, "" + intValue);
-		this.intValue = intValue;
-	}
+  public IntParameter(String key, int intValue) {
+    super(key, "" + intValue);
+    this.intValue = intValue;
+  }
 
-	public int getIntValue() {
-		return this.intValue;
-	}
+  public int getIntValue() {
+    return this.intValue;
+  }
 
 }

@@ -24,7 +24,7 @@
  * Greedy.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,6 +35,10 @@
  */
 package gtna.routing.greedy;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Random;
+
 import gtna.graph.Graph;
 import gtna.graph.Node;
 import gtna.id.DoubleIdentifierSpace;
@@ -44,66 +48,61 @@ import gtna.routing.RoutingAlgorithm;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
-
 /**
  * @author benni
- * 
  */
 public class GreedyBacktracking extends RoutingAlgorithm {
 
-	private int ttl;
+  private int ttl;
 
-	public GreedyBacktracking() {
-		super("GREEDY_BACKTRACKING");
-		this.ttl = Integer.MAX_VALUE;
-	}
+  public GreedyBacktracking() {
+    super("GREEDY_BACKTRACKING");
+    this.ttl = Integer.MAX_VALUE;
+  }
 
-	public GreedyBacktracking(int ttl) {
-		super("GREEDY_BACKTRACKING", new Parameter[] { new IntParameter("TTL",
-				ttl) });
-		this.ttl = ttl;
-	}
+  public GreedyBacktracking(int ttl) {
+    super("GREEDY_BACKTRACKING", new Parameter[]{new IntParameter("TTL",
+            ttl)});
+    this.ttl = ttl;
+  }
 
-	@Override
-	public Route routeToTarget(Graph graph, int start, Identifier target,
-			Random rand) {
-		return this.route(new ArrayList<Integer>(), start, target, rand,
-				graph.getNodes(), new HashMap<Integer, Integer>());
-	}
+  @Override
+  public Route routeToTarget(Graph graph, int start, Identifier target,
+                             Random rand) {
+    return this.route(new ArrayList<Integer>(), start, target, rand,
+            graph.getNodes(), new HashMap<Integer, Integer>());
+  }
 
-	private Route route(ArrayList<Integer> route, int current,
-			Identifier target, Random rand, Node[] nodes,
-			HashMap<Integer, Integer> from) {
-		route.add(current);
+  private Route route(ArrayList<Integer> route, int current,
+                      Identifier target, Random rand, Node[] nodes,
+                      HashMap<Integer, Integer> from) {
+    route.add(current);
 
-		if (this.isEndPoint(current, target)) {
-			return new Route(route, true);
-		}
-		if (route.size() > this.ttl) {
-			return new Route(route, false);
-		}
+    if (this.isEndPoint(current, target)) {
+      return new Route(route, true);
+    }
+    if (route.size() > this.ttl) {
+      return new Route(route, false);
+    }
 
-		int closest = target.getClosestNode(nodes[current].getOutgoingEdges(),
-				this.identifierSpace.getPartitions());
-		if (!target.isCloser(this.identifierSpace.getPartition(closest),
-				this.identifierSpace.getPartition(current))) {
-			if (from.containsKey(current)) {
-				return this.route(route, from.get(current), target, rand,
-						nodes, from);
-			}
-			return new Route(route, false);
-		}
+    int closest = target.getClosestNode(nodes[current].getOutgoingEdges(),
+            this.identifierSpace.getPartitions());
+    if (!target.isCloser(this.identifierSpace.getPartition(closest),
+            this.identifierSpace.getPartition(current))) {
+      if (from.containsKey(current)) {
+        return this.route(route, from.get(current), target, rand,
+                nodes, from);
+      }
+      return new Route(route, false);
+    }
 
-		from.put(closest, current);
-		return this.route(route, closest, target, rand, nodes, from);
-	}
+    from.put(closest, current);
+    return this.route(route, closest, target, rand, nodes, from);
+  }
 
-	@Override
-	public boolean applicable(Graph graph) {
-		return graph.hasProperty("ID_SPACE_0", DoubleIdentifierSpace.class);
-	}
+  @Override
+  public boolean applicable(Graph graph) {
+    return graph.hasProperty("ID_SPACE_0", DoubleIdentifierSpace.class);
+  }
 
 }

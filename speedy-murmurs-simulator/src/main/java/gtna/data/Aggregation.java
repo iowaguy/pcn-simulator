@@ -69,7 +69,7 @@ public class Aggregation {
       }
     }
     return Aggregation.aggregateRuntimes(s, z, runs)
-        && Aggregation.aggregateEtc(s, z, runs);
+            && Aggregation.aggregateEtc(s, z, runs);
   }
 
   private static boolean aggregate(Series s, Metric m, double z, int runs) {
@@ -112,7 +112,7 @@ public class Aggregation {
       from[run] = s.getSinglesFilenameRun(run, m);
     }
     return Aggregation
-        .aggregateFrom(from, s.getSinglesFilename(m), z, runs);
+            .aggregateFrom(from, s.getSinglesFilename(m), z, runs);
   }
 
   private static boolean aggregateRuntimes(Series s, double z, int runs) {
@@ -121,7 +121,7 @@ public class Aggregation {
       from[run] = s.getRuntimesFilenameRun(run);
     }
     return Aggregation
-        .aggregateFrom(from, s.getRuntimesFilename(), z, runs);
+            .aggregateFrom(from, s.getRuntimesFilename(), z, runs);
   }
 
   private static boolean aggregateEtc(Series s, double z, int runs) {
@@ -166,7 +166,7 @@ public class Aggregation {
       toWrite.add(key + "=" + buff.toString());
     }
     Filewriter fw = new Filewriter(to);
-    for (String s: toWrite) {
+    for (String s : toWrite) {
       fw.writeln(s);
     }
     return fw.close();
@@ -223,7 +223,7 @@ public class Aggregation {
     double varLow = varLowUp[1];
     double varUp = varLowUp[2];
     double[] confLowUp = Aggregation.computeConfLowUp(values, avgMinMax[0],
-        z, var);
+            z, var);
     double confLow = confLowUp[0];
     double confUp = confLowUp[1];
     // 0 avg
@@ -236,7 +236,7 @@ public class Aggregation {
     // 7 confLow
     // 8 confUp
     return new double[]{avg, med, min, max, var, varLow, varUp, confLow,
-        confUp};
+            confUp};
   }
 
   private static double[] aggregate(double x, double[] values, double z) {
@@ -340,7 +340,7 @@ public class Aggregation {
             double[][][] data = new double[num][][];
             for (int run = 0; run < num; run++) {
               data[run] = DataReader.readDouble2D(folder + "/" + run + "/" + mets[i]
-                  + "/" + files[k]);
+                      + "/" + files[k]);
             }
             boolean cdf = false;
             double[] x = extractX(data);

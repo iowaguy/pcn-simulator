@@ -24,7 +24,7 @@
  * MaxNormBPartitionSimple.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: Andreas Höfer;
  * Contributors:    -;
@@ -37,81 +37,81 @@ package gtna.id.prefix;
 
 import java.util.Random;
 
-import gtna.id.SIdentifier;
-import gtna.id.SPartition;
 import gtna.id.Identifier;
 import gtna.id.Partition;
+import gtna.id.SIdentifier;
+import gtna.id.SPartition;
 
 /**
  * @author Andreas Höfer
- *
- * TODO: STill the same semnatics as PrefixSPartitionSimple, needs to be changed
+ *         <p>
+ *         TODO: STill the same semnatics as PrefixSPartitionSimple, needs to be changed
  */
 public class PrefixSPartition extends SPartition {
 
-	private PrefixSIdentifier id;
-	
-	public PrefixSPartition(PrefixSIdentifier id) {
-		this.id = id;
-	}
+  private PrefixSIdentifier id;
 
-	public String toString() {
-		return this.id.toString();
-	}
+  public PrefixSPartition(PrefixSIdentifier id) {
+    this.id = id;
+  }
 
-	/* (non-Javadoc)
-	 * @see gtna.id.SPartition#distance(gtna.id.SIdentifier)
-	 */
-	@Override
-	public short distance(SIdentifier id) {
-		return this.id.distance(id);
-	}
+  public String toString() {
+    return this.id.toString();
+  }
 
-	/* (non-Javadoc)
-	 * @see gtna.id.SPartition#distance(gtna.id.SPartition)
-	 */
-	@Override
-	public short distance(SPartition p) {
-		return this.id.distance((SIdentifier) p.getRepresentativeIdentifier());
-	}
+  /* (non-Javadoc)
+   * @see gtna.id.SPartition#distance(gtna.id.SIdentifier)
+   */
+  @Override
+  public short distance(SIdentifier id) {
+    return this.id.distance(id);
+  }
 
-	/* (non-Javadoc)
-	 * @see gtna.id.Partition#asString()
-	 */
-	@Override
-	public String asString() {
-		return id.toString();
-	}
+  /* (non-Javadoc)
+   * @see gtna.id.SPartition#distance(gtna.id.SPartition)
+   */
+  @Override
+  public short distance(SPartition p) {
+    return this.id.distance((SIdentifier) p.getRepresentativeIdentifier());
+  }
 
-	/* (non-Javadoc)
-	 * @see gtna.id.Partition#contains(gtna.id.Identifier)
-	 */
-	@Override
-	public boolean contains(Identifier id) {
-		return this.id.equals(id);
-	}
+  /* (non-Javadoc)
+   * @see gtna.id.Partition#asString()
+   */
+  @Override
+  public String asString() {
+    return id.toString();
+  }
 
-	/* (non-Javadoc)
-	 * @see gtna.id.Partition#getRepresentativeIdentifier()
-	 */
-	@Override
-	public Identifier getRepresentativeIdentifier() {
-		return this.id;
-	}
+  /* (non-Javadoc)
+   * @see gtna.id.Partition#contains(gtna.id.Identifier)
+   */
+  @Override
+  public boolean contains(Identifier id) {
+    return this.id.equals(id);
+  }
 
-	/* (non-Javadoc)
-	 * @see gtna.id.Partition#getRandomIdentifier(java.util.Random)
-	 */
-	@Override
-	public Identifier getRandomIdentifier(Random rand) {
-		return new PrefixSIdentifier(id);
-	}
+  /* (non-Javadoc)
+   * @see gtna.id.Partition#getRepresentativeIdentifier()
+   */
+  @Override
+  public Identifier getRepresentativeIdentifier() {
+    return this.id;
+  }
 
-	/* (non-Javadoc)
-	 * @see gtna.id.Partition#equals(gtna.id.Partition)
-	 */
-	@Override
-	public boolean equals(Partition p) {
-		return this.id.equals((PrefixSIdentifier) p.getRepresentativeIdentifier());
-	}
+  /* (non-Javadoc)
+   * @see gtna.id.Partition#getRandomIdentifier(java.util.Random)
+   */
+  @Override
+  public Identifier getRandomIdentifier(Random rand) {
+    return new PrefixSIdentifier(id);
+  }
+
+  /* (non-Javadoc)
+   * @see gtna.id.Partition#equals(gtna.id.Partition)
+   */
+  @Override
+  public boolean equals(Partition p) {
+    return this.id.equals((PrefixSIdentifier) p.getRepresentativeIdentifier());
+  }
 }

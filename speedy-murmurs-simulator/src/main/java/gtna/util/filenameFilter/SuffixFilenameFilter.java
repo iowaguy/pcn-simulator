@@ -24,7 +24,7 @@
  * PostfixFilenameFilter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -39,21 +39,19 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 /**
- * Implements a filename filter that accepts only files with a given filename
- * postfix.
- * 
+ * Implements a filename filter that accepts only files with a given filename postfix.
+ *
  * @author benni
- * 
  */
 public class SuffixFilenameFilter implements FilenameFilter {
-	String suffix;
+  String suffix;
 
-	public SuffixFilenameFilter(String suffix) {
-		this.suffix = suffix;
-	}
+  public SuffixFilenameFilter(String suffix) {
+    this.suffix = suffix;
+  }
 
-	@Override
-	public boolean accept(File dir, String name) {
-		return name.endsWith(this.suffix);
-	}
+  @Override
+  public boolean accept(File dir, String name) {
+    return name.endsWith(this.suffix);
+  }
 }

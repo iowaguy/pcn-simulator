@@ -24,7 +24,7 @@
  * WeakConnectivity.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,112 +35,111 @@
  */
 package gtna.transformation.partition;
 
-import gtna.graph.Graph;
-import gtna.graph.Node;
-import gtna.graph.partition.Partition;
-import gtna.transformation.Transformation;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import gtna.graph.Graph;
+import gtna.graph.Node;
+import gtna.graph.partition.Partition;
+import gtna.transformation.Transformation;
+
 /**
  * @author benni
- * 
  */
 public class WeakConnectivityPartition extends Transformation {
 
-	public WeakConnectivityPartition() {
-		super("WEAK_CONNECTIVITY_PARTITION");
-	}
+  public WeakConnectivityPartition() {
+    super("WEAK_CONNECTIVITY_PARTITION");
+  }
 
-	@Override
-	public Graph transform(Graph g) {
-		boolean[] seen = new boolean[g.getNodes().length];
-		Partition p = WeakConnectivityPartition.getWeakPartition(g, seen);
-		g.addProperty(g.getNextKey("WEAK_CONNECTIVITY_PARTITION"), p);
-		g.addProperty(g.getNextKey("PARTITION"), p);
-		return g;
-	}
+  @Override
+  public Graph transform(Graph g) {
+    boolean[] seen = new boolean[g.getNodes().length];
+    Partition p = WeakConnectivityPartition.getWeakPartition(g, seen);
+    g.addProperty(g.getNextKey("WEAK_CONNECTIVITY_PARTITION"), p);
+    g.addProperty(g.getNextKey("PARTITION"), p);
+    return g;
+  }
 
-	@Override
-	public boolean applicable(Graph g) {
-		return true;
-	}
+  @Override
+  public boolean applicable(Graph g) {
+    return true;
+  }
 
-	public static Partition getWeakPartition(Graph g) {
-		return WeakConnectivityPartition.getWeakPartition(g,
-				new boolean[g.getNodes().length]);
-	}
+  public static Partition getWeakPartition(Graph g) {
+    return WeakConnectivityPartition.getWeakPartition(g,
+            new boolean[g.getNodes().length]);
+  }
 
-	public static Partition getWeakPartition(Graph g, boolean[] seen) {
-		ArrayList<ArrayList<Integer>> components = new ArrayList<ArrayList<Integer>>();
-		for (int start = 0; start < seen.length; start++) {
-			if (seen[start]) {
-				continue;
-			}
-			ArrayList<Integer> current = new ArrayList<Integer>();
-			Queue<Integer> queue = new LinkedList<Integer>();
-			queue.add(start);
-			seen[start] = true;
-			while (!queue.isEmpty()) {
-				Node node = g.getNode(queue.poll());
-				current.add(node.getIndex());
-				for (int out : node.getOutgoingEdges()) {
-					if (!seen[out]) {
-						queue.add(out);
-						seen[out] = true;
-					}
-				}
-				for (int in : node.getIncomingEdges()) {
-					if (!seen[in]) {
-						queue.add(in);
-						seen[in] = true;
-					}
-				}
-			}
-			components.add(current);
-		}
-		return new Partition(components);
-	}
-	
-	public static Partition getWeakPartition(Graph g, boolean[] seen, HashMap<Integer, HashSet<Integer>> droppedEdges) {
-		ArrayList<ArrayList<Integer>> components = new ArrayList<ArrayList<Integer>>();
-		for (int start = 0; start < seen.length; start++) {
-			if (seen[start]) {
-				continue;
-			}
-			ArrayList<Integer> current = new ArrayList<Integer>();
-			Queue<Integer> queue = new LinkedList<Integer>();
-			queue.add(start);
-			seen[start] = true;
-			while (!queue.isEmpty()) {
-				Node node = g.getNode(queue.poll());
-				HashSet<Integer> set = droppedEdges.get(node.getIndex());
-				if (set == null){
-					set = new HashSet<Integer>();
-				}
-				current.add(node.getIndex());
-				for (int out : node.getOutgoingEdges()) {
-					if (set.contains(out)) continue;
-					if (!seen[out]) {
-						queue.add(out);
-						seen[out] = true;
-					}
-				}
-				for (int in : node.getIncomingEdges()) {
-					if (set.contains(in)) continue;
-					if (!seen[in]) {
-						queue.add(in);
-						seen[in] = true;
-					}
-				}
-			}
-			components.add(current);
-		}
-		return new Partition(components);
-	}
+  public static Partition getWeakPartition(Graph g, boolean[] seen) {
+    ArrayList<ArrayList<Integer>> components = new ArrayList<ArrayList<Integer>>();
+    for (int start = 0; start < seen.length; start++) {
+      if (seen[start]) {
+        continue;
+      }
+      ArrayList<Integer> current = new ArrayList<Integer>();
+      Queue<Integer> queue = new LinkedList<Integer>();
+      queue.add(start);
+      seen[start] = true;
+      while (!queue.isEmpty()) {
+        Node node = g.getNode(queue.poll());
+        current.add(node.getIndex());
+        for (int out : node.getOutgoingEdges()) {
+          if (!seen[out]) {
+            queue.add(out);
+            seen[out] = true;
+          }
+        }
+        for (int in : node.getIncomingEdges()) {
+          if (!seen[in]) {
+            queue.add(in);
+            seen[in] = true;
+          }
+        }
+      }
+      components.add(current);
+    }
+    return new Partition(components);
+  }
+
+  public static Partition getWeakPartition(Graph g, boolean[] seen, HashMap<Integer, HashSet<Integer>> droppedEdges) {
+    ArrayList<ArrayList<Integer>> components = new ArrayList<ArrayList<Integer>>();
+    for (int start = 0; start < seen.length; start++) {
+      if (seen[start]) {
+        continue;
+      }
+      ArrayList<Integer> current = new ArrayList<Integer>();
+      Queue<Integer> queue = new LinkedList<Integer>();
+      queue.add(start);
+      seen[start] = true;
+      while (!queue.isEmpty()) {
+        Node node = g.getNode(queue.poll());
+        HashSet<Integer> set = droppedEdges.get(node.getIndex());
+        if (set == null) {
+          set = new HashSet<Integer>();
+        }
+        current.add(node.getIndex());
+        for (int out : node.getOutgoingEdges()) {
+          if (set.contains(out)) continue;
+          if (!seen[out]) {
+            queue.add(out);
+            seen[out] = true;
+          }
+        }
+        for (int in : node.getIncomingEdges()) {
+          if (set.contains(in)) continue;
+          if (!seen[in]) {
+            queue.add(in);
+            seen[in] = true;
+          }
+        }
+      }
+      components.add(current);
+    }
+    return new Partition(components);
+  }
 
 }

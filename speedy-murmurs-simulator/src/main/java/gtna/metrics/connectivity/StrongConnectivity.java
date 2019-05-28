@@ -41,17 +41,16 @@ import gtna.transformation.partition.StrongConnectivityPartition;
 
 /**
  * @author benni
- * 
  */
 public class StrongConnectivity extends Partitioning {
 
-	public StrongConnectivity() {
-		super("STRONG_CONNECTIVITY");
-	}
+  public StrongConnectivity() {
+    super("STRONG_CONNECTIVITY");
+  }
 
-	@Override
-	protected Partition getPartition(Graph g) {
-		return StrongConnectivityPartition.getStrongPartition(g);
-	}
+  @Override
+  protected Partition getPartition(Graph g) {
+    return StrongConnectivityPartition.getStrongPartition(g);
+  }
 
 }

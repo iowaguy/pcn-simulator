@@ -24,7 +24,7 @@
  * IPartition.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -37,19 +37,16 @@ package gtna.id;
 
 /**
  * @author benni
- * 
  */
 public abstract class IntegerPartition extends Partition implements
-		Comparable<IntegerPartition> {
-	/**
-	 * @param id
-	 * @return distance from this partition to the identifier $id
-	 */
-	public abstract int distance(IntegerIdentifier id);
+        Comparable<IntegerPartition> {
+  /**
+   * @return distance from this partition to the identifier $id
+   */
+  public abstract int distance(IntegerIdentifier id);
 
-	/**
-	 * @param id
-	 * @return distance from this partition to the partition $id
-	 */
-	public abstract int distance(IntegerPartition p);
+  /**
+   * @return distance from this partition to the partition $id
+   */
+  public abstract int distance(IntegerPartition p);
 }

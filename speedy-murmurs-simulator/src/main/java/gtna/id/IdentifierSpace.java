@@ -24,7 +24,7 @@
  * IdentifierSpace.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,113 +35,106 @@
  */
 package gtna.id;
 
-import gtna.graph.GraphProperty;
-import gtna.io.Filereader;
-import gtna.io.Filewriter;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Random;
 
+import gtna.graph.GraphProperty;
+import gtna.io.Filereader;
+import gtna.io.Filewriter;
+
 /**
  * @author benni
- * 
  */
 public abstract class IdentifierSpace extends GraphProperty {
 
-	public static final String delimiter = "_";
+  public static final String delimiter = "_";
 
-	protected Partition[] partitions;
+  protected Partition[] partitions;
 
-	protected IdentifierSpace(Partition[] partitions) {
-		this.partitions = partitions;
-	}
+  protected IdentifierSpace(Partition[] partitions) {
+    this.partitions = partitions;
+  }
 
-	public Partition[] getPartitions() {
-		return this.partitions;
-	}
+  public Partition[] getPartitions() {
+    return this.partitions;
+  }
 
-	public Partition getPartition(int node) {
-		return this.partitions[node];
-	}
+  public Partition getPartition(int node) {
+    return this.partitions[node];
+  }
 
-	@Override
-	public boolean write(String filename, String key) {
-		Filewriter fw = new Filewriter(filename);
+  @Override
+  public boolean write(String filename, String key) {
+    Filewriter fw = new Filewriter(filename);
 
-		this.writeHeader(fw, this.getClass(), key);
-		this.writeParameter(fw, "Partition count", this.partitions.length);
-		this.writeParameter(fw, "Partition class",
-				this.partitions[0].getClass());
-		this.writeParameters(fw);
+    this.writeHeader(fw, this.getClass(), key);
+    this.writeParameter(fw, "Partition count", this.partitions.length);
+    this.writeParameter(fw, "Partition class",
+            this.partitions[0].getClass());
+    this.writeParameters(fw);
 
-		for (Partition p : this.partitions) {
-			fw.writeln(p.asString());
-		}
+    for (Partition p : this.partitions) {
+      fw.writeln(p.asString());
+    }
 //		for (int i = 0; i < this.partitions.length; i++) {
 //			fw.writeln(i+ " " + this.partitions[i].asString());
 //		}
 
-		return fw.close();
-	}
+    return fw.close();
+  }
 
-	@Override
-	public String read(String filename) {
-		Filereader fr = new Filereader(filename);
-		String key = this.readHeader(fr);
-		int partitionCount = this.readInt(fr);
-		Class<?> partitionClass = this.readClass(fr);
-		this.partitions = new Partition[partitionCount];
-		this.readParameters(fr);
+  @Override
+  public String read(String filename) {
+    Filereader fr = new Filereader(filename);
+    String key = this.readHeader(fr);
+    int partitionCount = this.readInt(fr);
+    Class<?> partitionClass = this.readClass(fr);
+    this.partitions = new Partition[partitionCount];
+    this.readParameters(fr);
 
-		for (int i = 0; i < partitionCount; i++) {
-			try {
-				Constructor<?> con = partitionClass
-						.getConstructor(new Class[] { String.class });
-				String f = fr.readLine();
-				this.partitions[i] = (Partition) con
-						.newInstance(new Object[] { f });
-				//(this.partitions[i]
-			} catch (SecurityException e) {
-				e.printStackTrace();
-			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (InstantiationException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			}
-		}
+    for (int i = 0; i < partitionCount; i++) {
+      try {
+        Constructor<?> con = partitionClass
+                .getConstructor(new Class[]{String.class});
+        String f = fr.readLine();
+        this.partitions[i] = (Partition) con
+                .newInstance(new Object[]{f});
+        //(this.partitions[i]
+      } catch (SecurityException e) {
+        e.printStackTrace();
+      } catch (NoSuchMethodException e) {
+        e.printStackTrace();
+      } catch (IllegalArgumentException e) {
+        e.printStackTrace();
+      } catch (InstantiationException e) {
+        e.printStackTrace();
+      } catch (IllegalAccessException e) {
+        e.printStackTrace();
+      } catch (InvocationTargetException e) {
+        e.printStackTrace();
+      }
+    }
 
-		fr.close();
+    fr.close();
 
-		return key;
-	}
+    return key;
+  }
 
-	/**
-	 * Write all the parameters required for reading in this IdentifierSpace
-	 * using .writeParameter(.).
-	 * 
-	 * @param fw
-	 */
-	protected abstract void writeParameters(Filewriter fw);
+  /**
+   * Write all the parameters required for reading in this IdentifierSpace using
+   * .writeParameter(.).
+   */
+  protected abstract void writeParameters(Filewriter fw);
 
-	/**
-	 * Read all parameters required for initiating this IdentifierSpace.
-	 * 
-	 * @param fr
-	 */
-	protected abstract void readParameters(Filereader fr);
+  /**
+   * Read all parameters required for initiating this IdentifierSpace.
+   */
+  protected abstract void readParameters(Filereader fr);
 
-	/**
-	 * 
-	 * @param rand
-	 * @return random identifier selected uniformly from all possible
-	 *         identifiers from the identifier space
-	 */
-	public abstract Identifier getRandomIdentifier(Random rand);
+  /**
+   * @return random identifier selected uniformly from all possible identifiers from the identifier
+   *         space
+   */
+  public abstract Identifier getRandomIdentifier(Random rand);
 }

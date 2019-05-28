@@ -24,7 +24,7 @@
  * NodeRoutingTable.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -40,45 +40,44 @@ import gtna.id.node.NodeIdentifier;
 
 /**
  * @author benni
- * 
  */
 public class NodeRoutingTable extends RoutingTable {
 
-	protected int node;
+  protected int node;
 
-	protected int[] nextHop;
+  protected int[] nextHop;
 
-	private static final String delimiter = ";";
+  private static final String delimiter = ";";
 
-	public NodeRoutingTable(int node, int[] nextHop) {
-		this.node = node;
-		this.nextHop = nextHop;
-	}
+  public NodeRoutingTable(int node, int[] nextHop) {
+    this.node = node;
+    this.nextHop = nextHop;
+  }
 
-	@Override
-	public String asString() {
-		StringBuffer buff = new StringBuffer(this.node + "");
-		for (int i = 0; i < this.nextHop.length; i++) {
-			buff.append(delimiter + this.nextHop[i]);
-		}
-		return buff.toString();
-	}
+  @Override
+  public String asString() {
+    StringBuffer buff = new StringBuffer(this.node + "");
+    for (int i = 0; i < this.nextHop.length; i++) {
+      buff.append(delimiter + this.nextHop[i]);
+    }
+    return buff.toString();
+  }
 
-	@Override
-	public void fromString(String str) {
-		String[] temp = str.split(delimiter);
-		this.node = Integer.parseInt(temp[0]);
-		this.nextHop = new int[temp.length - 1];
-		for (int i = 1; i < temp.length; i++) {
-			this.nextHop[i - 1] = Integer.parseInt(temp[i]);
-		}
-	}
+  @Override
+  public void fromString(String str) {
+    String[] temp = str.split(delimiter);
+    this.node = Integer.parseInt(temp[0]);
+    this.nextHop = new int[temp.length - 1];
+    for (int i = 1; i < temp.length; i++) {
+      this.nextHop[i - 1] = Integer.parseInt(temp[i]);
+    }
+  }
 
-	@SuppressWarnings("rawtypes")
-	@Override
-	public int getNextHop(Identifier target) {
-		NodeIdentifier nid = (NodeIdentifier) target;
-		return this.nextHop[nid.getNode()];
-	}
+  @SuppressWarnings("rawtypes")
+  @Override
+  public int getNextHop(Identifier target) {
+    NodeIdentifier nid = (NodeIdentifier) target;
+    return this.nextHop[nid.getNode()];
+  }
 
 }

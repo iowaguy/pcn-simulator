@@ -24,7 +24,7 @@
  * GreedyTemplate.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: stefanie;
  * Contributors:    -;
@@ -34,6 +34,9 @@
  *
  */
 package gtna.routing.greedyVariations;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 import gtna.graph.Graph;
 import gtna.graph.GraphProperty;
@@ -50,161 +53,135 @@ import gtna.routing.RoutingAlgorithm;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 
-import java.util.ArrayList;
-import java.util.Random;
-
 /**
  * template for greedy-like algorithms
- * 
+ *
  * @author stefanie
- * 
  */
 public abstract class GreedyTemplate extends RoutingAlgorithm {
 
-	DoubleIdentifierSpace idSpaceD;
+  DoubleIdentifierSpace idSpaceD;
 
-	DoublePartition[] pD;
+  DoublePartition[] pD;
 
-	BigIntegerIdentifierSpace idSpaceBI;
+  BigIntegerIdentifierSpace idSpaceBI;
 
-	BigIntegerPartition[] pBI;
+  BigIntegerPartition[] pBI;
 
-	private int ttl;
+  private int ttl;
 
-	public GreedyTemplate(String name) {
-		super(name);
-		this.ttl = Integer.MAX_VALUE;
-	}
+  public GreedyTemplate(String name) {
+    super(name);
+    this.ttl = Integer.MAX_VALUE;
+  }
 
-	public GreedyTemplate(int ttl, String name) {
-		super(name, new Parameter[] { new IntParameter("TTL", ttl) });
-		this.ttl = ttl;
-	}
+  public GreedyTemplate(int ttl, String name) {
+    super(name, new Parameter[]{new IntParameter("TTL", ttl)});
+    this.ttl = ttl;
+  }
 
-	public GreedyTemplate(String name, Parameter[] parameters) {
-		super(name, parameters);
-		this.ttl = Integer.MAX_VALUE;
-	}
+  public GreedyTemplate(String name, Parameter[] parameters) {
+    super(name, parameters);
+    this.ttl = Integer.MAX_VALUE;
+  }
 
-	public GreedyTemplate(int ttl, String name, Parameter[] parameters) {
-		super(name, parameters);
-		this.ttl = ttl;
-	}
+  public GreedyTemplate(int ttl, String name, Parameter[] parameters) {
+    super(name, parameters);
+    this.ttl = ttl;
+  }
 
-	@Override
-	public Route routeToTarget(Graph graph, int start, Identifier target,
-			Random rand) {
-		this.setSets(graph.getNodes().length);
-		if (this.idSpaceD != null)
-			return this.routeD(new ArrayList<Integer>(), start, (DoubleIdentifier) target, rand, graph.getNodes());
-		else
-			return this.routeBI(new ArrayList<Integer>(), start, (BigIntegerIdentifier) target, rand, graph.getNodes());
-	}
+  @Override
+  public Route routeToTarget(Graph graph, int start, Identifier target,
+                             Random rand) {
+    this.setSets(graph.getNodes().length);
+    if (this.idSpaceD != null)
+      return this.routeD(new ArrayList<Integer>(), start, (DoubleIdentifier) target, rand, graph.getNodes());
+    else
+      return this.routeBI(new ArrayList<Integer>(), start, (BigIntegerIdentifier) target, rand, graph.getNodes());
+  }
 
-	/**
-	 * generic method for the routing procedure: check if target is reached, if
-	 * not select the next node or fail
-	 * 
-	 * @param route
-	 * @param current
-	 * @param target
-	 * @param rand
-	 * @param nodes
-	 * @return
-	 */
-	private Route routeD(ArrayList<Integer> route, int current,
-			DoubleIdentifier target, Random rand, Node[] nodes) {
-		route.add(current);
-		if (this.isEndPoint(current, target)) {
-			return new Route(route, true);
-		}
-		if (route.size() > this.ttl) {
-			return new Route(route, false);
-		}
-		int minNode = this.getNextD(current, target, rand, nodes);
-		if (minNode == -1) {
-			return new Route(route, false);
-		}
-		return this.routeD(route, minNode, target, rand, nodes);
-	}
-	
-	/**
-	 * generic method for the routing procedure: check if target is reached, if
-	 * not select the next node or fail
-	 * 
-	 * @param route
-	 * @param current
-	 * @param target
-	 * @param rand
-	 * @param nodes
-	 * @return
-	 */
-	private Route routeBI(ArrayList<Integer> route, int current,
-			BigIntegerIdentifier target, Random rand, Node[] nodes) {
-		route.add(current);
-		if (this.isEndPoint(current, target)) {
-			return new Route(route, true);
-		}
-		if (route.size() > this.ttl) {
-			return new Route(route, false);
-		}
-		int minNode = this.getNextBI(current, target, rand, nodes);
-		if (minNode == -1) {
-			return new Route(route, false);
-		}
-		return this.routeBI(route, minNode, target, rand, nodes);
-	}
+  /**
+   * generic method for the routing procedure: check if target is reached, if not select the next
+   * node or fail
+   */
+  private Route routeD(ArrayList<Integer> route, int current,
+                       DoubleIdentifier target, Random rand, Node[] nodes) {
+    route.add(current);
+    if (this.isEndPoint(current, target)) {
+      return new Route(route, true);
+    }
+    if (route.size() > this.ttl) {
+      return new Route(route, false);
+    }
+    int minNode = this.getNextD(current, target, rand, nodes);
+    if (minNode == -1) {
+      return new Route(route, false);
+    }
+    return this.routeD(route, minNode, target, rand, nodes);
+  }
 
-	@Override
-	public boolean applicable(Graph graph) {
-		return graph.hasProperty("ID_SPACE_0")
-				&& (graph.getProperty("ID_SPACE_0") instanceof DoubleIdentifierSpace || graph
-						.getProperty("ID_SPACE_0") instanceof BigIntegerIdentifierSpace);
-	}
+  /**
+   * generic method for the routing procedure: check if target is reached, if not select the next
+   * node or fail
+   */
+  private Route routeBI(ArrayList<Integer> route, int current,
+                        BigIntegerIdentifier target, Random rand, Node[] nodes) {
+    route.add(current);
+    if (this.isEndPoint(current, target)) {
+      return new Route(route, true);
+    }
+    if (route.size() > this.ttl) {
+      return new Route(route, false);
+    }
+    int minNode = this.getNextBI(current, target, rand, nodes);
+    if (minNode == -1) {
+      return new Route(route, false);
+    }
+    return this.routeBI(route, minNode, target, rand, nodes);
+  }
 
-	@Override
-	public void preprocess(Graph graph) {
-		super.preprocess(graph);
-		GraphProperty p = graph.getProperty("ID_SPACE_0");
-		if (p instanceof DoubleIdentifierSpace) {
-			this.idSpaceD = (DoubleIdentifierSpace) p;
-			this.pD = (DoublePartition[]) this.idSpaceD.getPartitions();
-			this.idSpaceBI = null;
-			this.pBI = null;
-		} else if (p instanceof BigIntegerIdentifierSpace) {
-			this.idSpaceD = null;
-			this.pD = null;
-			this.idSpaceBI = (BigIntegerIdentifierSpace) p;
-			this.pBI = (BigIntegerPartition[]) this.idSpaceBI.getPartitions();
-		} else {
-			this.idSpaceD = null;
-			this.pD = null;
-			this.idSpaceBI = null;
-			this.pBI = null;
-		}
-	}
+  @Override
+  public boolean applicable(Graph graph) {
+    return graph.hasProperty("ID_SPACE_0")
+            && (graph.getProperty("ID_SPACE_0") instanceof DoubleIdentifierSpace || graph
+            .getProperty("ID_SPACE_0") instanceof BigIntegerIdentifierSpace);
+  }
 
-	/**
-	 * abstract method for getting the next nodes
-	 * 
-	 * @param current
-	 * @param target
-	 * @param rand
-	 * @param nodes
-	 * @return
-	 */
-	
-	public abstract int getNextD(int current, DoubleIdentifier target, Random rand,
-			Node[] nodes);
-	
-	public abstract int getNextBI(int current, BigIntegerIdentifier target, Random rand,
-			Node[] nodes);
+  @Override
+  public void preprocess(Graph graph) {
+    super.preprocess(graph);
+    GraphProperty p = graph.getProperty("ID_SPACE_0");
+    if (p instanceof DoubleIdentifierSpace) {
+      this.idSpaceD = (DoubleIdentifierSpace) p;
+      this.pD = (DoublePartition[]) this.idSpaceD.getPartitions();
+      this.idSpaceBI = null;
+      this.pBI = null;
+    } else if (p instanceof BigIntegerIdentifierSpace) {
+      this.idSpaceD = null;
+      this.pD = null;
+      this.idSpaceBI = (BigIntegerIdentifierSpace) p;
+      this.pBI = (BigIntegerPartition[]) this.idSpaceBI.getPartitions();
+    } else {
+      this.idSpaceD = null;
+      this.pD = null;
+      this.idSpaceBI = null;
+      this.pBI = null;
+    }
+  }
 
-	/**
-	 * abstract method initiating the necessary objects
-	 * 
-	 * @param nr
-	 */
-	public abstract void setSets(int nr);
+  /**
+   * abstract method for getting the next nodes
+   */
+
+  public abstract int getNextD(int current, DoubleIdentifier target, Random rand,
+                               Node[] nodes);
+
+  public abstract int getNextBI(int current, BigIntegerIdentifier target, Random rand,
+                                Node[] nodes);
+
+  /**
+   * abstract method initiating the necessary objects
+   */
+  public abstract void setSets(int nr);
 
 }

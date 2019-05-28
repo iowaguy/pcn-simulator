@@ -24,7 +24,7 @@
  * ParameterListParameter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -37,18 +37,17 @@ package gtna.util.parameter;
 
 /**
  * @author benni
- * 
  */
 public class ParameterListParameter extends Parameter {
-	private ParameterList parameterListValue;
+  private ParameterList parameterListValue;
 
-	public ParameterListParameter(String key, ParameterList parameterListValue) {
-		super(key, parameterListValue.getFolderName());
-		this.parameterListValue = parameterListValue;
-	}
+  public ParameterListParameter(String key, ParameterList parameterListValue) {
+    super(key, parameterListValue.getFolderName());
+    this.parameterListValue = parameterListValue;
+  }
 
-	public ParameterList getParameterListValue() {
-		return this.parameterListValue;
-	}
+  public ParameterList getParameterListValue() {
+    return this.parameterListValue;
+  }
 
 }

@@ -24,7 +24,7 @@
  * RandomTargetSelection.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -41,31 +41,30 @@ import gtna.id.IdentifierSpace;
 
 /**
  * @author benni
- * 
  */
 public class RandomIdTargetSelection extends TargetSelection {
 
-	protected IdentifierSpace identifierSpace;
+  protected IdentifierSpace identifierSpace;
 
-	public RandomIdTargetSelection() {
-		super("TARGET_SELECTION_RANDOM_ID");
-	}
+  public RandomIdTargetSelection() {
+    super("TARGET_SELECTION_RANDOM_ID");
+  }
 
-	public void init(Graph graph) {
-		super.init(graph);
-		this.identifierSpace = (IdentifierSpace) this.graph
-				.getProperty("ID_SPACE_0");
-	}
+  public void init(Graph graph) {
+    super.init(graph);
+    this.identifierSpace = (IdentifierSpace) this.graph
+            .getProperty("ID_SPACE_0");
+  }
 
-	@Override
-	public Identifier getNextTarget() {
-		return this.identifierSpace.getRandomIdentifier(this.rand);
-	}
+  @Override
+  public Identifier getNextTarget() {
+    return this.identifierSpace.getRandomIdentifier(this.rand);
+  }
 
-	@Override
-	public boolean applicable(Graph graph) {
-		return graph.hasProperty("ID_SPACE_0")
-				&& graph.getProperty("ID_SPACE_0") instanceof IdentifierSpace;
-	}
+  @Override
+  public boolean applicable(Graph graph) {
+    return graph.hasProperty("ID_SPACE_0")
+            && graph.getProperty("ID_SPACE_0") instanceof IdentifierSpace;
+  }
 
 }

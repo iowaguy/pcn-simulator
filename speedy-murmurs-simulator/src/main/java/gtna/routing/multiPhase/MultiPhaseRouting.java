@@ -24,7 +24,7 @@
  * MultiPhaseRouting.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,6 +35,9 @@
  */
 package gtna.routing.multiPhase;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 import gtna.graph.Graph;
 import gtna.graph.Node;
 import gtna.id.Identifier;
@@ -44,94 +47,90 @@ import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 import gtna.util.parameter.StringParameter;
 
-import java.util.ArrayList;
-import java.util.Random;
-
 /**
  * @author benni
- * 
  */
-@SuppressWarnings({ "rawtypes" })
+@SuppressWarnings({"rawtypes"})
 public class MultiPhaseRouting extends RoutingAlgorithm {
 
-	private int retries;
+  private int retries;
 
-	private RoutingAlgorithm[] phases;
+  private RoutingAlgorithm[] phases;
 
-	public MultiPhaseRouting(RoutingAlgorithm[] phases) {
-		super("MULTI_PHASE_ROUTING", new Parameter[] { new StringParameter(
-				"PHASES", RoutingAlgorithm.toString(phases)) });
-		this.retries = 1;
-		this.phases = phases;
-	}
+  public MultiPhaseRouting(RoutingAlgorithm[] phases) {
+    super("MULTI_PHASE_ROUTING", new Parameter[]{new StringParameter(
+            "PHASES", RoutingAlgorithm.toString(phases))});
+    this.retries = 1;
+    this.phases = phases;
+  }
 
-	public MultiPhaseRouting(int retries, RoutingAlgorithm[] phases) {
-		super("MULTI_PHASE_ROUTING",
-				new Parameter[] {
-						new IntParameter("RETRIES", retries),
-						new StringParameter("PHASES",
-								RoutingAlgorithm.toString(phases)) });
-		this.retries = retries;
-		this.phases = phases;
-	}
+  public MultiPhaseRouting(int retries, RoutingAlgorithm[] phases) {
+    super("MULTI_PHASE_ROUTING",
+            new Parameter[]{
+                    new IntParameter("RETRIES", retries),
+                    new StringParameter("PHASES",
+                            RoutingAlgorithm.toString(phases))});
+    this.retries = retries;
+    this.phases = phases;
+  }
 
-	@Override
-	public Route routeToTarget(Graph graph, int start, Identifier target,
-			Random rand) {
-		return this.route(graph, start, target, rand, graph.getNodes());
-	}
+  @Override
+  public Route routeToTarget(Graph graph, int start, Identifier target,
+                             Random rand) {
+    return this.route(graph, start, target, rand, graph.getNodes());
+  }
 
-	private Route route(Graph g, int start, Identifier target, Random rand,
-			Node[] nodes) {
-		ArrayList<Integer> route = new ArrayList<Integer>();
-		route.add(start);
+  private Route route(Graph g, int start, Identifier target, Random rand,
+                      Node[] nodes) {
+    ArrayList<Integer> route = new ArrayList<Integer>();
+    route.add(start);
 
-		if (this.isEndPoint(start, target)) {
-			return new Route(route, true);
-		}
+    if (this.isEndPoint(start, target)) {
+      return new Route(route, true);
+    }
 
-		route.add(start);
+    route.add(start);
 
-		for (int run = 0; run < this.retries; run++) {
+    for (int run = 0; run < this.retries; run++) {
 
-			int current = start;
-			for (RoutingAlgorithm phase : this.phases) {
-				Route r = phase.routeToTarget(g, current, target, rand);
+      int current = start;
+      for (RoutingAlgorithm phase : this.phases) {
+        Route r = phase.routeToTarget(g, current, target, rand);
 
-				for (int i = 1; i < r.getRoute().length; i++) {
-					route.add(r.getRoute()[i]);
-				}
+        for (int i = 1; i < r.getRoute().length; i++) {
+          route.add(r.getRoute()[i]);
+        }
 
-				if (r.isSuccessful()) {
-					return new Route(route, true);
-				}
-			}
+        if (r.isSuccessful()) {
+          return new Route(route, true);
+        }
+      }
 
-		}
+    }
 
-		return new Route(route, false);
-	}
+    return new Route(route, false);
+  }
 
-	@Override
-	public boolean applicable(Graph graph) {
-		if (!graph.hasProperty("ID_SPACE_0")) {
-			return false;
-		}
-		for (RoutingAlgorithm phase : this.phases) {
-			if (!phase.applicable(graph)) {
-				return false;
-			}
-		}
-		return true;
-	}
+  @Override
+  public boolean applicable(Graph graph) {
+    if (!graph.hasProperty("ID_SPACE_0")) {
+      return false;
+    }
+    for (RoutingAlgorithm phase : this.phases) {
+      if (!phase.applicable(graph)) {
+        return false;
+      }
+    }
+    return true;
+  }
 
-	@Override
-	public void preprocess(Graph graph) {
-		super.preprocess(graph);
+  @Override
+  public void preprocess(Graph graph) {
+    super.preprocess(graph);
 
-		for (RoutingAlgorithm phase : this.phases) {
-			phase.preprocess(graph);
-		}
-	}
+    for (RoutingAlgorithm phase : this.phases) {
+      phase.preprocess(graph);
+    }
+  }
 
 }

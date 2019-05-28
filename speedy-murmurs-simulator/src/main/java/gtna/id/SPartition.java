@@ -24,7 +24,7 @@
  * IDSpacePartition.java
  * ---------------------------------------
  * (C) Copyright 2009-2012, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: Andreas Höfer;
  * Contributors:    -;
@@ -37,45 +37,43 @@ package gtna.id;
 
 /**
  * @author Andreas Höfer
- * 
- * Partition with short as base tyoe
+ *         <p>
+ *         Partition with short as base tyoe
  */
 
 public abstract class SPartition extends Partition {
-	/**
-	* @param id
-	* @return distance from this partition to the identifier $id
-	*/
-	public abstract short distance(SIdentifier id);
-	
-	/**
-	* @param p
-	* @return distance from this partition to the partition $p
-	*/
-	public abstract short distance(SPartition p);
+  /**
+   * @return distance from this partition to the identifier $id
+   */
+  public abstract short distance(SIdentifier id);
 
-	@Override
-	public boolean isCloser(Identifier to, Identifier than) {
-		return this.distance((SIdentifier) to) < this
-				.distance((SIdentifier) than);
-	}
+  /**
+   * @return distance from this partition to the partition $p
+   */
+  public abstract short distance(SPartition p);
 
-	@Override
-	public int getClosestNode(int[] nodes, Partition[] partitions) {
-		if (nodes.length <= 0) {
-			return -1;
-		}
-		int closest = nodes[0];
-		double distance = ((SPartition) partitions[closest]).distance(this);
+  @Override
+  public boolean isCloser(Identifier to, Identifier than) {
+    return this.distance((SIdentifier) to) < this
+            .distance((SIdentifier) than);
+  }
 
-		for (int i = 1; i < nodes.length; i++) {
-			double d = ((SPartition) partitions[nodes[i]]).distance(this);
-			if (d < distance) {
-				closest = nodes[i];
-				distance = d;
-			}
-		}
-		return closest;
-	}
+  @Override
+  public int getClosestNode(int[] nodes, Partition[] partitions) {
+    if (nodes.length <= 0) {
+      return -1;
+    }
+    int closest = nodes[0];
+    double distance = ((SPartition) partitions[closest]).distance(this);
+
+    for (int i = 1; i < nodes.length; i++) {
+      double d = ((SPartition) partitions[nodes[i]]).distance(this);
+      if (d < distance) {
+        closest = nodes[i];
+        distance = d;
+      }
+    }
+    return closest;
+  }
 
 }

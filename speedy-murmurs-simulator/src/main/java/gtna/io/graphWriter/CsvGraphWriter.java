@@ -24,7 +24,7 @@
  * CsvGraphWriter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -40,30 +40,28 @@ import gtna.graph.Node;
 import gtna.io.Filewriter;
 
 /**
- * GraphWriter for the CSV graph file format as specified here:
- * https://gephi.org/users/supported-graph-formats/csv-format/
- * 
+ * GraphWriter for the CSV graph file format as specified here: https://gephi.org/users/supported-graph-formats/csv-format/
+ *
  * @author benni
- * 
  */
 public class CsvGraphWriter extends GraphWriter {
 
-	public CsvGraphWriter() {
-		super("CSV");
-	}
+  public CsvGraphWriter() {
+    super("CSV");
+  }
 
-	@Override
-	public boolean write(Graph g, String filename) {
-		Filewriter fw = new Filewriter(filename);
-		for (Node node : g.getNodes()) {
-			StringBuffer buff = new StringBuffer();
-			buff.append(node.getIndex());
-			for (int out : node.getOutgoingEdges()) {
-				buff.append(";" + out);
-			}
-			fw.writeln(buff.toString());
-		}
-		return fw.close();
-	}
+  @Override
+  public boolean write(Graph g, String filename) {
+    Filewriter fw = new Filewriter(filename);
+    for (Node node : g.getNodes()) {
+      StringBuffer buff = new StringBuffer();
+      buff.append(node.getIndex());
+      for (int out : node.getOutgoingEdges()) {
+        buff.append(";" + out);
+      }
+      fw.writeln(buff.toString());
+    }
+    return fw.close();
+  }
 
 }

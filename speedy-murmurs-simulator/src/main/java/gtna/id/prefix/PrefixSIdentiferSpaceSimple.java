@@ -24,7 +24,7 @@
  * PrefixSIdentiferSpaceSimple.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: Andreas Höfer;
  * Contributors:    -;
@@ -35,125 +35,120 @@
  */
 package gtna.id.prefix;
 
-import gtna.graph.Graph;
+import java.util.Random;
+
 import gtna.id.Identifier;
-import gtna.id.IdentifierSpace;
-import gtna.id.Partition;
 import gtna.id.SIdentifierSpace;
 import gtna.io.Filereader;
 import gtna.io.Filewriter;
-import gtna.util.Config;
-
-import java.io.IOException;
-import java.util.Random;
 
 /**
  * @author Andreas Höfer
- *
  */
 public class PrefixSIdentiferSpaceSimple extends SIdentifierSpace {
-	
-    private int size;
-    private int bitsPerCoord;
-	//private PrefixSPartitionSimple[] partitions; 
-	private boolean virtual;
-	
 
-	/**
-	 * 
-	 * @param partitions
-	 * @param bitsPerCoord
-	 * @param size
-	 * @param virtual
-	 */
-	
-	public PrefixSIdentiferSpaceSimple(PrefixSPartitionSimple[] partitions, int bitsPerCoord, int size, boolean virtual){
-		super(partitions);
-		this.bitsPerCoord = bitsPerCoord;
-		this.size = size;
-		this.virtual = virtual;
-	}
-	
-	public PrefixSIdentiferSpaceSimple(){
-		this(null,160,Integer.MAX_VALUE,true);
-	}
+  private int size;
+  private int bitsPerCoord;
+  //private PrefixSPartitionSimple[] partitions;
+  private boolean virtual;
 
-	public int getSize() {
-		return this.size;
-	}
-	public void setSize(int size) {
-		this.size = size;
-	}
-	public int getBitsPerCoord() {
-		return this.bitsPerCoord;
-	}
-	public void setBitsPerCoord(int bitsPerCoord) {
-		this.bitsPerCoord = bitsPerCoord;
-	}
-	@Override
-	public PrefixSPartitionSimple[] getPartitions() {
-		return (PrefixSPartitionSimple[]) super.getPartitions();
-	}
-	
-	/* (non-Javadoc)
-	 * @see gtna.id.IdentifierSpace#getMaxDistance()
-	 */
-	@Override
-	public short getMaxDistance() {
-		return Short.MAX_VALUE;
-	}
 
-	/**
-	 * @return the virtual
-	 */
-	public boolean isVirtual() {
-		return virtual;
-	}
-	/**
-	 * @param virtual the virtual to set
-	 */
-	public void setVirtual(boolean virtual) {
-		this.virtual = virtual;
-	}
+  /**
+   *
+   */
 
-	/* (non-Javadoc)
-	 * @see gtna.id.IdentifierSpace#writeParameters(gtna.io.Filewriter)
-	 */
-	@Override
-	protected void writeParameters(Filewriter fw) {
-        // SIZE	
-		this.writeParameter(fw, "size", this.size);
+  public PrefixSIdentiferSpaceSimple(PrefixSPartitionSimple[] partitions, int bitsPerCoord, int size, boolean virtual) {
+    super(partitions);
+    this.bitsPerCoord = bitsPerCoord;
+    this.size = size;
+    this.virtual = virtual;
+  }
 
-		// BITSPERCOORD
-		this.writeParameter(fw, "bitsPerCoord", this.bitsPerCoord);
-		
-		// Type
-		this.writeParameter(fw, "virtual ", this.virtual);
-	}
+  public PrefixSIdentiferSpaceSimple() {
+    this(null, 160, Integer.MAX_VALUE, true);
+  }
 
-	/* (non-Javadoc)
-	 * @see gtna.id.IdentifierSpace#readParameters(gtna.io.Filereader)
-	 */
-	@Override
-	protected void readParameters(Filereader fr) {
-		System.out.println("Got here");
-		// SIZE
-		this.size = Integer.parseInt(fr.readLine());
-				
-		// BITSPERCOORD
-		this.bitsPerCoord = Integer.parseInt(fr.readLine());
-				
-		// Type
-		this.virtual = Boolean.parseBoolean(fr.readLine());
-	}
+  public int getSize() {
+    return this.size;
+  }
 
-	/* (non-Javadoc)
-	 * @see gtna.id.IdentifierSpace#getRandomIdentifier(java.util.Random)
-	 */
-	@Override
-	public Identifier getRandomIdentifier(Random rand) {
-		return this.partitions[rand.nextInt(this.partitions.length)].getRepresentativeIdentifier();
-	}
+  public void setSize(int size) {
+    this.size = size;
+  }
+
+  public int getBitsPerCoord() {
+    return this.bitsPerCoord;
+  }
+
+  public void setBitsPerCoord(int bitsPerCoord) {
+    this.bitsPerCoord = bitsPerCoord;
+  }
+
+  @Override
+  public PrefixSPartitionSimple[] getPartitions() {
+    return (PrefixSPartitionSimple[]) super.getPartitions();
+  }
+
+  /* (non-Javadoc)
+   * @see gtna.id.IdentifierSpace#getMaxDistance()
+   */
+  @Override
+  public short getMaxDistance() {
+    return Short.MAX_VALUE;
+  }
+
+  /**
+   * @return the virtual
+   */
+  public boolean isVirtual() {
+    return virtual;
+  }
+
+  /**
+   * @param virtual the virtual to set
+   */
+  public void setVirtual(boolean virtual) {
+    this.virtual = virtual;
+  }
+
+  /* (non-Javadoc)
+   * @see gtna.id.IdentifierSpace#writeParameters(gtna.io.Filewriter)
+   */
+  @Override
+  protected void writeParameters(Filewriter fw) {
+    // SIZE
+    this.writeParameter(fw, "size", this.size);
+
+    // BITSPERCOORD
+    this.writeParameter(fw, "bitsPerCoord", this.bitsPerCoord);
+
+    // Type
+    this.writeParameter(fw, "virtual ", this.virtual);
+  }
+
+  /* (non-Javadoc)
+   * @see gtna.id.IdentifierSpace#readParameters(gtna.io.Filereader)
+   */
+  @Override
+  protected void readParameters(Filereader fr) {
+    System.out.println("Got here");
+    // SIZE
+    this.size = Integer.parseInt(fr.readLine());
+
+    // BITSPERCOORD
+    this.bitsPerCoord = Integer.parseInt(fr.readLine());
+
+    // Type
+    this.virtual = Boolean.parseBoolean(fr.readLine());
+  }
+
+  /* (non-Javadoc)
+   * @see gtna.id.IdentifierSpace#getRandomIdentifier(java.util.Random)
+   */
+  @Override
+  public Identifier getRandomIdentifier(Random rand) {
+    return this.partitions[rand.nextInt(this.partitions.length)].getRepresentativeIdentifier();
+  }
 
 
 }

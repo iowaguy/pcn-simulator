@@ -24,7 +24,7 @@
  * RemoveLargestNode.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -41,26 +41,25 @@ import gtna.util.parameter.Parameter;
 
 /**
  * @author benni
- * 
  */
 public class RemoveLargestNode extends RemoveNodes {
-	public RemoveLargestNode() {
-		super("REMOVE_LARGEST_NODE", new Parameter[0]);
-	}
+  public RemoveLargestNode() {
+    super("REMOVE_LARGEST_NODE", new Parameter[0]);
+  }
 
-	@Override
-	public boolean[] getNodeSet(Graph g) {
-		Node[] nodes = g.getNodes();
-		int maxIndex = 0;
-		for (Node node : nodes) {
-			if (node.getDegree() > g.getNode(maxIndex).getDegree()) {
-				maxIndex = node.getIndex();
-			}
-		}
+  @Override
+  public boolean[] getNodeSet(Graph g) {
+    Node[] nodes = g.getNodes();
+    int maxIndex = 0;
+    for (Node node : nodes) {
+      if (node.getDegree() > g.getNode(maxIndex).getDegree()) {
+        maxIndex = node.getIndex();
+      }
+    }
 
-		boolean[] remove = new boolean[nodes.length];
-		remove[maxIndex] = true;
+    boolean[] remove = new boolean[nodes.length];
+    remove[maxIndex] = true;
 
-		return remove;
-	}
+    return remove;
+  }
 }

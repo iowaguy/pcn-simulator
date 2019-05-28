@@ -24,7 +24,7 @@
  * NodeGreedy.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: stefanie;
  * Contributors:    -;
@@ -35,38 +35,37 @@
  */
 package gtna.routing.greedyVariations;
 
-import gtna.util.parameter.Parameter;
-
 import java.util.HashMap;
+
+import gtna.util.parameter.Parameter;
 
 /**
  * abstract class for greedy variations marking nodes
- * 
+ *
  * @author stefanie
- * 
  */
 public abstract class NodeGreedy extends GreedyTemplate {
-	HashMap<Integer, Integer> from;
+  HashMap<Integer, Integer> from;
 
-	public NodeGreedy(String name) {
-		super(name);
-	}
+  public NodeGreedy(String name) {
+    super(name);
+  }
 
-	public NodeGreedy(int ttl, String name) {
-		super(ttl, name);
-	}
+  public NodeGreedy(int ttl, String name) {
+    super(ttl, name);
+  }
 
-	public NodeGreedy(String name, Parameter[] parameters) {
-		super(name, parameters);
-	}
+  public NodeGreedy(String name, Parameter[] parameters) {
+    super(name, parameters);
+  }
 
-	public NodeGreedy(int ttl, String name, Parameter[] parameters) {
-		super(ttl, name, parameters);
-	}
+  public NodeGreedy(int ttl, String name, Parameter[] parameters) {
+    super(ttl, name, parameters);
+  }
 
-	@Override
-	public void setSets(int nr) {
-		from = new HashMap<Integer, Integer>();
-	}
+  @Override
+  public void setSets(int nr) {
+    from = new HashMap<Integer, Integer>();
+  }
 
 }

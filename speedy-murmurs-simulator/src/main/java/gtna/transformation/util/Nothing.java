@@ -24,7 +24,7 @@
  * Nothing.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -41,30 +41,29 @@ import gtna.util.parameter.Parameter;
 
 /**
  * @author benni
- * 
  */
 public class Nothing extends Transformation {
 
-	public Nothing() {
-		super("NOTHING");
-	}
+  public Nothing() {
+    super("NOTHING");
+  }
 
-	public Nothing(Parameter parameter) {
-		super("NOTHING", new Parameter[] { parameter });
-	}
+  public Nothing(Parameter parameter) {
+    super("NOTHING", new Parameter[]{parameter});
+  }
 
-	public Nothing(Parameter[] parameters) {
-		super("NOTHING", parameters);
-	}
+  public Nothing(Parameter[] parameters) {
+    super("NOTHING", parameters);
+  }
 
-	@Override
-	public Graph transform(Graph g) {
-		return g;
-	}
+  @Override
+  public Graph transform(Graph g) {
+    return g;
+  }
 
-	@Override
-	public boolean applicable(Graph g) {
-		return true;
-	}
+  @Override
+  public boolean applicable(Graph g) {
+    return true;
+  }
 
 }

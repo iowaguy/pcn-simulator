@@ -24,7 +24,7 @@
  * NodeIdentifierSpace.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,44 +35,43 @@
  */
 package gtna.id.node;
 
+import java.util.Random;
+
 import gtna.id.DoubleIdentifierSpace;
 import gtna.id.Identifier;
 import gtna.io.Filereader;
 import gtna.io.Filewriter;
 
-import java.util.Random;
-
 /**
  * @author benni
- * 
  */
 public class NodeIdentifierSpace extends DoubleIdentifierSpace {
 
-	/**
-	 * @param partitions
-	 */
-	public NodeIdentifierSpace(NodePartition[] partitions) {
-		super(partitions);
-	}
+  /**
+   *
+   */
+  public NodeIdentifierSpace(NodePartition[] partitions) {
+    super(partitions);
+  }
 
-	@Override
-	public double getMaxDistance() {
-		return 0;
-	}
+  @Override
+  public double getMaxDistance() {
+    return 0;
+  }
 
-	@Override
-	protected void writeParameters(Filewriter fw) {
+  @Override
+  protected void writeParameters(Filewriter fw) {
 
-	}
+  }
 
-	@Override
-	protected void readParameters(Filereader fr) {
+  @Override
+  protected void readParameters(Filereader fr) {
 
-	}
+  }
 
-	@Override
-	public Identifier getRandomIdentifier(Random rand) {
-		return new NodeIdentifier(rand.nextInt(this.partitions.length));
-	}
+  @Override
+  public Identifier getRandomIdentifier(Random rand) {
+    return new NodeIdentifier(rand.nextInt(this.partitions.length));
+  }
 
 }

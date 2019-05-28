@@ -60,34 +60,34 @@
                     </execution>
                 </executions>
             </plugin>
-    <!--</plugins>
-        <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>1.2.1</version>
-            <executions>
-                <execution>
-                    <id>Static</id>
-                    <goals>
-                        <goal>java</goal>
-                    </goals>
-                    <configuration>
-                        <mainClass>treeembedding.tests.Static</mainClass>
-                        <includePluginDependencies>false</includePluginDependencies>
-                    </configuration>
-                </execution>
-                <execution>
-                    <id>Dynamic</id>
-                    <goals>
-                        <goal>java</goal>
-                    </goals>
-                    <configuration>
-                        <mainClass>treeembedding.tests.Dynamic</mainClass>
-                        <includePluginDependencies>false</includePluginDependencies>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>-->
+            <!--</plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>1.2.1</version>
+                    <executions>
+                        <execution>
+                            <id>Static</id>
+                            <goals>
+                                <goal>java</goal>
+                            </goals>
+                            <configuration>
+                                <mainClass>treeembedding.tests.Static</mainClass>
+                                <includePluginDependencies>false</includePluginDependencies>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>Dynamic</id>
+                            <goals>
+                                <goal>java</goal>
+                            </goals>
+                            <configuration>
+                                <mainClass>treeembedding.tests.Dynamic</mainClass>
+                                <includePluginDependencies>false</includePluginDependencies>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>-->
         </plugins>
     </build>
 </project>

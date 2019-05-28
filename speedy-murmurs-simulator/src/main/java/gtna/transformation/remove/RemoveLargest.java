@@ -24,7 +24,7 @@
  * RemoveMax.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: stef;
  * Contributors:    -;
@@ -45,45 +45,44 @@ import gtna.util.parameter.StringParameter;
  * @author stef remove all nodes whose degree exceeds a certian bound
  */
 public class RemoveLargest extends RemoveNodes {
-	int max;
-	Type type;
+  int max;
+  Type type;
 
-	public static enum Type {
-		IN, OUT, TOTAL
-	}
+  public static enum Type {
+    IN, OUT, TOTAL
+  }
 
-	/**
-	 * @param key
-	 * @param parameters
-	 */
-	public RemoveLargest(int max, Type type) {
-		super("REMOVE_LARGEST", new Parameter[] { new IntParameter("MAX", max),
-				new StringParameter("TYPE", type.toString()) });
-		this.max = max;
-		this.type = type;
-	}
+  /**
+   *
+   */
+  public RemoveLargest(int max, Type type) {
+    super("REMOVE_LARGEST", new Parameter[]{new IntParameter("MAX", max),
+            new StringParameter("TYPE", type.toString())});
+    this.max = max;
+    this.type = type;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see gtna.transformation.remove.RemoveNodes#getNodeSet(gtna.graph.Graph)
-	 */
-	@Override
-	public boolean[] getNodeSet(Graph g) {
-		Node[] nodes = g.getNodes();
-		boolean[] remove = new boolean[nodes.length];
-		for (int j = 0; j < nodes.length; j++) {
-			if (this.type == Type.TOTAL && nodes[j].getDegree() > this.max) {
-				remove[j] = true;
-			}
-			if (this.type == Type.IN && nodes[j].getInDegree() > this.max) {
-				remove[j] = true;
-			}
-			if (this.type == Type.OUT && nodes[j].getOutDegree() > this.max) {
-				remove[j] = true;
-			}
-		}
-		return remove;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see gtna.transformation.remove.RemoveNodes#getNodeSet(gtna.graph.Graph)
+   */
+  @Override
+  public boolean[] getNodeSet(Graph g) {
+    Node[] nodes = g.getNodes();
+    boolean[] remove = new boolean[nodes.length];
+    for (int j = 0; j < nodes.length; j++) {
+      if (this.type == Type.TOTAL && nodes[j].getDegree() > this.max) {
+        remove[j] = true;
+      }
+      if (this.type == Type.IN && nodes[j].getInDegree() > this.max) {
+        remove[j] = true;
+      }
+      if (this.type == Type.OUT && nodes[j].getOutDegree() > this.max) {
+        remove[j] = true;
+      }
+    }
+    return remove;
+  }
 
 }

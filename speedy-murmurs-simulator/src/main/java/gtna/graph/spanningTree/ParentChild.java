@@ -24,7 +24,7 @@
  * ParentChild.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -37,48 +37,47 @@ package gtna.graph.spanningTree;
 
 /**
  * @author benni
- * 
  */
 public class ParentChild {
-	private int parent;
-	private int child;
-	private int depth;
+  private int parent;
+  private int child;
+  private int depth;
 
-	public ParentChild(String string) {
-		String[] temp = string.split(";");
-		this.parent = Integer.parseInt(temp[0]);
-		this.child = Integer.parseInt(temp[1]);
-		this.depth = Integer.parseInt(temp[2]);
-	}
+  public ParentChild(String string) {
+    String[] temp = string.split(";");
+    this.parent = Integer.parseInt(temp[0]);
+    this.child = Integer.parseInt(temp[1]);
+    this.depth = Integer.parseInt(temp[2]);
+  }
 
-	public ParentChild(int parent, int child, int depth) {
-		this.parent = parent;
-		this.child = child;
-		this.depth = depth;
-	}
+  public ParentChild(int parent, int child, int depth) {
+    this.parent = parent;
+    this.child = child;
+    this.depth = depth;
+  }
 
-	public String toString() {
-		return this.parent + ";" + this.child + ";" + this.depth;
-	}
+  public String toString() {
+    return this.parent + ";" + this.child + ";" + this.depth;
+  }
 
-	/**
-	 * @return the parent
-	 */
-	public int getParent() {
-		return this.parent;
-	}
+  /**
+   * @return the parent
+   */
+  public int getParent() {
+    return this.parent;
+  }
 
-	/**
-	 * @return the child
-	 */
-	public int getChild() {
-		return this.child;
-	}
+  /**
+   * @return the child
+   */
+  public int getChild() {
+    return this.child;
+  }
 
-	/**
-	 * @return
-	 */
-	public int getDepth() {
-		return this.depth;
-	}
+  /**
+   *
+   */
+  public int getDepth() {
+    return this.depth;
+  }
 }

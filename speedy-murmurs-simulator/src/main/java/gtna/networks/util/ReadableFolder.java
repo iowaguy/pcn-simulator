@@ -24,7 +24,7 @@
  * ReadableFolder.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: "Benjamin Schiller";
  * Contributors:    -;
@@ -35,6 +35,9 @@
  */
 package gtna.networks.util;
 
+import java.io.File;
+import java.util.Arrays;
+
 import gtna.graph.Graph;
 import gtna.io.graphReader.GtnaGraphReader;
 import gtna.networks.Network;
@@ -43,84 +46,80 @@ import gtna.util.Config;
 import gtna.util.filenameFilter.SuffixFilenameFilter;
 import gtna.util.parameter.Parameter;
 
-import java.io.File;
-import java.util.Arrays;
-
 /**
  * @author "Benjamin Schiller"
- * 
  */
 public class ReadableFolder extends Network {
-	private File[] files;
+  private File[] files;
 
-	private int index;
+  private int index;
 
-	public ReadableFolder(String name, String folder, String srcFolder,
-			String suffix, Transformation[] t) {
-		this(name, folder, srcFolder, suffix, new Parameter[0], t);
-	}
+  public ReadableFolder(String name, String folder, String srcFolder,
+                        String suffix, Transformation[] t) {
+    this(name, folder, srcFolder, suffix, new Parameter[0], t);
+  }
 
-	public ReadableFolder(String name, String folder, String srcFolder,
-			String suffix, Parameter[] parameters, Transformation[] t) {
-		super(ReadableFolder.key(folder, name), ReadableFolder.getNodes(
-				srcFolder, suffix), parameters, t);
-		File d = new File(srcFolder);
-		if (!d.exists()) {
-			this.files = new File[0];
-		} else {
-			this.files = d.listFiles(new SuffixFilenameFilter(suffix));
-			Arrays.sort(this.files);
-		}
-		this.index = 0;
-		for (Parameter p : parameters) {
-			ReadableFolder.parameterKey(folder, p.getKey(), p.getKey());
-		}
-	}
+  public ReadableFolder(String name, String folder, String srcFolder,
+                        String suffix, Parameter[] parameters, Transformation[] t) {
+    super(ReadableFolder.key(folder, name), ReadableFolder.getNodes(
+            srcFolder, suffix), parameters, t);
+    File d = new File(srcFolder);
+    if (!d.exists()) {
+      this.files = new File[0];
+    } else {
+      this.files = d.listFiles(new SuffixFilenameFilter(suffix));
+      Arrays.sort(this.files);
+    }
+    this.index = 0;
+    for (Parameter p : parameters) {
+      ReadableFolder.parameterKey(folder, p.getKey(), p.getKey());
+    }
+  }
 
-	public Graph generate() {
-		if (this.files.length == 0) {
-			return null;
-		}
-		Graph graph = new GtnaGraphReader()
-				.readWithProperties(this.files[this.index].getAbsolutePath());
-		graph.setName(this.getDescription());
-		this.incIndex();
-		return graph;
-	}
+  public Graph generate() {
+    if (this.files.length == 0) {
+      return null;
+    }
+    Graph graph = new GtnaGraphReader()
+            .readWithProperties(this.files[this.index].getAbsolutePath());
+    graph.setName(this.getDescription());
+    this.incIndex();
+    return graph;
+  }
 
-	private static int getNodes(String srcFolder, String suffix) {
-		File d = new File(srcFolder);
-		if (!d.exists()) {
-			return 0;
-		}
-		File[] f = d.listFiles(new SuffixFilenameFilter(suffix));
-		if (f.length == 0) {
-			return 0;
-		}
-		return new GtnaGraphReader().nodes(f[0].getAbsolutePath());
-	}
+  private static int getNodes(String srcFolder, String suffix) {
+    File d = new File(srcFolder);
+    if (!d.exists()) {
+      return 0;
+    }
+    File[] f = d.listFiles(new SuffixFilenameFilter(suffix));
+    if (f.length == 0) {
+      return 0;
+    }
+    return new GtnaGraphReader().nodes(f[0].getAbsolutePath());
+  }
 
-	public static String key(String folder, String name) {
-		Config.overwrite("READABLE_FILE_" + folder + "_NAME", name);
-		Config.overwrite("READABLE_FILE_" + folder + "_NAME_SHORT", name);
-		Config.overwrite("READABLE_FILE_" + folder + "_NAME_LONG", name);
-		Config.overwrite("READABLE_FILE_" + folder + "_FOLDER", folder);
-		return "READABLE_FILE_" + folder;
-	}
+  public static String key(String folder, String name) {
+    Config.overwrite("READABLE_FILE_" + folder + "_NAME", name);
+    Config.overwrite("READABLE_FILE_" + folder + "_NAME_SHORT", name);
+    Config.overwrite("READABLE_FILE_" + folder + "_NAME_LONG", name);
+    Config.overwrite("READABLE_FILE_" + folder + "_FOLDER", folder);
+    return "READABLE_FILE_" + folder;
+  }
 
-	public static void parameterKey(String folder, String key, String name) {
-		Config.overwrite("READABLE_FILE_" + folder + "_" + key + "_NAME", name);
-		Config.overwrite("READABLE_FILE_" + folder + "_" + key + "_NAME_SHORT",
-				name);
-		Config.overwrite("READABLE_FILE_" + folder + "_" + key + "_NAME_LONG",
-				name);
-	}
+  public static void parameterKey(String folder, String key, String name) {
+    Config.overwrite("READABLE_FILE_" + folder + "_" + key + "_NAME", name);
+    Config.overwrite("READABLE_FILE_" + folder + "_" + key + "_NAME_SHORT",
+            name);
+    Config.overwrite("READABLE_FILE_" + folder + "_" + key + "_NAME_LONG",
+            name);
+  }
 
-	public void incIndex() {
-		this.index = (this.index + 1) % this.files.length;
-	}
+  public void incIndex() {
+    this.index = (this.index + 1) % this.files.length;
+  }
 
-	public File[] getFiles() {
-		return this.files;
-	}
+  public File[] getFiles() {
+    return this.files;
+  }
 }

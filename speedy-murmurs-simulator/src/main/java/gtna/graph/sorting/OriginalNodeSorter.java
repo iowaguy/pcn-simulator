@@ -24,7 +24,7 @@
  * OriginalNodeSorter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,34 +35,33 @@
  */
 package gtna.graph.sorting;
 
+import java.util.Random;
+
 import gtna.graph.Graph;
 import gtna.graph.Node;
 
-import java.util.Random;
-
 /**
  * @author benni
- * 
  */
 public class OriginalNodeSorter extends NodeSorter {
 
-	public OriginalNodeSorter() {
-		super("ORIGINAL");
-	}
+  public OriginalNodeSorter() {
+    super("ORIGINAL");
+  }
 
-	@Override
-	public boolean applicable(Graph g) {
-		return true;
-	}
+  @Override
+  public boolean applicable(Graph g) {
+    return true;
+  }
 
-	@Override
-	public Node[] sort(Graph g, Random rand) {
-		return this.clone(g.getNodes());
-	}
+  @Override
+  public Node[] sort(Graph g, Random rand) {
+    return this.clone(g.getNodes());
+  }
 
-	@Override
-	protected boolean isPropertyEqual(Node n1, Node n2) {
-		return false;
-	}
+  @Override
+  protected boolean isPropertyEqual(Node n1, Node n2) {
+    return false;
+  }
 
 }

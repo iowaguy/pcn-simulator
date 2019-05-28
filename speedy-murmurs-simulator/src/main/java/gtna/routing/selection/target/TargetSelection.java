@@ -24,7 +24,7 @@
  * TargetSelection.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,38 +35,37 @@
  */
 package gtna.routing.selection.target;
 
+import java.util.Random;
+
 import gtna.graph.Graph;
 import gtna.id.Identifier;
 import gtna.util.parameter.Parameter;
 import gtna.util.parameter.ParameterList;
 
-import java.util.Random;
-
 /**
  * @author benni
- * 
  */
 public abstract class TargetSelection extends ParameterList {
 
-	protected Graph graph;
+  protected Graph graph;
 
-	protected Random rand;
+  protected Random rand;
 
-	public TargetSelection(String key) {
-		super(key);
-		this.rand = new Random();
-	}
+  public TargetSelection(String key) {
+    super(key);
+    this.rand = new Random();
+  }
 
-	public TargetSelection(String key, Parameter[] parameters) {
-		super(key, parameters);
-	}
+  public TargetSelection(String key, Parameter[] parameters) {
+    super(key, parameters);
+  }
 
-	public void init(Graph graph) {
-		this.graph = graph;
-	}
+  public void init(Graph graph) {
+    this.graph = graph;
+  }
 
-	public abstract Identifier getNextTarget();
+  public abstract Identifier getNextTarget();
 
-	public abstract boolean applicable(Graph graph);
+  public abstract boolean applicable(Graph graph);
 
 }

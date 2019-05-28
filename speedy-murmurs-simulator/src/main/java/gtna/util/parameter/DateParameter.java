@@ -24,7 +24,7 @@
  * DateParameter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -39,23 +39,21 @@ import java.util.Date;
 
 /**
  * @author benni
- * 
  */
 public class DateParameter extends Parameter {
 
-	private Date dateValue;
+  private Date dateValue;
 
-	/**
-	 * @param key
-	 * @param value
-	 */
-	public DateParameter(String key, Date dateValue) {
-		super(key, dateValue.toString());
-		this.dateValue = dateValue;
-	}
+  /**
+   *
+   */
+  public DateParameter(String key, Date dateValue) {
+    super(key, dateValue.toString());
+    this.dateValue = dateValue;
+  }
 
-	public Date getDateValue() {
-		return this.dateValue;
-	}
+  public Date getDateValue() {
+    return this.dateValue;
+  }
 
 }

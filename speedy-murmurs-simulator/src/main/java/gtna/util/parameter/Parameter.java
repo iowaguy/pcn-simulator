@@ -24,7 +24,7 @@
  * Parameter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -37,40 +37,39 @@ package gtna.util.parameter;
 
 /**
  * @author benni
- *
  */
 public abstract class Parameter {
-	private String key;
-	
-	private String value;
-	
-	public Parameter(String key, String value){
-		this.key = key;
-		this.value = value;
-	}
+  private String key;
 
-	/**
-	 * @return the key
-	 */
-	public String getKey() {
-		return this.key;
-	}
+  private String value;
 
-	/**
-	 * @return the value
-	 */
-	public String getValue() {
-		return this.value;
-	}
-	
-	public String toString(){
-		return this.key + ": " + this.value;
-	}
+  public Parameter(String key, String value) {
+    this.key = key;
+    this.value = value;
+  }
 
-	/**
-	 * @param string
-	 */
-	public void setKey(String string) {
-		key = string;
-	}
+  /**
+   * @return the key
+   */
+  public String getKey() {
+    return this.key;
+  }
+
+  /**
+   * @return the value
+   */
+  public String getValue() {
+    return this.value;
+  }
+
+  public String toString() {
+    return this.key + ": " + this.value;
+  }
+
+  /**
+   *
+   */
+  public void setKey(String string) {
+    key = string;
+  }
 }

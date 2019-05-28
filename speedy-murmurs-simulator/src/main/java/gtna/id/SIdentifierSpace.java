@@ -24,7 +24,7 @@
  * DIdentifierSpace.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: Andreas Höfer;
  * Contributors:    -;
@@ -37,22 +37,20 @@ package gtna.id;
 
 /**
  * @author Andreas Höfer
- * 
  */
 public abstract class SIdentifierSpace extends IdentifierSpace {
 
-	/**
-	 * @param partitions
-	 */
-	protected SIdentifierSpace(Partition[] partitions) {
-		super(partitions);
-	}
-	
+  /**
+   *
+   */
+  protected SIdentifierSpace(Partition[] partitions) {
+    super(partitions);
+  }
 
-	/**
-	 * @return maximum distance between any two identifier in this identifier
-	 *         space
-	 */
-	public abstract short getMaxDistance();
-	
+
+  /**
+   * @return maximum distance between any two identifier in this identifier space
+   */
+  public abstract short getMaxDistance();
+
 }

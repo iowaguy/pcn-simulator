@@ -24,7 +24,7 @@
  * RoutingTables.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -41,66 +41,65 @@ import gtna.io.Filewriter;
 
 /**
  * @author benni
- * 
  */
 public class RoutingTables extends GraphProperty {
 
-	protected RoutingTable[] tables;
+  protected RoutingTable[] tables;
 
-	public static final int noRoute = -1;
+  public static final int noRoute = -1;
 
-	public RoutingTables(RoutingTable[] tables) {
-		this.tables = tables;
-	}
+  public RoutingTables(RoutingTable[] tables) {
+    this.tables = tables;
+  }
 
-	public RoutingTable getRoutingTable(int node) {
-		return this.tables[node];
-	}
+  public RoutingTable getRoutingTable(int node) {
+    return this.tables[node];
+  }
 
-	@Override
-	public boolean write(String filename, String key) {
-		Filewriter fw = new Filewriter(filename);
+  @Override
+  public boolean write(String filename, String key) {
+    Filewriter fw = new Filewriter(filename);
 
-		this.writeHeader(fw, this.getClass(), key);
+    this.writeHeader(fw, this.getClass(), key);
 
-		this.writeParameter(fw, "Routing Table Class",
-				this.tables[0].getClass());
-		this.writeParameter(fw, "Routing Tables", this.tables.length);
+    this.writeParameter(fw, "Routing Table Class",
+            this.tables[0].getClass());
+    this.writeParameter(fw, "Routing Tables", this.tables.length);
 
-		fw.writeln();
+    fw.writeln();
 
-		for (RoutingTable table : this.tables) {
-			fw.writeln(table.asString());
-		}
+    for (RoutingTable table : this.tables) {
+      fw.writeln(table.asString());
+    }
 
-		return fw.close();
-	}
+    return fw.close();
+  }
 
-	@SuppressWarnings("rawtypes")
-	@Override
-	public String read(String filename) {
-		Filereader fr = new Filereader(filename);
+  @SuppressWarnings("rawtypes")
+  @Override
+  public String read(String filename) {
+    Filereader fr = new Filereader(filename);
 
-		String key = this.readHeader(fr);
+    String key = this.readHeader(fr);
 
-		Class routingTableClass = this.readClass(fr);
-		int routingTables = this.readInt(fr);
+    Class routingTableClass = this.readClass(fr);
+    int routingTables = this.readInt(fr);
 
-		this.tables = new RoutingTable[routingTables];
-		for (int i = 0; i < routingTables; i++) {
-			try {
-				RoutingTable rt = (RoutingTable) routingTableClass
-						.newInstance();
-				this.tables[i] = rt;
-			} catch (InstantiationException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
-		}
+    this.tables = new RoutingTable[routingTables];
+    for (int i = 0; i < routingTables; i++) {
+      try {
+        RoutingTable rt = (RoutingTable) routingTableClass
+                .newInstance();
+        this.tables[i] = rt;
+      } catch (InstantiationException e) {
+        e.printStackTrace();
+      } catch (IllegalAccessException e) {
+        e.printStackTrace();
+      }
+    }
 
-		fr.close();
+    fr.close();
 
-		return key;
-	}
+    return key;
+  }
 }

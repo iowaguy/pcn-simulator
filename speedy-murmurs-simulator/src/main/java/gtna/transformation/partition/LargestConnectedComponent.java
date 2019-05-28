@@ -24,7 +24,7 @@
  * GiantConnectedComponent.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,68 +35,67 @@
  */
 package gtna.transformation.partition;
 
+import java.util.HashMap;
+
 import gtna.graph.Edges;
 import gtna.graph.Graph;
 import gtna.graph.Node;
 import gtna.transformation.Transformation;
 
-import java.util.HashMap;
-
 /**
  * @author benni
- * 
  */
 public abstract class LargestConnectedComponent extends Transformation {
-	HashMap<Integer, Integer> map;
+  HashMap<Integer, Integer> map;
 
-	protected LargestConnectedComponent(String key) {
-		super(key);
-	}
+  protected LargestConnectedComponent(String key) {
+    super(key);
+  }
 
-	protected abstract int[] getLargestComponent(Graph g);
+  protected abstract int[] getLargestComponent(Graph g);
 
-	@Override
-	public Graph transform(Graph g) {
-		Graph graph = new Graph(g.getName());
-		int[] lc = this.getLargestComponent(g);
-		Node[] nodes = Node.init(lc.length, graph);
-		Edges edges = new Edges(nodes, nodes.length);
-		map = new HashMap<Integer, Integer>();
-		for (int i = 0; i < lc.length; i++) {
-			map.put(lc[i], i);
-		}
-		for (Node oldNode : g.getNodes()) {
-			if (!map.containsKey(oldNode.getIndex())) {
-				continue;
-			}
-			int src = map.get(oldNode.getIndex());
-			for (int oldOut : oldNode.getOutgoingEdges()) {
-				if (!map.containsKey(oldOut)) {
-					continue;
-				}
-				int dst = map.get(oldOut);
-				edges.add(src, dst);
-			}
-		}
-		edges.fill();
-		graph.setNodes(nodes);
-		return graph;
-	}
+  @Override
+  public Graph transform(Graph g) {
+    Graph graph = new Graph(g.getName());
+    int[] lc = this.getLargestComponent(g);
+    Node[] nodes = Node.init(lc.length, graph);
+    Edges edges = new Edges(nodes, nodes.length);
+    map = new HashMap<Integer, Integer>();
+    for (int i = 0; i < lc.length; i++) {
+      map.put(lc[i], i);
+    }
+    for (Node oldNode : g.getNodes()) {
+      if (!map.containsKey(oldNode.getIndex())) {
+        continue;
+      }
+      int src = map.get(oldNode.getIndex());
+      for (int oldOut : oldNode.getOutgoingEdges()) {
+        if (!map.containsKey(oldOut)) {
+          continue;
+        }
+        int dst = map.get(oldOut);
+        edges.add(src, dst);
+      }
+    }
+    edges.fill();
+    graph.setNodes(nodes);
+    return graph;
+  }
 
-	@Override
-	public boolean applicable(Graph g) {
-		return true;
-	}
-	
-	public int getNewIndex(int i){
-		if (map.containsKey(i)){
-		  return map.get(i);
-		}
-		return -1;
-	}
-	
-	public HashMap<Integer, Integer> getMap(){
-		return map;
-	}
+  @Override
+  public boolean applicable(Graph g) {
+    return true;
+  }
+
+  public int getNewIndex(int i) {
+    if (map.containsKey(i)) {
+      return map.get(i);
+    }
+    return -1;
+  }
+
+  public HashMap<Integer, Integer> getMap() {
+    return map;
+  }
 
 }

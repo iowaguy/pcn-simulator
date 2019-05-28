@@ -24,7 +24,7 @@
  * GraphWriter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -41,65 +41,56 @@ import gtna.util.Config;
 
 /**
  * @author benni
- * 
  */
 public abstract class GraphWriter {
-	protected String key;
+  protected String key;
 
-	/**
-	 * writes the given graph to the specified filename
-	 * 
-	 * @param g
-	 *            graph
-	 * @param filename
-	 *            destination filename
-	 * @return true, if the graph was successfully written; false otherwise
-	 */
-	public abstract boolean write(Graph g, String filename);
+  /**
+   * writes the given graph to the specified filename
+   *
+   * @param g        graph
+   * @param filename destination filename
+   * @return true, if the graph was successfully written; false otherwise
+   */
+  public abstract boolean write(Graph g, String filename);
 
-	/**
-	 * 
-	 * @param key
-	 *            key of this graph reader
-	 */
-	public GraphWriter(String key) {
-		this.key = key;
-	}
+  /**
+   * @param key key of this graph reader
+   */
+  public GraphWriter(String key) {
+    this.key = key;
+  }
 
-	/**
-	 * returns the key of this graph reader
-	 * 
-	 * @return key of this graph reader
-	 */
-	public String getKey() {
-		return this.key;
-	}
+  /**
+   * returns the key of this graph reader
+   *
+   * @return key of this graph reader
+   */
+  public String getKey() {
+    return this.key;
+  }
 
-	/**
-	 * writes the given graph to the specified file. all graph properties are
-	 * written to
-	 * ${filename}Config.get("GRAPH_WRITER_PROPERTY_FILE_DELIMITER")${key}
-	 * 
-	 * @param g
-	 *            graph
-	 * @param filename
-	 *            destination filename
-	 * @return true, if the graph and all properties were written successfully;
-	 *         false otherwise
-	 */
-	public boolean writeWithProperties(Graph g, String filename) {
-		if (!this.write(g, filename)) {
-			return false;
-		}
-		String del = Config.get("GRAPH_WRITER_PROPERTY_FILE_DELIMITER");
-		for (String key : g.getProperties().keySet()) {
-			String dst = filename + del + key;
-			GraphProperty gp = g.getProperty(key);
-			if (!gp.write(dst, key)) {
-				return false;
-			}
-		}
-		return true;
-	}
+  /**
+   * writes the given graph to the specified file. all graph properties are written to
+   * ${filename}Config.get("GRAPH_WRITER_PROPERTY_FILE_DELIMITER")${key}
+   *
+   * @param g        graph
+   * @param filename destination filename
+   * @return true, if the graph and all properties were written successfully; false otherwise
+   */
+  public boolean writeWithProperties(Graph g, String filename) {
+    if (!this.write(g, filename)) {
+      return false;
+    }
+    String del = Config.get("GRAPH_WRITER_PROPERTY_FILE_DELIMITER");
+    for (String key : g.getProperties().keySet()) {
+      String dst = filename + del + key;
+      GraphProperty gp = g.getProperty(key);
+      if (!gp.write(dst, key)) {
+        return false;
+      }
+    }
+    return true;
+  }
 
 }

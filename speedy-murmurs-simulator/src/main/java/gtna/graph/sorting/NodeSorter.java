@@ -24,7 +24,7 @@
  * NodeSorter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,89 +35,90 @@
  */
 package gtna.graph.sorting;
 
+import java.util.Random;
+
 import gtna.graph.Graph;
 import gtna.graph.Node;
 
-import java.util.Random;
-
 /**
  * @author benni
- * 
  */
 public abstract class NodeSorter {
-	public enum NodeSorterMode {
-		ASC, DESC
-	};
+  public enum NodeSorterMode {
+    ASC, DESC
+  }
 
-	private String key;
+  ;
 
-	protected NodeSorterMode mode;
+  private String key;
 
-	public NodeSorter(String key) {
-		this.key = key;
-		this.mode = null;
-	}
+  protected NodeSorterMode mode;
 
-	public NodeSorter(String key, NodeSorterMode mode) {
-		this.key = key;
-		this.mode = mode;
-	}
+  public NodeSorter(String key) {
+    this.key = key;
+    this.mode = null;
+  }
 
-	public abstract Node[] sort(Graph g, Random rand);
+  public NodeSorter(String key, NodeSorterMode mode) {
+    this.key = key;
+    this.mode = mode;
+  }
 
-	public abstract boolean applicable(Graph g);
+  public abstract Node[] sort(Graph g, Random rand);
 
-	protected abstract boolean isPropertyEqual(Node n1, Node n2);
+  public abstract boolean applicable(Graph g);
 
-	public String getKey() {
-		return this.mode == null ? this.key : this.key + "_" + this.mode;
-	}
+  protected abstract boolean isPropertyEqual(Node n1, Node n2);
 
-	protected Node[] clone(Node[] nodes) {
-		Node[] clone = new Node[nodes.length];
-		for (int i = 0; i < nodes.length; i++) {
-			clone[i] = nodes[i];
-		}
-		return clone;
-	}
+  public String getKey() {
+    return this.mode == null ? this.key : this.key + "_" + this.mode;
+  }
 
-	protected Node[] randomize(Node[] nodes, Random rand) {
-		int from = 0;
-		for (int i = 1; i < nodes.length; i++) {
-			if (!this.isPropertyEqual(nodes[from], nodes[i])) {
-				int to = i - 1;
-				if (from != to) {
-					this.randomize(nodes, rand, from, to);
-				}
-				from = i;
-			}
-		}
-		if (from < nodes.length - 1) {
-			this.randomize(nodes, rand, from, nodes.length - 1);
-		}
-		return nodes;
-	}
+  protected Node[] clone(Node[] nodes) {
+    Node[] clone = new Node[nodes.length];
+    for (int i = 0; i < nodes.length; i++) {
+      clone[i] = nodes[i];
+    }
+    return clone;
+  }
 
-	protected Node[] randomize(Node[] nodes, Random rand, int from, int to) {
-		// System.out.println("switching " + from + " to " + to);
-		for (int i = from; i < to; i++) {
-			int FROM = i;
-			int TO = i + rand.nextInt(to - i + 1);
-			// System.out.println(FROM + " <==> " + TO);
-			Node temp = nodes[FROM];
-			nodes[FROM] = nodes[TO];
-			nodes[TO] = temp;
-		}
-		return nodes;
-	}
+  protected Node[] randomize(Node[] nodes, Random rand) {
+    int from = 0;
+    for (int i = 1; i < nodes.length; i++) {
+      if (!this.isPropertyEqual(nodes[from], nodes[i])) {
+        int to = i - 1;
+        if (from != to) {
+          this.randomize(nodes, rand, from, to);
+        }
+        from = i;
+      }
+    }
+    if (from < nodes.length - 1) {
+      this.randomize(nodes, rand, from, nodes.length - 1);
+    }
+    return nodes;
+  }
 
-	protected Node[] reverse(Node[] nodes) {
-		for (int i = 0; i < nodes.length / 2; i++) {
-			int with = nodes.length - 1 - i;
-			Node temp = nodes[i];
-			nodes[i] = nodes[with];
-			nodes[with] = temp;
-		}
-		return nodes;
-	}
+  protected Node[] randomize(Node[] nodes, Random rand, int from, int to) {
+    // System.out.println("switching " + from + " to " + to);
+    for (int i = from; i < to; i++) {
+      int FROM = i;
+      int TO = i + rand.nextInt(to - i + 1);
+      // System.out.println(FROM + " <==> " + TO);
+      Node temp = nodes[FROM];
+      nodes[FROM] = nodes[TO];
+      nodes[TO] = temp;
+    }
+    return nodes;
+  }
+
+  protected Node[] reverse(Node[] nodes) {
+    for (int i = 0; i < nodes.length / 2; i++) {
+      int with = nodes.length - 1 - i;
+      Node temp = nodes[i];
+      nodes[i] = nodes[with];
+      nodes[with] = temp;
+    }
+    return nodes;
+  }
 }

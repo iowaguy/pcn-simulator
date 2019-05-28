@@ -24,7 +24,7 @@
  * DoubleParameter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -37,18 +37,17 @@ package gtna.util.parameter;
 
 /**
  * @author benni
- * 
  */
 public class DoubleParameter extends Parameter {
-	private double doubleValue;
+  private double doubleValue;
 
-	public DoubleParameter(String key, double doubleValue) {
-		super(key, "" + doubleValue);
-		this.doubleValue = doubleValue;
-	}
+  public DoubleParameter(String key, double doubleValue) {
+    super(key, "" + doubleValue);
+    this.doubleValue = doubleValue;
+  }
 
-	public double getDoubleValue() {
-		return this.doubleValue;
-	}
+  public double getDoubleValue() {
+    return this.doubleValue;
+  }
 
 }

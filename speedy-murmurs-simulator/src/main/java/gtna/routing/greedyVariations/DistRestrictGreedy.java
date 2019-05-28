@@ -24,7 +24,7 @@
  * DistRestrictGreedy.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: stefanie;
  * Contributors:    -;
@@ -35,6 +35,8 @@
  */
 package gtna.routing.greedyVariations;
 
+import java.util.Random;
+
 import gtna.graph.Node;
 import gtna.id.BigIntegerIdentifier;
 import gtna.id.DoubleIdentifier;
@@ -42,54 +44,51 @@ import gtna.util.parameter.DoubleParameter;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 
-import java.util.Random;
-
 /**
- * a weighted depth first search marking edges that does only allow an decline
- * up to a certain (absolute) threshold
- * 
+ * a weighted depth first search marking edges that does only allow an decline up to a certain
+ * (absolute) threshold
+ *
  * @author stefanie
- * 
  */
 public class DistRestrictGreedy extends NodeGreedy {
-	double maxBack;
+  double maxBack;
 
-	public DistRestrictGreedy(double maxBack) {
-		this(maxBack, Integer.MAX_VALUE);
-	}
+  public DistRestrictGreedy(double maxBack) {
+    this(maxBack, Integer.MAX_VALUE);
+  }
 
-	public DistRestrictGreedy(double maxBack, int ttl) {
-		super(ttl, "DIST_RESTRICT_GREEDY", new Parameter[] {
-				new IntParameter("TTL", ttl),
-				new DoubleParameter("MAXBACK", maxBack) });
-		this.maxBack = maxBack;
-	}
+  public DistRestrictGreedy(double maxBack, int ttl) {
+    super(ttl, "DIST_RESTRICT_GREEDY", new Parameter[]{
+            new IntParameter("TTL", ttl),
+            new DoubleParameter("MAXBACK", maxBack)});
+    this.maxBack = maxBack;
+  }
 
-	@Override
-	public int getNextD(int current, DoubleIdentifier target, Random rand,
-			Node[] nodes) {
-		double currentDist = this.pD[current].distance(target);
-		double minDist = this.idSpaceD.getMaxDistance();
-		int minNode = -1;
-		for (int out : nodes[current].getOutgoingEdges()) {
-			double dist = this.pD[out].distance(target);
-			if (dist < minDist && dist < currentDist + this.maxBack
-					&& !from.containsKey(out)) {
-				minDist = dist;
-				minNode = out;
-			}
-		}
-		if (minNode == -1 && from.containsKey(current)) {
-			return from.get(current);
-		}
-		from.put(minNode, current);
-		return minNode;
-	}
+  @Override
+  public int getNextD(int current, DoubleIdentifier target, Random rand,
+                      Node[] nodes) {
+    double currentDist = this.pD[current].distance(target);
+    double minDist = this.idSpaceD.getMaxDistance();
+    int minNode = -1;
+    for (int out : nodes[current].getOutgoingEdges()) {
+      double dist = this.pD[out].distance(target);
+      if (dist < minDist && dist < currentDist + this.maxBack
+              && !from.containsKey(out)) {
+        minDist = dist;
+        minNode = out;
+      }
+    }
+    if (minNode == -1 && from.containsKey(current)) {
+      return from.get(current);
+    }
+    from.put(minNode, current);
+    return minNode;
+  }
 
-	@Override
-	public int getNextBI(int current, BigIntegerIdentifier target, Random rand,
-			Node[] nodes) {
-		return -1;
-	}
+  @Override
+  public int getNextBI(int current, BigIntegerIdentifier target, Random rand,
+                       Node[] nodes) {
+    return -1;
+  }
 
 }

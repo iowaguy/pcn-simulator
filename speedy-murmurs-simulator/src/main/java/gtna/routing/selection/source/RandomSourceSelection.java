@@ -24,7 +24,7 @@
  * RandomSourceSelection.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -39,22 +39,21 @@ import gtna.graph.Graph;
 
 /**
  * @author benni
- * 
  */
 public class RandomSourceSelection extends SourceSelection {
 
-	public RandomSourceSelection() {
-		super("SOURCE_SELECTION_RANDOM");
-	}
+  public RandomSourceSelection() {
+    super("SOURCE_SELECTION_RANDOM");
+  }
 
-	@Override
-	public int getNextSource() {
-		return this.rand.nextInt(this.graph.getNodeCount());
-	}
+  @Override
+  public int getNextSource() {
+    return this.rand.nextInt(this.graph.getNodeCount());
+  }
 
-	@Override
-	public boolean applicable(Graph graph) {
-		return true;
-	}
+  @Override
+  public boolean applicable(Graph graph) {
+    return true;
+  }
 
 }

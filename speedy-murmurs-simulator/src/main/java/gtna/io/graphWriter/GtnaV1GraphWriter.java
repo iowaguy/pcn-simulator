@@ -24,7 +24,7 @@
  * GtnaV1GraphWriter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -42,39 +42,38 @@ import gtna.util.Config;
 
 /**
  * @author benni
- * 
  */
 public class GtnaV1GraphWriter extends GraphWriter {
 
-	public GtnaV1GraphWriter() {
-		super("GTNA_V1");
-	}
+  public GtnaV1GraphWriter() {
+    super("GTNA_V1");
+  }
 
-	@Override
-	public boolean write(Graph g, String filename) {
-		String delimiter = Config.get("GRAPH_WRITER_DELIMITER");
-		Filewriter fw = new Filewriter(filename);
-		Edge[] edges = g.generateEdges();
+  @Override
+  public boolean write(Graph g, String filename) {
+    String delimiter = Config.get("GRAPH_WRITER_DELIMITER");
+    Filewriter fw = new Filewriter(filename);
+    Edge[] edges = g.generateEdges();
 
-		// NAME
-		fw.writeComment(Config.get("GRAPH_WRITER_NAME"));
-		fw.writeln(g.getName());
+    // NAME
+    fw.writeComment(Config.get("GRAPH_WRITER_NAME"));
+    fw.writeln(g.getName());
 
-		// NODES
-		fw.writeComment(Config.get("GRAPH_WRITER_NODES"));
-		fw.writeln(g.getNodes().length);
+    // NODES
+    fw.writeComment(Config.get("GRAPH_WRITER_NODES"));
+    fw.writeln(g.getNodes().length);
 
-		// EDGES
-		fw.writeComment(Config.get("GRAPH_WRITER_EDGES"));
-		fw.writeln(edges.length);
+    // EDGES
+    fw.writeComment(Config.get("GRAPH_WRITER_EDGES"));
+    fw.writeln(edges.length);
 
-		// EDGES
-		fw.writeln();
-		for (Edge e : edges) {
-			fw.writeln(e.getSrc() + delimiter + e.getDst());
-		}
+    // EDGES
+    fw.writeln();
+    for (Edge e : edges) {
+      fw.writeln(e.getSrc() + delimiter + e.getDst());
+    }
 
-		return fw.close();
-	}
+    return fw.close();
+  }
 
 }

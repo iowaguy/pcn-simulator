@@ -24,7 +24,7 @@
  * Plot.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,119 +35,118 @@
  */
 package gtna.plot;
 
+import java.util.ArrayList;
+
 import gtna.io.Filewriter;
 import gtna.plot.data.Data;
 import gtna.util.Config;
 
-import java.util.ArrayList;
-
 /**
  * @author benni
- * 
  */
 public class Plot {
-	private Data[] data;
+  private Data[] data;
 
-	private String terminal;
+  private String terminal;
 
-	private String output;
+  private String output;
 
-	private String key;
+  private String key;
 
-	private String title;
+  private String title;
 
-	private String xLabel;
+  private String xLabel;
 
-	private String yLabel;
+  private String yLabel;
 
-	private ArrayList<String> config;
+  private ArrayList<String> config;
 
-	private double offsetX;
+  private double offsetX;
 
-	private double offsetY;
+  private double offsetY;
 
-	private int lw;
+  private int lw;
 
-	public Plot(Data[] data, String terminal, String output) {
-		this.data = data;
-		this.terminal = terminal;
-		this.output = output;
-		this.config = new ArrayList<String>();
-		this.offsetX = Config.getDouble("GNUPLOT_OFFSET_X");
-		this.offsetY = Config.getDouble("GNUPLOT_OFFSET_Y");
-		this.lw = Config.getInt("GNUPLOT_LW");
-	}
+  public Plot(Data[] data, String terminal, String output) {
+    this.data = data;
+    this.terminal = terminal;
+    this.output = output;
+    this.config = new ArrayList<String>();
+    this.offsetX = Config.getDouble("GNUPLOT_OFFSET_X");
+    this.offsetY = Config.getDouble("GNUPLOT_OFFSET_Y");
+    this.lw = Config.getInt("GNUPLOT_LW");
+  }
 
-	public boolean write(String filename) {
-		Filewriter fw = new Filewriter(filename);
-		fw.writeln("set terminal " + this.terminal);
-		fw.writeln("set output \"" + this.output + "\"");
-		if (this.key != null) {
-			fw.writeln("set key " + this.key);
-		}
-		if (this.title != null) {
-			fw.writeln("set title \"" + this.title + "\"");
-		}
-		if (this.xLabel != null && this.xLabel.length() > 0) {
-			fw.writeln("set xlabel \"" + this.xLabel + "\"");
-		} else {
-			fw.writeln("set noxtics");
-		}
-		if (this.yLabel != null && this.xLabel.length() > 0) {
-			fw.writeln("set ylabel \"" + this.yLabel + "\"");
-		} else {
-			fw.writeln("set noytics");
-		}
-		for (String config : this.config) {
-			fw.writeln(config);
-		}
-		fw.write("plot ");
-		for (int i = 0; i < data.length; i++) {
-			if (i > 0) {
-				fw.write(", \\\n"
-						+ data[i].getEntry(i + 1, this.lw, this.offsetX * i,
-								this.offsetY * i));
-			} else {
-				fw.write(data[i].getEntry(i + 1, this.lw, this.offsetX * i,
-						this.offsetY * i));
-			}
-		}
-		return fw.close();
-	}
+  public boolean write(String filename) {
+    Filewriter fw = new Filewriter(filename);
+    fw.writeln("set terminal " + this.terminal);
+    fw.writeln("set output \"" + this.output + "\"");
+    if (this.key != null) {
+      fw.writeln("set key " + this.key);
+    }
+    if (this.title != null) {
+      fw.writeln("set title \"" + this.title + "\"");
+    }
+    if (this.xLabel != null && this.xLabel.length() > 0) {
+      fw.writeln("set xlabel \"" + this.xLabel + "\"");
+    } else {
+      fw.writeln("set noxtics");
+    }
+    if (this.yLabel != null && this.xLabel.length() > 0) {
+      fw.writeln("set ylabel \"" + this.yLabel + "\"");
+    } else {
+      fw.writeln("set noytics");
+    }
+    for (String config : this.config) {
+      fw.writeln(config);
+    }
+    fw.write("plot ");
+    for (int i = 0; i < data.length; i++) {
+      if (i > 0) {
+        fw.write(", \\\n"
+                + data[i].getEntry(i + 1, this.lw, this.offsetX * i,
+                this.offsetY * i));
+      } else {
+        fw.write(data[i].getEntry(i + 1, this.lw, this.offsetX * i,
+                this.offsetY * i));
+      }
+    }
+    return fw.close();
+  }
 
-	public Data[] getData() {
-		return this.data;
-	}
+  public Data[] getData() {
+    return this.data;
+  }
 
-	public void addConfig(String config) {
-		this.config.add(config);
-	}
+  public void addConfig(String config) {
+    this.config.add(config);
+  }
 
-	public void setKey(String key) {
-		this.key = key;
-	}
+  public void setKey(String key) {
+    this.key = key;
+  }
 
-	public void setTitle(String title) {
-		this.title = title;
-	}
+  public void setTitle(String title) {
+    this.title = title;
+  }
 
-	public void setxLabel(String xLabel) {
-		this.xLabel = xLabel;
-	}
+  public void setxLabel(String xLabel) {
+    this.xLabel = xLabel;
+  }
 
-	public void setyLabel(String yLabel) {
-		this.yLabel = yLabel;
-	}
+  public void setyLabel(String yLabel) {
+    this.yLabel = yLabel;
+  }
 
-	public void setOffsetX(double offsetX) {
-		this.offsetX = offsetX;
-	}
+  public void setOffsetX(double offsetX) {
+    this.offsetX = offsetX;
+  }
 
-	public void setOffsetY(double offsetY) {
-		this.offsetY = offsetY;
-	}
+  public void setOffsetY(double offsetY) {
+    this.offsetY = offsetY;
+  }
 
-	public void setLW(int lw) {
-		this.lw = lw;
-	}
+  public void setLW(int lw) {
+    this.lw = lw;
+  }
 }

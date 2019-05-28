@@ -24,7 +24,7 @@
  * BiIdentifierSpace.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -39,18 +39,16 @@ import java.math.BigInteger;
 
 /**
  * @author benni
- * 
  */
 public abstract class BigIntegerIdentifierSpace extends IdentifierSpace {
 
-	protected BigIntegerIdentifierSpace(Partition[] partitions) {
-		super(partitions);
-	}
+  protected BigIntegerIdentifierSpace(Partition[] partitions) {
+    super(partitions);
+  }
 
-	/**
-	 * @return maximum distance between any two identifier in this identifier
-	 *         space
-	 */
-	public abstract BigInteger getMaxDistance();
+  /**
+   * @return maximum distance between any two identifier in this identifier space
+   */
+  public abstract BigInteger getMaxDistance();
 
 }

@@ -24,7 +24,7 @@
  * BooleanParameter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -37,36 +37,35 @@ package gtna.util.parameter;
 
 /**
  * @author benni
- * 
  */
 public class BooleanParameter extends Parameter {
-	private boolean booleanValue;
+  private boolean booleanValue;
 
-	private String t;
+  private String t;
 
-	private String f;
+  private String f;
 
-	public BooleanParameter(String key, boolean booleanValue) {
-		this(key, booleanValue, "true", "false");
-	}
+  public BooleanParameter(String key, boolean booleanValue) {
+    this(key, booleanValue, "true", "false");
+  }
 
-	public BooleanParameter(String key, boolean booleanValue, String t, String f) {
-		super(key, booleanValue ? t : f);
-		this.booleanValue = booleanValue;
-		this.t = t;
-		this.f = f;
-	}
+  public BooleanParameter(String key, boolean booleanValue, String t, String f) {
+    super(key, booleanValue ? t : f);
+    this.booleanValue = booleanValue;
+    this.t = t;
+    this.f = f;
+  }
 
-	public boolean getBooleanValue() {
-		return this.booleanValue;
-	}
+  public boolean getBooleanValue() {
+    return this.booleanValue;
+  }
 
-	public String getT() {
-		return this.t;
-	}
+  public String getT() {
+    return this.t;
+  }
 
-	public String getF() {
-		return this.f;
-	}
+  public String getF() {
+    return this.f;
+  }
 
 }

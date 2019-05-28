@@ -24,7 +24,7 @@
  * GnuplotData.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -39,54 +39,53 @@ import gtna.plot.Gnuplot.Style;
 
 /**
  * @author benni
- * 
  */
 public abstract class Data {
-	public static enum Type {
-		average, median, minimum, maximum, variance, confidence1, confidence2, function
-	}
+  public static enum Type {
+    average, median, minimum, maximum, variance, confidence1, confidence2, function
+  }
 
-	protected String data;
+  protected String data;
 
-	protected Style style;
+  protected Style style;
 
-	protected String title;
+  protected String title;
 
-	public Data(String data, Style style, String title) {
-		this.data = data;
-		this.style = style;
-		this.title = title;
-	}
+  public Data(String data, Style style, String title) {
+    this.data = data;
+    this.style = style;
+    this.title = title;
+  }
 
-	public abstract boolean isStyleValid();
+  public abstract boolean isStyleValid();
 
-	public abstract String getEntry(int lt, int lw, double offsetX,
-			double offsetY);
+  public abstract String getEntry(int lt, int lw, double offsetX,
+                                  double offsetY);
 
-	public String[] getConfig() {
-		return new String[0];
-	}
+  public String[] getConfig() {
+    return new String[0];
+  }
 
-	public static Data get(String data, Style style, String title, Type type) {
-		switch (type) {
-		case average:
-			return new AverageData(data, style, title);
-		case median:
-			return new MedianData(data, style, title);
-		case minimum:
-			return new MinimumData(data, style, title);
-		case maximum:
-			return new MaximumData(data, style, title);
-		case variance:
-			return new VarianceData(data, style, title);
-		case confidence1:
-			return new ConfidenceData1(data, style, title);
-		case confidence2:
-			return new ConfidenceData2(data, style, title);
-		case function:
-			return new FunctionData(data, style, title);
-		default:
-			return null;
-		}
-	}
+  public static Data get(String data, Style style, String title, Type type) {
+    switch (type) {
+      case average:
+        return new AverageData(data, style, title);
+      case median:
+        return new MedianData(data, style, title);
+      case minimum:
+        return new MinimumData(data, style, title);
+      case maximum:
+        return new MaximumData(data, style, title);
+      case variance:
+        return new VarianceData(data, style, title);
+      case confidence1:
+        return new ConfidenceData1(data, style, title);
+      case confidence2:
+        return new ConfidenceData2(data, style, title);
+      case function:
+        return new FunctionData(data, style, title);
+      default:
+        return null;
+    }
+  }
 }

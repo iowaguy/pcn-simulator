@@ -24,7 +24,7 @@
  * WeakConnectivity.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -41,17 +41,16 @@ import gtna.transformation.partition.WeakConnectivityPartition;
 
 /**
  * @author benni
- * 
  */
 public class WeakConnectivity extends Partitioning {
 
-	public WeakConnectivity() {
-		super("WEAK_CONNECTIVITY");
-	}
+  public WeakConnectivity() {
+    super("WEAK_CONNECTIVITY");
+  }
 
-	@Override
-	protected Partition getPartition(Graph g) {
-		return WeakConnectivityPartition.getWeakPartition(g);
-	}
+  @Override
+  protected Partition getPartition(Graph g) {
+    return WeakConnectivityPartition.getWeakPartition(g);
+  }
 
 }

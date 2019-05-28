@@ -24,7 +24,7 @@
  * RemoveGraphProperty.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -40,62 +40,63 @@ import gtna.transformation.Transformation;
 
 /**
  * @author benni
- * 
  */
 public class RemoveGraphProperty extends Transformation {
-	public static enum RemoveType {
-		ALL, ALL_OF_TYPE, SELECTED
-	};
+  public static enum RemoveType {
+    ALL, ALL_OF_TYPE, SELECTED
+  }
 
-	private RemoveType type;
+  ;
 
-	private String[] remove;
+  private RemoveType type;
 
-	public RemoveGraphProperty() {
-		this(RemoveType.ALL, new String[0]);
-	}
+  private String[] remove;
 
-	public RemoveGraphProperty(RemoveType type, String remove) {
-		this(type, new String[] { remove });
-	}
+  public RemoveGraphProperty() {
+    this(RemoveType.ALL, new String[0]);
+  }
 
-	public RemoveGraphProperty(RemoveType type, String[] remove) {
-		super("REMOVE_GRAPH_PROPERTY");
-		this.type = type;
-		this.remove = remove;
-	}
+  public RemoveGraphProperty(RemoveType type, String remove) {
+    this(type, new String[]{remove});
+  }
 
-	@Override
-	public Graph transform(Graph g) {
-		switch (this.type) {
+  public RemoveGraphProperty(RemoveType type, String[] remove) {
+    super("REMOVE_GRAPH_PROPERTY");
+    this.type = type;
+    this.remove = remove;
+  }
 
-		case ALL:
-			g.getProperties().clear();
-			break;
+  @Override
+  public Graph transform(Graph g) {
+    switch (this.type) {
 
-		case ALL_OF_TYPE:
-			for (String rm : this.remove) {
-				int index = 0;
-				while (g.hasProperty(rm + "_" + index)) {
-					g.getProperties().remove(rm + "_" + index);
-					index++;
-				}
-			}
-			break;
+      case ALL:
+        g.getProperties().clear();
+        break;
 
-		case SELECTED:
-			for (String rm : this.remove) {
-				g.getProperties().remove(rm);
-			}
-			break;
-		}
+      case ALL_OF_TYPE:
+        for (String rm : this.remove) {
+          int index = 0;
+          while (g.hasProperty(rm + "_" + index)) {
+            g.getProperties().remove(rm + "_" + index);
+            index++;
+          }
+        }
+        break;
 
-		return g;
-	}
+      case SELECTED:
+        for (String rm : this.remove) {
+          g.getProperties().remove(rm);
+        }
+        break;
+    }
 
-	@Override
-	public boolean applicable(Graph g) {
-		return true;
-	}
+    return g;
+  }
+
+  @Override
+  public boolean applicable(Graph g) {
+    return true;
+  }
 
 }

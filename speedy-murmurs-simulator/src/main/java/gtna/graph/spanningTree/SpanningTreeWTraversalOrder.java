@@ -24,7 +24,7 @@
  * SpanningTreeWTraversalOrder.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: andi;
  * Contributors:    -;
@@ -35,107 +35,106 @@
  */
 package gtna.graph.spanningTree;
 
-import gtna.graph.Graph;
-import gtna.io.Filereader;
-import gtna.io.Filewriter;
-import gtna.util.Config;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import gtna.graph.Graph;
+import gtna.io.Filereader;
+import gtna.io.Filewriter;
+
 /**
  * @author Andreas Höfer
- * 
- * Spanning Tree with predefined traversal order. It is assumed that the order in the list of ParentChild relations passed to the
- * constructor defines the traversal order. This traversal order is stored as ParentChild list in the spanning tree object.
- * It is assumed that the traversal order is respected when constructing the children lists of the nodes, 
- * this depends on the behavior of the superclass SpanningTree. 
+ *         <p>
+ *         Spanning Tree with predefined traversal order. It is assumed that the order in the list
+ *         of ParentChild relations passed to the constructor defines the traversal order. This
+ *         traversal order is stored as ParentChild list in the spanning tree object. It is assumed
+ *         that the traversal order is respected when constructing the children lists of the nodes,
+ *         this depends on the behavior of the superclass SpanningTree.
  */
 public class SpanningTreeWTraversalOrder extends SpanningTree {
-	private ArrayList<ParentChild> traversalorder;
-	private boolean debug = false;
-	
-	public SpanningTreeWTraversalOrder() {
-		super();
-	}
-	
-	/**
-	 * @param g the graph
-	 * @param pcs list of ParentChild relation defindes the spanning tree, 
-	 * the order in the list is also interpreted as the traversal order
-	 */
-	public SpanningTreeWTraversalOrder(Graph g, ArrayList<ParentChild> pcs) {
-		super(g, pcs);
-		traversalorder = pcs;
-		if (debug && !testTraversalOrder(pcs)) 
-			throw new RuntimeException("Traversal order broken.");
-	}
-	
-	public ParentChild[] generateParentChildList() {
-		throw new RuntimeException("Invalid Operation: SpanningTreeWTraversalOrder.generateParentChildList()");
-	}
+  private ArrayList<ParentChild> traversalorder;
+  private boolean debug = false;
+
+  public SpanningTreeWTraversalOrder() {
+    super();
+  }
+
+  /**
+   * @param g   the graph
+   * @param pcs list of ParentChild relation defindes the spanning tree, the order in the list is
+   *            also interpreted as the traversal order
+   */
+  public SpanningTreeWTraversalOrder(Graph g, ArrayList<ParentChild> pcs) {
+    super(g, pcs);
+    traversalorder = pcs;
+    if (debug && !testTraversalOrder(pcs))
+      throw new RuntimeException("Traversal order broken.");
+  }
+
+  public ParentChild[] generateParentChildList() {
+    throw new RuntimeException("Invalid Operation: SpanningTreeWTraversalOrder.generateParentChildList()");
+  }
 
 
+  @Override
+  public String read(String filename) {
+    Filereader fr = new Filereader(filename);
 
-	@Override
-	public String read(String filename) {
-		Filereader fr = new Filereader(filename);
+    String key = this.readHeader(fr);
 
-		String key = this.readHeader(fr);
+    int nodes = Integer.parseInt(fr.readLine());
 
-		int nodes = Integer.parseInt(fr.readLine());
+    // Construct ParentChild list
+    ArrayList<ParentChild> pcs = new ArrayList<ParentChild>();
+    String line = null;
+    while ((line = fr.readLine()) != null) {
+      pcs.add(new ParentChild(line));
+    }
 
-		// Construct ParentChild list
-		ArrayList<ParentChild> pcs = new ArrayList<ParentChild>();
-		String line = null;
-		while ((line = fr.readLine()) != null) {
-			pcs.add(new ParentChild(line));
-		}
-		
-		this.fill(nodes, pcs);
-		this.traversalorder = pcs;
-		
-		fr.close();
+    this.fill(nodes, pcs);
+    this.traversalorder = pcs;
 
-		return key;
-	}
-		
-	@Override
-	public boolean write(String filename, String key) {
-		Filewriter fw = new Filewriter(filename);
+    fr.close();
 
-		this.writeHeader(fw, this.getClass(), key);
+    return key;
+  }
 
-		this.writeParameter(fw, "Nodes", this.parent.length);
+  @Override
+  public boolean write(String filename, String key) {
+    Filewriter fw = new Filewriter(filename);
 
-		// LIST OF PCS
-		for (ParentChild pc : traversalorder) {
-			if (pc != null)
-				fw.writeln(pc.toString());
-		}
+    this.writeHeader(fw, this.getClass(), key);
 
-		return fw.close();
-	}
+    this.writeParameter(fw, "Nodes", this.parent.length);
 
-	/*
-	 * Check whether the traversal order given by the children lists of the nodes and by the ParentChild list fit together
-	 */
-	private boolean testTraversalOrder(ArrayList<ParentChild> pcs){
-		int curNode, curPos = 0;
-		Queue<Integer> stNodes = new LinkedList<Integer>();
-		stNodes.add(getSrc());
-		while (!stNodes.isEmpty()){
-			curNode = stNodes.poll();
-			System.out.println("st node=" + curNode + ", pcs node=" + pcs.get(curPos).getChild());
-			if (curNode != pcs.get(curPos).getChild()){
-				return false;
-			}
-			int[] children = getChildren(curNode);
-			for (int c : children)
-				stNodes.add(c);
-			curPos++;
-		}
-		return true;
-	}
+    // LIST OF PCS
+    for (ParentChild pc : traversalorder) {
+      if (pc != null)
+        fw.writeln(pc.toString());
+    }
+
+    return fw.close();
+  }
+
+  /*
+   * Check whether the traversal order given by the children lists of the nodes and by the ParentChild list fit together
+   */
+  private boolean testTraversalOrder(ArrayList<ParentChild> pcs) {
+    int curNode, curPos = 0;
+    Queue<Integer> stNodes = new LinkedList<Integer>();
+    stNodes.add(getSrc());
+    while (!stNodes.isEmpty()) {
+      curNode = stNodes.poll();
+      System.out.println("st node=" + curNode + ", pcs node=" + pcs.get(curPos).getChild());
+      if (curNode != pcs.get(curPos).getChild()) {
+        return false;
+      }
+      int[] children = getChildren(curNode);
+      for (int c : children)
+        stNodes.add(c);
+      curPos++;
+    }
+    return true;
+  }
 }

@@ -24,7 +24,7 @@
  * StringParameter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -37,18 +37,17 @@ package gtna.util.parameter;
 
 /**
  * @author benni
- * 
  */
 public class StringParameter extends Parameter {
-	private String stringValue;
+  private String stringValue;
 
-	public StringParameter(String key, String stringValue) {
-		super(key, stringValue);
-		this.stringValue = stringValue;
-	}
+  public StringParameter(String key, String stringValue) {
+    super(key, stringValue);
+    this.stringValue = stringValue;
+  }
 
-	public String getStringValue() {
-		return this.stringValue;
-	}
+  public String getStringValue() {
+    return this.stringValue;
+  }
 
 }

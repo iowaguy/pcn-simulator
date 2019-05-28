@@ -24,7 +24,7 @@
  * AverageData.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -39,29 +39,28 @@ import gtna.plot.Gnuplot.Style;
 
 /**
  * @author benni
- * 
  */
 public class AverageData extends Data {
 
-	public AverageData(String data, Style style, String title) {
-		super(data, style, title);
-	}
+  public AverageData(String data, Style style, String title) {
+    super(data, style, title);
+  }
 
-	@Override
-	public boolean isStyleValid() {
-		return !this.style.equals(Style.candlesticks)
-				&& !this.style.equals(Style.yerrorbars);
-	}
+  @Override
+  public boolean isStyleValid() {
+    return !this.style.equals(Style.candlesticks)
+            && !this.style.equals(Style.yerrorbars);
+  }
 
-	@Override
-	public String getEntry(int lt, int lw, double offsetX, double offsetY) {
-		StringBuffer buff = new StringBuffer();
-		buff.append("'" + this.data + "' using ($1 + " + offsetX + "):($2 + "
-				+ offsetY + ") with " + this.style);
-		buff.append(" lt " + lt + " lw " + lw);
-		buff.append(title == null ? " notitle" : " title \"" + this.title
-				+ "\"");
-		return buff.toString();
-	}
+  @Override
+  public String getEntry(int lt, int lw, double offsetX, double offsetY) {
+    StringBuffer buff = new StringBuffer();
+    buff.append("'" + this.data + "' using ($1 + " + offsetX + "):($2 + "
+            + offsetY + ") with " + this.style);
+    buff.append(" lt " + lt + " lw " + lw);
+    buff.append(title == null ? " notitle" : " title \"" + this.title
+            + "\"");
+    return buff.toString();
+  }
 
 }

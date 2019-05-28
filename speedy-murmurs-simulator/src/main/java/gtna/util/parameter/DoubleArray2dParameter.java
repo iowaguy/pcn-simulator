@@ -24,7 +24,7 @@
  * DoubleArrayParameter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -37,34 +37,33 @@ package gtna.util.parameter;
 
 /**
  * @author benni
- * 
  */
 public class DoubleArray2dParameter extends Parameter {
-	private double[][] doubleArray2dValue;
+  private double[][] doubleArray2dValue;
 
-	public DoubleArray2dParameter(String key, double[][] doubleArray2dValue) {
-		super(key, DoubleArray2dParameter.toString(doubleArray2dValue));
-		this.doubleArray2dValue = doubleArray2dValue;
-	}
+  public DoubleArray2dParameter(String key, double[][] doubleArray2dValue) {
+    super(key, DoubleArray2dParameter.toString(doubleArray2dValue));
+    this.doubleArray2dValue = doubleArray2dValue;
+  }
 
-	public double[][] getDoubleArray2dValue() {
-		return this.doubleArray2dValue;
-	}
+  public double[][] getDoubleArray2dValue() {
+    return this.doubleArray2dValue;
+  }
 
-	private static String toString(double[][] v) {
-		StringBuffer buff = new StringBuffer();
-		for (int i = 0; i < v.length; i++) {
-			if (i > 0) {
-				buff.append("__");
-			}
-			for (int j = 0; j < v[i].length; j++) {
-				if (j == 0) {
-					buff.append(v[i][j]);
-				} else {
-					buff.append("_" + v[i][j]);
-				}
-			}
-		}
-		return buff.toString();
-	}
+  private static String toString(double[][] v) {
+    StringBuffer buff = new StringBuffer();
+    for (int i = 0; i < v.length; i++) {
+      if (i > 0) {
+        buff.append("__");
+      }
+      for (int j = 0; j < v[i].length; j++) {
+        if (j == 0) {
+          buff.append(v[i][j]);
+        } else {
+          buff.append("_" + v[i][j]);
+        }
+      }
+    }
+    return buff.toString();
+  }
 }

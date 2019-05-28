@@ -24,7 +24,7 @@
  * EdgeListGraphReader.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,79 +35,78 @@
  */
 package gtna.io.graphReader;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import gtna.graph.Edges;
 import gtna.graph.Graph;
 import gtna.graph.Node;
 import gtna.io.Filereader;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author benni
- * 
  */
 public class EdgeListGraphReader extends GraphReader {
-	protected String separator;
+  protected String separator;
 
-	public EdgeListGraphReader(String separator) {
-		this("EDGE_LIST", separator);
-	}
+  public EdgeListGraphReader(String separator) {
+    this("EDGE_LIST", separator);
+  }
 
-	protected EdgeListGraphReader(String key, String separator) {
-		super(key);
-		this.separator = separator;
-	}
+  protected EdgeListGraphReader(String key, String separator) {
+    super(key);
+    this.separator = separator;
+  }
 
-	@Override
-	public Graph read(String filename) {
-		Map<String, Integer> map = this.getIdIndexMap(filename);
+  @Override
+  public Graph read(String filename) {
+    Map<String, Integer> map = this.getIdIndexMap(filename);
 
-		Graph graph = new Graph(this.getGraphName(filename));
-		Node[] nodes = Node.init(map.size(), graph);
-		Edges edges = new Edges(nodes, map.size());
+    Graph graph = new Graph(this.getGraphName(filename));
+    Node[] nodes = Node.init(map.size(), graph);
+    Edges edges = new Edges(nodes, map.size());
 
-		Filereader fr = new Filereader(filename);
+    Filereader fr = new Filereader(filename);
 
-		try {
-			String line = null;
-			while ((line = fr.readLine()) != null) {
-				String[] temp = line.split(this.separator);
-				edges.add(map.get(temp[0]), map.get(temp[1]));
-			}
-			edges.fill();
-			graph.setNodes(nodes);
-			return graph;
-		} catch (Exception e) {
-			return null;
-		} finally {
-			fr.close();
-		}
-	}
+    try {
+      String line = null;
+      while ((line = fr.readLine()) != null) {
+        String[] temp = line.split(this.separator);
+        edges.add(map.get(temp[0]), map.get(temp[1]));
+      }
+      edges.fill();
+      graph.setNodes(nodes);
+      return graph;
+    } catch (Exception e) {
+      return null;
+    } finally {
+      fr.close();
+    }
+  }
 
-	protected Map<String, Integer> getIdIndexMap(String filename) {
-		Map<String, Integer> map = new HashMap<String, Integer>();
+  protected Map<String, Integer> getIdIndexMap(String filename) {
+    Map<String, Integer> map = new HashMap<String, Integer>();
 
-		int index = 0;
-		Filereader fr = new Filereader(filename);
-		String line = null;
-		while ((line = fr.readLine()) != null) {
-			String[] temp = line.split(this.separator);
-			if (!map.containsKey(temp[0])) {
-				map.put(temp[0], index++);
-			}
-			if (!map.containsKey(temp[1])) {
-				map.put(temp[1], index++);
-			}
-		}
-		fr.close();
+    int index = 0;
+    Filereader fr = new Filereader(filename);
+    String line = null;
+    while ((line = fr.readLine()) != null) {
+      String[] temp = line.split(this.separator);
+      if (!map.containsKey(temp[0])) {
+        map.put(temp[0], index++);
+      }
+      if (!map.containsKey(temp[1])) {
+        map.put(temp[1], index++);
+      }
+    }
+    fr.close();
 
-		return map;
-	}
+    return map;
+  }
 
-	@Override
-	public int nodes(String filename) {
-		return this.getIdIndexMap(filename).size();
-	}
+  @Override
+  public int nodes(String filename) {
+    return this.getIdIndexMap(filename).size();
+  }
 
 }

@@ -24,7 +24,7 @@
  * ShortestPaths.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -39,31 +39,24 @@ import gtna.graph.Graph;
 
 /**
  * @author benni
- * 
  */
 public abstract class ShortestPathsAlgorithm {
-	/**
-	 * 
-	 * @param graph
-	 * @return {int[][] dist, int[][] previous, int[][] nextHop} for all nodes
-	 *         in $graph
-	 */
-	public int[][][] getShortestPaths(Graph graph) {
-		int[][][] sp = new int[3][graph.getNodeCount()][];
-		for (int i = 0; i < sp.length; i++) {
-			int[][] temp = this.getShortestPaths(graph, i);
-			sp[0][i] = temp[0];
-			sp[1][i] = temp[1];
-			sp[2][i] = temp[2];
-		}
-		return sp;
-	}
+  /**
+   * @return {int[][] dist, int[][] previous, int[][] nextHop} for all nodes in $graph
+   */
+  public int[][][] getShortestPaths(Graph graph) {
+    int[][][] sp = new int[3][graph.getNodeCount()][];
+    for (int i = 0; i < sp.length; i++) {
+      int[][] temp = this.getShortestPaths(graph, i);
+      sp[0][i] = temp[0];
+      sp[1][i] = temp[1];
+      sp[2][i] = temp[2];
+    }
+    return sp;
+  }
 
-	/**
-	 * 
-	 * @param graph
-	 * @param start
-	 * @return {int[] dist, int[] previous, int[] nextHop} for node $start
-	 */
-	public abstract int[][] getShortestPaths(Graph graph, int start);
+  /**
+   * @return {int[] dist, int[] previous, int[] nextHop} for node $start
+   */
+  public abstract int[][] getShortestPaths(Graph graph, int start);
 }

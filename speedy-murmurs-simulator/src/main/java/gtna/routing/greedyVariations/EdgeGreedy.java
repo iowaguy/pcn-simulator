@@ -24,7 +24,7 @@
  * EdgeGreedy.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: stefanie;
  * Contributors:    -;
@@ -35,39 +35,38 @@
  */
 package gtna.routing.greedyVariations;
 
-import gtna.util.parameter.Parameter;
-
 import java.util.HashMap;
 import java.util.Vector;
 
+import gtna.util.parameter.Parameter;
+
 /**
  * abstract class for variations marking edges
- * 
+ *
  * @author stefanie
- * 
  */
 public abstract class EdgeGreedy extends GreedyTemplate {
-	HashMap<Integer, Vector<Integer>> from;
+  HashMap<Integer, Vector<Integer>> from;
 
-	public EdgeGreedy(String name) {
-		super(name);
-	}
+  public EdgeGreedy(String name) {
+    super(name);
+  }
 
-	public EdgeGreedy(int ttl, String name) {
-		super(ttl, name);
-	}
+  public EdgeGreedy(int ttl, String name) {
+    super(ttl, name);
+  }
 
-	public EdgeGreedy(String name, Parameter[] parameters) {
-		super(name, parameters);
-	}
+  public EdgeGreedy(String name, Parameter[] parameters) {
+    super(name, parameters);
+  }
 
-	public EdgeGreedy(int ttl, String name, Parameter[] parameters) {
-		super(ttl, name, parameters);
-	}
+  public EdgeGreedy(int ttl, String name, Parameter[] parameters) {
+    super(ttl, name, parameters);
+  }
 
-	@Override
-	public void setSets(int nr) {
-		from = new HashMap<Integer, Vector<Integer>>();
-	}
+  @Override
+  public void setSets(int nr) {
+    from = new HashMap<Integer, Vector<Integer>>();
+  }
 
 }

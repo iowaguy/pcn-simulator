@@ -24,7 +24,7 @@
  * FactorRestrictGreedy.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: stefanie;
  * Contributors:    -;
@@ -35,6 +35,8 @@
  */
 package gtna.routing.greedyVariations;
 
+import java.util.Random;
+
 import gtna.graph.Node;
 import gtna.id.BigIntegerIdentifier;
 import gtna.id.DoubleIdentifier;
@@ -42,67 +44,64 @@ import gtna.util.parameter.DoubleParameter;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 
-import java.util.Random;
-
 /**
- * a weighted depth first search that does only allow an decline up to a certain
- * multiple of current distance
- * 
+ * a weighted depth first search that does only allow an decline up to a certain multiple of current
+ * distance
+ *
  * @author stefanie
- * 
  */
 public class FactorRestrictGreedy extends NodeGreedy {
 
-	double maxBack;
+  double maxBack;
 
-	public FactorRestrictGreedy(double maxBack) {
-		this(maxBack, Integer.MAX_VALUE);
-	}
+  public FactorRestrictGreedy(double maxBack) {
+    this(maxBack, Integer.MAX_VALUE);
+  }
 
-	public FactorRestrictGreedy(double maxBack, int ttl) {
-		super(ttl, "FACTOR_RESTRICT_GREEDY", new Parameter[] {
-				new IntParameter("TTL", ttl),
-				new DoubleParameter("MAXBACK", maxBack) });
-		this.maxBack = maxBack;
-	}
+  public FactorRestrictGreedy(double maxBack, int ttl) {
+    super(ttl, "FACTOR_RESTRICT_GREEDY", new Parameter[]{
+            new IntParameter("TTL", ttl),
+            new DoubleParameter("MAXBACK", maxBack)});
+    this.maxBack = maxBack;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see gtna.routing.greddyStef.GreedyTemplate#getNextD(int,
-	 * gtna.id.DIdentifier, java.util.Random, gtna.graph.Node[])
-	 */
-	@Override
-	public int getNextD(int current, DoubleIdentifier target, Random rand,
-			Node[] nodes) {
-		double currentDist = this.pD[current].distance(target);
-		double minDist = this.idSpaceD.getMaxDistance();
-		int minNode = -1;
-		for (int out : nodes[current].getOutgoingEdges()) {
-			double dist = this.pD[out].distance(target);
-			if (dist < minDist && dist < currentDist * this.maxBack
-					&& !from.containsKey(out)) {
-				minDist = dist;
-				minNode = out;
-			}
-		}
-		if (minNode == -1 && from.containsKey(current)) {
-			return from.get(current);
-		}
-		from.put(minNode, current);
-		return minNode;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see gtna.routing.greddyStef.GreedyTemplate#getNextD(int,
+   * gtna.id.DIdentifier, java.util.Random, gtna.graph.Node[])
+   */
+  @Override
+  public int getNextD(int current, DoubleIdentifier target, Random rand,
+                      Node[] nodes) {
+    double currentDist = this.pD[current].distance(target);
+    double minDist = this.idSpaceD.getMaxDistance();
+    int minNode = -1;
+    for (int out : nodes[current].getOutgoingEdges()) {
+      double dist = this.pD[out].distance(target);
+      if (dist < minDist && dist < currentDist * this.maxBack
+              && !from.containsKey(out)) {
+        minDist = dist;
+        minNode = out;
+      }
+    }
+    if (minNode == -1 && from.containsKey(current)) {
+      return from.get(current);
+    }
+    from.put(minNode, current);
+    return minNode;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see gtna.routing.greddyStef.GreedyTemplate#getNextBI(int,
-	 * gtna.id.BIIdentifier, java.util.Random, gtna.graph.Node[])
-	 */
-	@Override
-	public int getNextBI(int current, BigIntegerIdentifier target, Random rand,
-			Node[] nodes) {
-		return -1;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see gtna.routing.greddyStef.GreedyTemplate#getNextBI(int,
+   * gtna.id.BIIdentifier, java.util.Random, gtna.graph.Node[])
+   */
+  @Override
+  public int getNextBI(int current, BigIntegerIdentifier target, Random rand,
+                       Node[] nodes) {
+    return -1;
+  }
 
 }

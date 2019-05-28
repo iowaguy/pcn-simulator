@@ -6,6 +6,7 @@ public enum RoutingAlgorithm {
   MAXFLOW(10);
 
   private int id;
+
   RoutingAlgorithm(int id) {
     this.id = id;
   }

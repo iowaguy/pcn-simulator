@@ -24,7 +24,7 @@
  * DegreeDescNodeSorter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,47 +35,46 @@
  */
 package gtna.graph.sorting;
 
-import gtna.graph.Graph;
-import gtna.graph.Node;
-
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
 
+import gtna.graph.Graph;
+import gtna.graph.Node;
+
 /**
  * @author benni
- * 
  */
 public class OutDegreeNodeSorter extends NodeSorter {
-	public OutDegreeNodeSorter(NodeSorterMode mode) {
-		super("OUT_DEGREE", mode);
-	}
+  public OutDegreeNodeSorter(NodeSorterMode mode) {
+    super("OUT_DEGREE", mode);
+  }
 
-	@Override
-	public boolean applicable(Graph g) {
-		return true;
-	}
+  @Override
+  public boolean applicable(Graph g) {
+    return true;
+  }
 
-	@Override
-	public Node[] sort(Graph g, Random rand) {
-		Node[] sorted = this.clone(g.getNodes());
-		Arrays.sort(sorted, new OutDegreeAsc());
-		this.randomize(sorted, rand);
-		if (this.mode == NodeSorterMode.DESC) {
-			sorted = this.reverse(sorted);
-		}
-		return sorted;
-	}
+  @Override
+  public Node[] sort(Graph g, Random rand) {
+    Node[] sorted = this.clone(g.getNodes());
+    Arrays.sort(sorted, new OutDegreeAsc());
+    this.randomize(sorted, rand);
+    if (this.mode == NodeSorterMode.DESC) {
+      sorted = this.reverse(sorted);
+    }
+    return sorted;
+  }
 
-	private class OutDegreeAsc implements Comparator<Node> {
-		public int compare(Node n1, Node n2) {
-			return n1.getOutDegree() - n2.getOutDegree();
-		}
-	}
+  private class OutDegreeAsc implements Comparator<Node> {
+    public int compare(Node n1, Node n2) {
+      return n1.getOutDegree() - n2.getOutDegree();
+    }
+  }
 
-	@Override
-	protected boolean isPropertyEqual(Node n1, Node n2) {
-		return n1.getOutDegree() == n2.getOutDegree();
-	}
+  @Override
+  protected boolean isPropertyEqual(Node n1, Node n2) {
+    return n1.getOutDegree() == n2.getOutDegree();
+  }
 
 }

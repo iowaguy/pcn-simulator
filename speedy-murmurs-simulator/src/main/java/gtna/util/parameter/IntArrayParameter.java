@@ -24,7 +24,7 @@
  * IntArrayParameter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -37,30 +37,29 @@ package gtna.util.parameter;
 
 /**
  * @author benni
- * 
  */
 public class IntArrayParameter extends Parameter {
-	private int[] intArrayValue;
+  private int[] intArrayValue;
 
-	public IntArrayParameter(String key, int[] intArrayValue) {
-		super(key, IntArrayParameter.toString(intArrayValue));
-		this.intArrayValue = intArrayValue;
-	}
+  public IntArrayParameter(String key, int[] intArrayValue) {
+    super(key, IntArrayParameter.toString(intArrayValue));
+    this.intArrayValue = intArrayValue;
+  }
 
-	public int[] getIntArrayValue() {
-		return this.intArrayValue;
-	}
+  public int[] getIntArrayValue() {
+    return this.intArrayValue;
+  }
 
-	private static String toString(int[] v) {
-		StringBuffer buff = new StringBuffer();
-		for (int i : v) {
-			if (buff.length() == 0) {
-				buff.append(i);
-			} else {
-				buff.append("_" + i);
-			}
-		}
-		return buff.toString();
-	}
+  private static String toString(int[] v) {
+    StringBuffer buff = new StringBuffer();
+    for (int i : v) {
+      if (buff.length() == 0) {
+        buff.append(i);
+      } else {
+        buff.append("_" + i);
+      }
+    }
+    return buff.toString();
+  }
 
 }

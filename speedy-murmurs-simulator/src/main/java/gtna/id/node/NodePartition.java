@@ -24,7 +24,7 @@
  * NodePartition.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -44,58 +44,55 @@ import gtna.id.Partition;
 
 /**
  * @author benni
- * 
  */
 public class NodePartition extends DoublePartition {
 
-	protected NodeIdentifier id;
+  protected NodeIdentifier id;
 
-	/**
-	 * 
-	 * @param node
-	 *            index of the node this partition is representing
-	 */
-	public NodePartition(int node) {
-		this.id = new NodeIdentifier(node);
-	}
+  /**
+   * @param node index of the node this partition is representing
+   */
+  public NodePartition(int node) {
+    this.id = new NodeIdentifier(node);
+  }
 
-	public NodePartition(String string) {
-		this(Integer.parseInt(string));
-	}
+  public NodePartition(String string) {
+    this(Integer.parseInt(string));
+  }
 
-	@Override
-	public double distance(DoubleIdentifier id) {
-		return 0;
-	}
+  @Override
+  public double distance(DoubleIdentifier id) {
+    return 0;
+  }
 
-	@Override
-	public double distance(DoublePartition p) {
-		return 0;
-	}
+  @Override
+  public double distance(DoublePartition p) {
+    return 0;
+  }
 
-	@Override
-	public String asString() {
-		return this.id.node + "";
-	}
+  @Override
+  public String asString() {
+    return this.id.node + "";
+  }
 
-	@Override
-	public boolean contains(Identifier id) {
-		return this.id.node == ((NodeIdentifier) id).node;
-	}
+  @Override
+  public boolean contains(Identifier id) {
+    return this.id.node == ((NodeIdentifier) id).node;
+  }
 
-	@Override
-	public Identifier getRepresentativeIdentifier() {
-		return new NodeIdentifier(this.id.node);
-	}
+  @Override
+  public Identifier getRepresentativeIdentifier() {
+    return new NodeIdentifier(this.id.node);
+  }
 
-	@Override
-	public Identifier getRandomIdentifier(Random rand) {
-		return new NodeIdentifier(this.id.node);
-	}
+  @Override
+  public Identifier getRandomIdentifier(Random rand) {
+    return new NodeIdentifier(this.id.node);
+  }
 
-	@Override
-	public boolean equals(Partition p) {
-		return this.id.node == ((NodePartition) p).id.node;
-	}
+  @Override
+  public boolean equals(Partition p) {
+    return this.id.node == ((NodePartition) p).id.node;
+  }
 
 }

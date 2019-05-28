@@ -24,7 +24,7 @@
  * Greedy.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -34,6 +34,9 @@
  *
  */
 package gtna.routing.greedy;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 import gtna.graph.Graph;
 import gtna.graph.Node;
@@ -45,63 +48,59 @@ import gtna.routing.RoutingAlgorithm;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 
-import java.util.ArrayList;
-import java.util.Random;
-
 /**
- * @author Andreas Höfer, Stefanie Roos
- * Simple Extension of Greedy Routing for Virtual Tree Prefix Embedding:
- * In case of a local minimum forward the message to the parent in the tree  
+ * @author Andreas Höfer, Stefanie Roos Simple Extension of Greedy Routing for Virtual Tree Prefix
+ *         Embedding: In case of a local minimum forward the message to the parent in the tree
  */
 
 public class GreedyTree extends RoutingAlgorithm {
 
-	boolean debug = true;
+  boolean debug = true;
 
-	private SpanningTree st;
-	private int ttl;
+  private SpanningTree st;
+  private int ttl;
 
-	public GreedyTree() {
-		super("GREEDYTREE");
-		this.ttl = Integer.MAX_VALUE;
-	}
+  public GreedyTree() {
+    super("GREEDYTREE");
+    this.ttl = Integer.MAX_VALUE;
+  }
 
-	public GreedyTree(int ttl) {
-		super("GREEDYTREE", new Parameter[] { new IntParameter("TTL", ttl) });
-		this.ttl = ttl;
-	}
+  public GreedyTree(int ttl) {
+    super("GREEDYTREE", new Parameter[]{new IntParameter("TTL", ttl)});
+    this.ttl = ttl;
+  }
 
-	@Override
-	public Route routeToTarget(Graph graph, int start, Identifier target,
-			Random rand) {
-		this.st = (SpanningTree) graph.getProperty("SPANNINGTREE"); 
-		return this.route(new ArrayList<Integer>(), start, target, rand,
-				graph.getNodes());
-	}
-	
-	private Route route(ArrayList<Integer> route, int current,
-			Identifier target, Random rand, Node[] nodes) {
-		route.add(current);
-		
-		if (this.isEndPoint(current, target)) {
-			return new Route(route, true);
-		}
-		if (route.size() > this.ttl) {
-			return new Route(route, false);
-		}
+  @Override
+  public Route routeToTarget(Graph graph, int start, Identifier target,
+                             Random rand) {
+    this.st = (SpanningTree) graph.getProperty("SPANNINGTREE");
+    return this.route(new ArrayList<Integer>(), start, target, rand,
+            graph.getNodes());
+  }
 
-		int closest = target.getClosestNode(nodes[current].getOutgoingEdges(),
-				this.identifierSpace.getPartitions());
-		if (!target.isCloser(this.identifierSpace.getPartition(closest), this.identifierSpace.getPartition(current))) {
-			// if the routing gets stuck, go to the parent
-			closest = st.getParent(current);
-			// if there is no parent the routing fails
-			if (closest == -1)
-				return new Route(route, false);
-		}
+  private Route route(ArrayList<Integer> route, int current,
+                      Identifier target, Random rand, Node[] nodes) {
+    route.add(current);
 
-		return this.route(route, closest, target, rand, nodes);
-	}
+    if (this.isEndPoint(current, target)) {
+      return new Route(route, true);
+    }
+    if (route.size() > this.ttl) {
+      return new Route(route, false);
+    }
+
+    int closest = target.getClosestNode(nodes[current].getOutgoingEdges(),
+            this.identifierSpace.getPartitions());
+    if (!target.isCloser(this.identifierSpace.getPartition(closest), this.identifierSpace.getPartition(current))) {
+      // if the routing gets stuck, go to the parent
+      closest = st.getParent(current);
+      // if there is no parent the routing fails
+      if (closest == -1)
+        return new Route(route, false);
+    }
+
+    return this.route(route, closest, target, rand, nodes);
+  }
 	
 	
 	
@@ -148,12 +147,12 @@ public class GreedyTree extends RoutingAlgorithm {
 		}
 		return this.routePE(route, minNode, target, rand, nodes);
 	}*/
-	
-	
-	@Override
-	public boolean applicable(Graph graph) {
-		return graph.hasProperty("ID_SPACE_0", PrefixSIdentiferSpaceSimple.class) && graph.hasProperty("SPANNINGTREE");
-		// return graph.hasProperty("ID_SPACE_0") && (graph.getProperty("ID_SPACE_0") instanceof PrefixSIdentiferSpaceSimple) && graph.hasProperty("SPANNINGTREE"); 
-	}
+
+
+  @Override
+  public boolean applicable(Graph graph) {
+    return graph.hasProperty("ID_SPACE_0", PrefixSIdentiferSpaceSimple.class) && graph.hasProperty("SPANNINGTREE");
+    // return graph.hasProperty("ID_SPACE_0") && (graph.getProperty("ID_SPACE_0") instanceof PrefixSIdentiferSpaceSimple) && graph.hasProperty("SPANNINGTREE");
+  }
 
 }

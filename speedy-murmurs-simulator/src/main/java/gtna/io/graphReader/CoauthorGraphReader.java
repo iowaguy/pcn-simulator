@@ -24,7 +24,7 @@
  * CoauthorGraphReader.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -37,13 +37,12 @@ package gtna.io.graphReader;
 
 /**
  * @author benni
- * 
  */
 public class CoauthorGraphReader extends EdgeListGraphReader {
-	public static final String SEPARATOR = " ";
+  public static final String SEPARATOR = " ";
 
-	public CoauthorGraphReader() {
-		super("COAUTHOR", CoauthorGraphReader.SEPARATOR);
-	}
+  public CoauthorGraphReader() {
+    super("COAUTHOR", CoauthorGraphReader.SEPARATOR);
+  }
 
 }

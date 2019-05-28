@@ -24,7 +24,7 @@
  * RandomNodeSorter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -35,36 +35,35 @@
  */
 package gtna.graph.sorting;
 
+import java.util.Random;
+
 import gtna.graph.Graph;
 import gtna.graph.Node;
 
-import java.util.Random;
-
 /**
  * @author benni
- * 
  */
 public class RandomNodeSorter extends NodeSorter {
 
-	public RandomNodeSorter() {
-		super("RANDOM");
-	}
+  public RandomNodeSorter() {
+    super("RANDOM");
+  }
 
-	@Override
-	public boolean applicable(Graph g) {
-		return true;
-	}
+  @Override
+  public boolean applicable(Graph g) {
+    return true;
+  }
 
-	@Override
-	public Node[] sort(Graph g, Random rand) {
-		Node[] sorted = this.clone(g.getNodes());
-		this.randomize(sorted, rand, 0, sorted.length - 1);
-		return sorted;
-	}
+  @Override
+  public Node[] sort(Graph g, Random rand) {
+    Node[] sorted = this.clone(g.getNodes());
+    this.randomize(sorted, rand, 0, sorted.length - 1);
+    return sorted;
+  }
 
-	@Override
-	protected boolean isPropertyEqual(Node n1, Node n2) {
-		return false;
-	}
+  @Override
+  protected boolean isPropertyEqual(Node n1, Node n2) {
+    return false;
+  }
 
 }

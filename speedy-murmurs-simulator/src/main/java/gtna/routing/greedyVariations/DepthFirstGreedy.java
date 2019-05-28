@@ -24,7 +24,7 @@
  * DepthFirstGreedy.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: stefanie;
  * Contributors:    -;
@@ -35,66 +35,65 @@
  */
 package gtna.routing.greedyVariations;
 
+import java.math.BigInteger;
+import java.util.Random;
+
 import gtna.graph.Node;
 import gtna.id.BigIntegerIdentifier;
 import gtna.id.DoubleIdentifier;
 
-import java.math.BigInteger;
-import java.util.Random;
-
 /**
  * a weighted depth first search (= Freenet routing)
- * 
+ *
  * @author stefanie
- * 
  */
 public class DepthFirstGreedy extends NodeGreedy {
 
-	public DepthFirstGreedy() {
-		super("DEPTH_FIRST_GREEDY");
-	}
+  public DepthFirstGreedy() {
+    super("DEPTH_FIRST_GREEDY");
+  }
 
-	public DepthFirstGreedy(int ttl) {
-		super(ttl, "DEPTH_FIRST_GREEDY");
-	}
+  public DepthFirstGreedy(int ttl) {
+    super(ttl, "DEPTH_FIRST_GREEDY");
+  }
 
-	@Override
-	public int getNextD(int current, DoubleIdentifier target, Random rand,
-			Node[] nodes) {
+  @Override
+  public int getNextD(int current, DoubleIdentifier target, Random rand,
+                      Node[] nodes) {
 
-		double minDist = this.idSpaceD.getMaxDistance();
-		int minNode = -1;
-		for (int out : nodes[current].getOutgoingEdges()) {
-			double dist = this.pD[out].distance(target);
-			if (dist < minDist && !from.containsKey(out)) {
-				minDist = dist;
-				minNode = out;
-			}
-		}
-		if (minNode == -1 && from.containsKey(current)) {
-			return from.get(current);
-		}
-		from.put(minNode, current);
-		return minNode;
-	}
+    double minDist = this.idSpaceD.getMaxDistance();
+    int minNode = -1;
+    for (int out : nodes[current].getOutgoingEdges()) {
+      double dist = this.pD[out].distance(target);
+      if (dist < minDist && !from.containsKey(out)) {
+        minDist = dist;
+        minNode = out;
+      }
+    }
+    if (minNode == -1 && from.containsKey(current)) {
+      return from.get(current);
+    }
+    from.put(minNode, current);
+    return minNode;
+  }
 
-	@Override
-	public int getNextBI(int current, BigIntegerIdentifier target, Random rand,
-			Node[] nodes) {
-		BigInteger minDist = this.idSpaceBI.getMaxDistance();
-		int minNode = -1;
-		for (int out : nodes[current].getOutgoingEdges()) {
-			BigInteger dist = this.pBI[out].distance(target);
-			if (dist.compareTo(minDist) == -1 && !from.containsKey(out)) {
-				minDist = dist;
-				minNode = out;
-			}
-		}
-		if (minNode == -1 && from.containsKey(current)) {
-			return from.get(current);
-		}
-		from.put(minNode, current);
-		return minNode;
-	}
+  @Override
+  public int getNextBI(int current, BigIntegerIdentifier target, Random rand,
+                       Node[] nodes) {
+    BigInteger minDist = this.idSpaceBI.getMaxDistance();
+    int minNode = -1;
+    for (int out : nodes[current].getOutgoingEdges()) {
+      BigInteger dist = this.pBI[out].distance(target);
+      if (dist.compareTo(minDist) == -1 && !from.containsKey(out)) {
+        minDist = dist;
+        minNode = out;
+      }
+    }
+    if (minNode == -1 && from.containsKey(current)) {
+      return from.get(current);
+    }
+    from.put(minNode, current);
+    return minNode;
+  }
 
 }

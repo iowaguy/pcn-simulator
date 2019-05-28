@@ -24,7 +24,7 @@
  * PostfixFilenameFilter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -39,15 +39,14 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 /**
- * Implements a filename filter that accepts only files that don't start with
- * ".", i.e., hidden files.
- * 
+ * Implements a filename filter that accepts only files that don't start with ".", i.e., hidden
+ * files.
+ *
  * @author benni
- * 
  */
 public class ExcludeHiddenFilenameFilter implements FilenameFilter {
-	@Override
-	public boolean accept(File dir, String name) {
-		return !name.startsWith(".");
-	}
+  @Override
+  public boolean accept(File dir, String name) {
+    return !name.startsWith(".");
+  }
 }

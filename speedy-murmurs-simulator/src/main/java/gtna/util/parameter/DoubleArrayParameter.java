@@ -24,7 +24,7 @@
  * DoubleArrayParameter.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -37,29 +37,28 @@ package gtna.util.parameter;
 
 /**
  * @author benni
- * 
  */
 public class DoubleArrayParameter extends Parameter {
-	private double[] doubleArrayValue;
+  private double[] doubleArrayValue;
 
-	public DoubleArrayParameter(String key, double[] doubleArrayValue) {
-		super(key, DoubleArrayParameter.toString(doubleArrayValue));
-		this.doubleArrayValue = doubleArrayValue;
-	}
+  public DoubleArrayParameter(String key, double[] doubleArrayValue) {
+    super(key, DoubleArrayParameter.toString(doubleArrayValue));
+    this.doubleArrayValue = doubleArrayValue;
+  }
 
-	public double[] getDoubleArrayValue() {
-		return this.doubleArrayValue;
-	}
+  public double[] getDoubleArrayValue() {
+    return this.doubleArrayValue;
+  }
 
-	private static String toString(double[] v) {
-		StringBuffer buff = new StringBuffer();
-		for (double i : v) {
-			if (buff.length() == 0) {
-				buff.append(i);
-			} else {
-				buff.append("_" + i);
-			}
-		}
-		return buff.toString();
-	}
+  private static String toString(double[] v) {
+    StringBuffer buff = new StringBuffer();
+    for (double i : v) {
+      if (buff.length() == 0) {
+        buff.append(i);
+      } else {
+        buff.append("_" + i);
+      }
+    }
+    return buff.toString();
+  }
 }

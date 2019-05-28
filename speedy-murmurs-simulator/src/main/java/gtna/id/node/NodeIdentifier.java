@@ -24,7 +24,7 @@
  * NodeIdentifier.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
- * and Contributors 
+ * and Contributors
  *
  * Original Author: benni;
  * Contributors:    -;
@@ -40,65 +40,61 @@ import gtna.id.Identifier;
 
 /**
  * @author benni
- * 
  */
 public class NodeIdentifier extends DoubleIdentifier {
 
-	protected int node;
+  protected int node;
 
-	/**
-	 * 
-	 * @param node
-	 *            index of the node represented by this identifier
-	 */
-	public NodeIdentifier(int node) {
-		this.node = node;
-	}
+  /**
+   * @param node index of the node represented by this identifier
+   */
+  public NodeIdentifier(int node) {
+    this.node = node;
+  }
 
-	public NodeIdentifier(String string) {
-		this(Integer.parseInt(string));
-	}
+  public NodeIdentifier(String string) {
+    this(Integer.parseInt(string));
+  }
 
-	@Override
-	public int compareTo(DoubleIdentifier arg0) {
-		NodeIdentifier id = (NodeIdentifier) arg0;
-		if (this.node < id.node) {
-			return -1;
-		} else if (this.node > id.node) {
-			return 1;
-		} else {
-			return 0;
-		}
-	}
+  @Override
+  public int compareTo(DoubleIdentifier arg0) {
+    NodeIdentifier id = (NodeIdentifier) arg0;
+    if (this.node < id.node) {
+      return -1;
+    } else if (this.node > id.node) {
+      return 1;
+    } else {
+      return 0;
+    }
+  }
 
-	@Override
-	public double distance(DoubleIdentifier id) {
-		return 0;
-	}
+  @Override
+  public double distance(DoubleIdentifier id) {
+    return 0;
+  }
 
-	@Override
-	public String asString() {
-		return this.node + "";
-	}
+  @Override
+  public String asString() {
+    return this.node + "";
+  }
 
-	@Override
-	public boolean equals(Identifier id) {
-		return this.node == ((NodeIdentifier) id).node;
-	}
+  @Override
+  public boolean equals(Identifier id) {
+    return this.node == ((NodeIdentifier) id).node;
+  }
 
-	/**
-	 * @return the node
-	 */
-	public int getNode() {
-		return this.node;
-	}
+  /**
+   * @return the node
+   */
+  public int getNode() {
+    return this.node;
+  }
 
-	/**
-	 * @param node
-	 *            the node to set
-	 */
-	public void setNode(int node) {
-		this.node = node;
-	}
+  /**
+   * @param node the node to set
+   */
+  public void setNode(int node) {
+    this.node = node;
+  }
 
 }
