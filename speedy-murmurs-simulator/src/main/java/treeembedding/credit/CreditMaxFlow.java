@@ -474,7 +474,7 @@ public class CreditMaxFlow extends Metric {
   }
 
   private LinkedList<double[]> readLinks(String file) {
-    LinkedList<double[]> vec = new LinkedList<double[]>();
+    LinkedList<double[]> vec = new LinkedList<>();
     try {
       BufferedReader br = new BufferedReader(new FileReader(file));
       String line;

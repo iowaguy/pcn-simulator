@@ -153,9 +153,7 @@ public abstract class Treeroute extends Metric {
         done = true;
       }
       if (src == dest) {
-        if (!(this instanceof TreerouteSilentW) || !((TreerouteSilentW) this).up) {
-          done = true;
-        }
+        done = true;
       }
 
     }

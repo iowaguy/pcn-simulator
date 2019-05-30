@@ -3,6 +3,7 @@ package treeembedding.treerouting;
 import gtna.graph.Node;
 
 public class TreerouteSilentW extends Treeroute {
+  // if the traversal is going up the tree (which it must do before coming back down)
   boolean up = true;
 
   public TreerouteSilentW() {
@@ -86,4 +87,4 @@ public class TreerouteSilentW extends Treeroute {
     up = true;
 
   }
-}	
+}

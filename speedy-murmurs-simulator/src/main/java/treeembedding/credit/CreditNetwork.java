@@ -118,7 +118,7 @@ public class CreditNetwork extends Metric {
     if (links != null) {
       this.newLinks = this.readLinks(links);
     } else {
-      this.newLinks = new LinkedList<double[]>();
+      this.newLinks = new LinkedList<>();
     }
     this.update = up;
 
