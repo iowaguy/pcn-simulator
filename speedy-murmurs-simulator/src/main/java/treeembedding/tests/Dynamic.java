@@ -73,7 +73,7 @@ public class Dynamic {
         prefix = "M";
         break;
       default:
-        throw new IllegalArgumentException("Routing algoithm not supported");
+        throw new IllegalArgumentException("Routing algorithm not supported");
     }
     String graph, trans, newlinks;
     if (step == 0) {
@@ -137,7 +137,7 @@ public class Dynamic {
 
     Network net = new ReadableFile(name, name, graph, null);
     CreditNetwork cred = new CreditNetwork(trans, name, epoch, ra,
-            dyn, multi, req, part, roots, max, add, byz, attackProperties);
+            dyn, multi, req, part, roots, max, add, byz, attackProperties, runConfig.areTransactionsConcurrent());
     Series.generate(net, new Metric[]{cred}, i, i);
   }
 

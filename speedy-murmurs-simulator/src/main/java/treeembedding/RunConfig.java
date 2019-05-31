@@ -44,7 +44,18 @@ public class RunConfig {
   @JsonProperty("step")
   private int step;
 
+  @JsonProperty("concurrent_transactions")
+  private boolean concurrentTransactions;
+
   private String runDirPath;
+
+  public boolean areTransactionsConcurrent() {
+    return concurrentTransactions;
+  }
+
+  public void setConcurrentTransactions(boolean concurrentTransactions) {
+    this.concurrentTransactions = concurrentTransactions;
+  }
 
   public String getRunDirPath() {
     return runDirPath;

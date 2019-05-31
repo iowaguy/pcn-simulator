@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -94,13 +93,15 @@ public class CreditNetwork extends Metric {
 
   boolean log = false;
 
-  ByzantineNodeSelection byzSelection;
-  Set<Integer> byzantineNodes;
-  Attack attack;
+  private ByzantineNodeSelection byzSelection;
+  private Set<Integer> byzantineNodes;
+  private Attack attack;
+  private boolean areTransactionsConcurrent;
 
   public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
                        boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
-                       String links, boolean up, ByzantineNodeSelection byzSelection, Attack attack) {
+                       String links, boolean up, ByzantineNodeSelection byzSelection, Attack attack,
+                       boolean areTransactionsConcurrent) {
     super("CREDIT_NETWORK", new Parameter[]{new StringParameter("NAME", name), new DoubleParameter("EPOCH", epoch),
             new StringParameter("RA", ra.getKey()), new BooleanParameter("DYN_REPAIR", dynRep),
             new BooleanParameter("MULTI", multi), new IntParameter("TREES", roots.length),
@@ -115,6 +116,7 @@ public class CreditNetwork extends Metric {
     this.part = part;
     this.roots = roots;
     this.maxTries = max;
+    this.areTransactionsConcurrent = areTransactionsConcurrent;
     if (links != null) {
       this.newLinks = this.readLinks(links);
     } else {
@@ -132,19 +134,25 @@ public class CreditNetwork extends Metric {
   }
 
   public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
-                       boolean multi, double requeueInt, Partitioner part, int[] roots, int max, String links, ByzantineNodeSelection byz, Attack attack) {
-    this(file, name, epoch, ra, dynRep, multi, requeueInt, part, roots, max, links, true, byz, attack);
+                       boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
+                       String links, ByzantineNodeSelection byz, Attack attack,
+                       boolean areTransactionsConcurrent) {
+    this(file, name, epoch, ra, dynRep, multi, requeueInt, part, roots, max, links, true, byz,
+            attack, areTransactionsConcurrent);
   }
 
   public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
-                       boolean multi, double requeueInt, Partitioner part, int[] roots, int max) {
-    this(file, name, epoch, ra, dynRep, multi, requeueInt, part, roots, max, null, true, null, null);
+                       boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
+                       boolean areTransactionsConcurrent) {
+    this(file, name, epoch, ra, dynRep, multi, requeueInt, part, roots, max, null, true,
+            null, null, areTransactionsConcurrent);
   }
 
   public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
                        boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
                        boolean up, ByzantineNodeSelection byzSelection, Attack attack) {
-    this(file, name, epoch, ra, dynRep, multi, requeueInt, part, roots, max, null, up, byzSelection, attack);
+    this(file, name, epoch, ra, dynRep, multi, requeueInt, part, roots, max, null, up, byzSelection,
+            attack, false);
   }
 
   @Override
@@ -225,8 +233,8 @@ public class CreditNetwork extends Metric {
 
       count++;
       //if (log){
-      System.out.println("Perform transaction s=" + cur.src + " d= " + cur.dst +
-              " val= " + cur.val + " time= " + cur.time);
+      //System.out.println("Perform transaction s=" + cur.src + " d= " + cur.dst +
+      //        " val= " + cur.val + " time= " + cur.time);
       //}
 
 
@@ -569,28 +577,6 @@ public class CreditNetwork extends Metric {
 
         }
       }
-//			for (int j = 0; j < this.roots.length; j++){
-//				SpanningTree sp =(SpanningTree)g.getProperty("SPANNINGTREE_"+j);
-//				for (int k = 0; k < this.zeroEdges.size(); k++){
-//					Edge e = this.zeroEdges.get(k);
-//					int s = e.getSrc();
-//					int t = e.getDst();
-//					int cut = -1;
-//					if (sp.getParent(s) == t){
-//						cut = s;
-//					}
-//					if (sp.getParent(t) == s){
-//						cut = t;
-//					}
-//					if (cut != -1){
-//						if (log){
-//							System.out.println("Repair tree " + j + " at expired edge ("+s + ","+t+")");
-//						}
-//					    TreeCoordinates coords = (TreeCoordinates)g.getProperty("TREE_COORDINATES_"+j);	
-//					    st = st + this.repairTree(nodes, sp, coords, cut, (CreditLinks) g.getProperty("CREDIT_LINKS"));	
-//					}
-//				}
-//			}
     }
     return st;
   }
@@ -627,11 +613,6 @@ public class CreditNetwork extends Metric {
     for (int j = 0; j < mins.length; j++) {
       paths[j] = ra.getRoute(src, dest, j, g, nodes, exclude);
 
-      String path = "";
-      for (int i = 0; i < paths[j].length; i++) {
-        path = path + " " + paths[j][i];
-      }
-      //System.out.println(j + " " + path);
       if (paths[j][paths[j].length - 1] == dest) {
         int l = src;
         int i = 1;
@@ -911,19 +892,14 @@ public class CreditNetwork extends Metric {
   }
 
   private void weightUpdate(CreditLinks edgeweights, HashMap<Edge, Double> updateWeight) {
-    Iterator<Entry<Edge, Double>> it = updateWeight.entrySet().iterator();
-    while (it.hasNext()) {
-      Entry<Edge, Double> entry = it.next();
+    for (Entry<Edge, Double> entry : updateWeight.entrySet()) {
       edgeweights.setWeight(entry.getKey(), entry.getValue());
     }
   }
 
-
   private void setZeros(CreditLinks edgeweights, HashMap<Edge, Double> updateWeight) {
-    this.zeroEdges = new Vector<Edge>();
-    Iterator<Entry<Edge, Double>> it = updateWeight.entrySet().iterator();
-    while (it.hasNext()) {
-      Entry<Edge, Double> entry = it.next();
+    this.zeroEdges = new Vector<>();
+    for (Entry<Edge, Double> entry : updateWeight.entrySet()) {
       int src = entry.getKey().getSrc();
       int dst = entry.getKey().getDst();
       if (edgeweights.getMaxTransactionAmount(src, dst) == 0) {

@@ -132,36 +132,7 @@ public abstract class Treeroute extends Metric {
   }
 
   public int[] getRoute(int src, int dest, int r, Graph g, Node[] nodes, boolean[] exclude) {
-    coords = ((TreeCoordinates) g.getProperty("TREE_COORDINATES_" + r)).coords;
-    sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + r);
-    int root = sp.getSrc();
-    int[] destC = this.coords[dest];
-    Vector<Integer> route = new Vector<Integer>();
-    route.add(src);
-    initRoute();
-    int pre = -1;
-    boolean done = false;
-    while (!done) {
-      int next = this.nextHop(src, nodes, destC, dest, exclude, pre);
-      route.add(next);
-      pre = src;
-      src = next;
-      if (root == src) {
-        this.fraction_root++;
-      }
-      if (src == -1) {
-        done = true;
-      }
-      if (src == dest) {
-        done = true;
-      }
-
-    }
-    int[] path = new int[route.size()];
-    for (int i = 0; i < route.size(); i++) {
-      path[i] = route.get(i);
-    }
-    return path;
+    return getRoute(src, dest, r, g, nodes, exclude, null, 0);
   }
 
   public int[] getRoute(int src, int dest, int r, Graph g, Node[] nodes, boolean[] exclude,
@@ -176,7 +147,12 @@ public abstract class Treeroute extends Metric {
     int pre = -1;
     boolean done = false;
     while (!done) {
-      int next = this.nextHopWeight(edgeweights, src, nodes, destC, dest, exclude, pre, weight);
+      int next;
+      if (edgeweights == null) {
+        next = this.nextHop(src, nodes, destC, dest, exclude, pre);
+      } else {
+        next = this.nextHopWeight(edgeweights, src, nodes, destC, dest, exclude, pre, weight);
+      }
       route.add(next);
       pre = src;
       src = next;
@@ -187,9 +163,7 @@ public abstract class Treeroute extends Metric {
         done = true;
       }
       if (src == dest) {
-        if (!(this instanceof TreerouteSilentW) || !((TreerouteSilentW) this).up) {
-          done = true;
-        }
+        done = true;
       }
     }
     int[] path = new int[route.size()];
@@ -383,8 +357,8 @@ public abstract class Treeroute extends Metric {
   }
 
   protected LinkedList<Integer> nextHopsWeight(CreditLinks edgeWeights, int cur, Node[] nodes, int[] destID, int dest, boolean[] exclude, int pre, double weight) {
-    LinkedList<Integer> list = new LinkedList<Integer>();
-    LinkedList<Integer> listall = new LinkedList<Integer>();
+    LinkedList<Integer> list = new LinkedList<>();
+    LinkedList<Integer> listall = new LinkedList<>();
     int add = this.nextHop(cur, nodes, destID, dest, exclude, pre);
     while (add != -1) {
       if (edgeWeights.getMaxTransactionAmount(cur, add) >= weight - 0.0000001) {
