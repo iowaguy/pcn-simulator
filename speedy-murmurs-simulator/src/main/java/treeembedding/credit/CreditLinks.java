@@ -1,7 +1,6 @@
 package treeembedding.credit;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -28,22 +27,13 @@ public class CreditLinks extends GraphProperty {
   }
 
 
-  public LinkWeight getWeights(int src, int dst) {
-    if (src < dst) {
-      return this.getWeights(new Edge(src, dst));
-    } else {
-      return this.getWeights(new Edge(dst, src));
-    }
+  LinkWeight getWeights(int src, int dst) {
+    return this.getWeights(makeEdge(src, dst));
   }
 
   public double getMaxTransactionAmount(int src, int dst) {
-    if (src < dst) {
-      LinkWeight weight = this.getWeights(new Edge(src, dst));
-      return weight.getMax() - weight.getCurrent();
-    } else {
-      LinkWeight weight = this.getWeights(new Edge(dst, src));
-      return weight.getCurrent() - weight.getMin();
-    }
+    LinkWeight weight = this.getWeights(makeEdge(src, dst));
+    return weight.getMaxTransactionAmount();
   }
 
 
@@ -51,13 +41,13 @@ public class CreditLinks extends GraphProperty {
     return this.weights.entrySet();
   }
 
-  public void setWeight(Edge edge, LinkWeight weight) {
+  void setWeight(Edge edge, LinkWeight weight) {
     this.weights.put(edge, weight);
   }
 
-  public boolean setWeight(int src, int dst, double weightChange) {
+  boolean setWeight(int src, int dst, double weightChange) {
+    LinkWeight ws = this.weights.get(makeEdge(src, dst));
     if (src < dst) {
-      LinkWeight ws = this.weights.get(new Edge(src, dst));
       double dn = ws.getCurrent() + weightChange;
       if (dn <= ws.getMax()) {
         ws.setCurrent(dn);
@@ -66,7 +56,6 @@ public class CreditLinks extends GraphProperty {
         return false;
       }
     } else {
-      LinkWeight ws = this.weights.get(new Edge(dst, src));
       double dn = ws.getCurrent() - weightChange;
       if (dn >= ws.getMin()) {
         ws.setCurrent(dn);
@@ -79,7 +68,7 @@ public class CreditLinks extends GraphProperty {
 
   public void setBound(int src, int dst, double val) {
     if (src < dst) {
-    LinkWeight ws = this.weights.get(new Edge(src, dst));
+      LinkWeight ws = this.weights.get(new Edge(src, dst));
       ws.setMax(val);
     } else {
       LinkWeight ws = this.weights.get(new Edge(dst, src));
@@ -87,39 +76,29 @@ public class CreditLinks extends GraphProperty {
     }
   }
 
-  public void setWeight(Edge e, double val) {
+  void setWeight(Edge e, double val) {
     LinkWeight ws = this.weights.get(e);
     ws.setCurrent(val);
   }
 
-  public LinkWeight getWeights(Edge edge) {
-    try {
-      return this.weights.get(edge);
-    } catch (NullPointerException e) {
-      return null;
+  // returns the LinkWeight object, or null if no such link exists
+  private LinkWeight getWeights(Edge edge) {
+    LinkWeight w = this.weights.get(edge);
+    if (w == null) {
+      return new LinkWeight(edge);
     }
+    return w;
   }
 
-  public double getWeight(int src, int dst) {
-    Edge edge = src < dst ? new Edge(src, dst) : new Edge(dst, src);
-    try {
-      LinkWeight ws = this.weights.get(edge);
-      return ws.getCurrent();
-    } catch (NullPointerException e) {
-      return 0;
-    }
+  double getWeight(int src, int dst) {
+    return this.getWeight(makeEdge(src, dst));
   }
 
-  public double getWeight(Edge edge) {
-    try {
-      LinkWeight ws = this.weights.get(edge);
-      return ws.getCurrent();
-    } catch (NullPointerException e) {
-      return 0;
-    }
+  double getWeight(Edge edge) {
+    return this.getWeights(edge).getCurrent();
   }
 
-  public Edge makeEdge(int src, int dst) {
+  static Edge makeEdge(int src, int dst) {
     return src < dst ? new Edge(src, dst) : new Edge(dst, src);
   }
 
@@ -129,9 +108,7 @@ public class CreditLinks extends GraphProperty {
 
     this.writeHeader(fw, this.getClass(), key);
 
-    Iterator<Entry<Edge, LinkWeight>> it = this.weights.entrySet().iterator();
-    while (it.hasNext()) {
-      Entry<Edge, LinkWeight> entry = it.next();
+    for (Entry<Edge, LinkWeight> entry : this.weights.entrySet()) {
       LinkWeight w = entry.getValue();
       String ws = w.getMin() + " " + w.getCurrent() + " " + w.getMax();
       fw.writeln(entry.getKey().getSrc() + " " + entry.getKey().getDst() + " " + ws);
@@ -145,7 +122,7 @@ public class CreditLinks extends GraphProperty {
     Filereader fr = new Filereader(filename);
 
     String key = this.readHeader(fr);
-    this.weights = new HashMap<Edge, LinkWeight>();
+    this.weights = new HashMap<>();
     String line = null;
     while ((line = fr.readLine()) != null) {
       String[] parts = line.split(" ");
@@ -154,7 +131,7 @@ public class CreditLinks extends GraphProperty {
       double val_low = Double.parseDouble(parts[2]);
       double val = Double.parseDouble(parts[3]);
       double val_high = Double.parseDouble(parts[4]);
-      this.weights.put(e, new LinkWeight(val_low, val_high, val));
+      this.weights.put(e, new LinkWeight(e, val_low, val_high, val));
     }
 
     fr.close();

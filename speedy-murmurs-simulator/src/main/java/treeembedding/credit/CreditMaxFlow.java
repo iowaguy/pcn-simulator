@@ -25,6 +25,8 @@ import gtna.util.parameter.DoubleParameter;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 
+import static treeembedding.credit.CreditLinks.makeEdge;
+
 
 public class CreditMaxFlow extends Metric {
   //input parameters
@@ -114,13 +116,13 @@ public class CreditMaxFlow extends Metric {
     int[] cAllPath = new int[2];
     success_first = 0;
     success = 0;
-    Vector<Double> succR = new Vector<Double>();
-    Vector<Integer> stabMes = new Vector<Integer>();
+    Vector<Double> succR = new Vector<>();
+    Vector<Integer> stabMes = new Vector<>();
     Node[] nodes = g.getNodes();
     boolean[] exclude = new boolean[nodes.length];
 
     //go over transactions
-    LinkedList<Transaction> toRetry = new LinkedList<Transaction>();
+    LinkedList<Transaction> toRetry = new LinkedList<>();
     int epoch_old = 0;
     int epoch_cur = 0;
     double cur_succ = 0;
@@ -142,7 +144,7 @@ public class CreditMaxFlow extends Metric {
         double nt = this.newLinks.peek()[0];
         while (nt <= cur.time) {
           double[] link = this.newLinks.poll();
-          this.addLink((int) link[1], (int) link[2], new LinkWeight(link[3], link[5], link[4]), g);
+          this.addLink((int) link[1], (int) link[2], new LinkWeight(makeEdge(cur.src, cur.dst), link[3], link[5], link[4]), g);
           nt = this.newLinks.isEmpty() ? Double.MAX_VALUE : this.newLinks.peek()[0];
         }
       }
