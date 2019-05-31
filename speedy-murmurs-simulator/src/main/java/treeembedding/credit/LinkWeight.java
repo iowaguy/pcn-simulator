@@ -2,9 +2,8 @@ package treeembedding.credit;
 
 import gtna.graph.Edge;
 
-public class LinkWeight {
-  private int src;
-  private int dest;
+public class Link {
+  private Edge edge;
   private double min;
   private double max;
   private double current;
@@ -12,18 +11,16 @@ public class LinkWeight {
   // these are the funds that are not tied up in any concurrent transactions
   private double unlocked;
 
-  LinkWeight(Edge edge) {
-    this.src = edge.getSrc();
-    this.dest = edge.getDst();
+  Link(Edge edge) {
+    this.edge = edge;
     this.min = 0;
     this.max = 0;
     this.current = 0;
     this.unlocked = 0;
   }
 
-  LinkWeight(Edge edge, double min, double max, double current) {
-    this.src = edge.getSrc();
-    this.dest = edge.getDst();
+  Link(Edge edge, double min, double max, double current) {
+    this.edge = edge;
     this.min = min;
     this.max = max;
     this.current = current;
@@ -62,10 +59,24 @@ public class LinkWeight {
   }
 
   double getMaxTransactionAmount() {
-    if (src < dest) {
+    if (edge.getSrc() < edge.getDst()) {
       return getMax() - getCurrent();
     } else {
       return getCurrent() - getMin();
+    }
+  }
+
+  @Override
+  public int hashCode() {
+    return this.edge.toString().hashCode();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o instanceof Link) {
+      return o.hashCode() == this.hashCode();
+    } else {
+      return false;
     }
   }
 }
