@@ -580,13 +580,13 @@ public class CreditFlare extends Metric {
         int l = p[0];
         for (int i = 1; i < p.length; i++) {
           int k = p[i];
-          Edge e = edgeweights.makeEdge(l, k);
+          Edge e = CreditLinks.makeEdge(l, k);
           double w = edgeweights.getWeight(e);
           if (!originalWeight.containsKey(e)) {
             originalWeight.put(e, w);
           }
 
-          if (!edgeweights.setWeight(l, k, vals[j])) {
+          if (!edgeweights.updateWeight(l, k, vals[j])) {
             succ = false;
             break;
           } else {

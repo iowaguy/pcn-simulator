@@ -17,71 +17,20 @@ public class CreditLinks extends GraphProperty {
   private Map<Edge, LinkWeight> weights;
 
 
-  public void setWeights(Map<Edge, LinkWeight> weights) {
-    this.weights = weights;
-  }
-
-
   public CreditLinks() {
     this.weights = new HashMap<>();
   }
 
+  static Edge makeEdge(int src, int dst) {
+    return src < dst ? new Edge(src, dst) : new Edge(dst, src);
+  }
 
   LinkWeight getWeights(int src, int dst) {
     return this.getWeights(makeEdge(src, dst));
   }
 
-  public double getMaxTransactionAmount(int src, int dst) {
-    LinkWeight weight = this.getWeights(makeEdge(src, dst));
-    return weight.getMaxTransactionAmount();
-  }
-
-
-  public Set<Entry<Edge, LinkWeight>> getWeights() {
-    return this.weights.entrySet();
-  }
-
-  void setWeight(Edge edge, LinkWeight weight) {
-    this.weights.put(edge, weight);
-  }
-
-  boolean setWeight(int src, int dst, double weightChange) {
-    LinkWeight ws = this.weights.get(makeEdge(src, dst));
-    if (src < dst) {
-      double dn = ws.getCurrent() + weightChange;
-      if (dn <= ws.getMax()) {
-        ws.setCurrent(dn);
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      double dn = ws.getCurrent() - weightChange;
-      if (dn >= ws.getMin()) {
-        ws.setCurrent(dn);
-        return true;
-      } else {
-        return false;
-      }
-    }
-  }
-
-  public void setBound(int src, int dst, double val) {
-    if (src < dst) {
-      LinkWeight ws = this.weights.get(new Edge(src, dst));
-      ws.setMax(val);
-    } else {
-      LinkWeight ws = this.weights.get(new Edge(dst, src));
-      ws.setMin(-val);
-    }
-  }
-
-  void setWeight(Edge e, double val) {
-    LinkWeight ws = this.weights.get(e);
-    ws.setCurrent(val);
-  }
-
-  // returns the LinkWeight object, or null if no such link exists
+  // returns the LinkWeight object, will be a zeroed object if link doesn't exist. this is because
+  // a zeroed link is the same as no link
   private LinkWeight getWeights(Edge edge) {
     LinkWeight w = this.weights.get(edge);
     if (w == null) {
@@ -98,8 +47,39 @@ public class CreditLinks extends GraphProperty {
     return this.getWeights(edge).getCurrent();
   }
 
-  static Edge makeEdge(int src, int dst) {
-    return src < dst ? new Edge(src, dst) : new Edge(dst, src);
+  public double getMaxTransactionAmount(int src, int dst) {
+    return this.getWeights(makeEdge(src, dst)).getMaxTransactionAmount();
+  }
+
+
+  public Set<Entry<Edge, LinkWeight>> getWeights() {
+    return this.weights.entrySet();
+  }
+
+  public void setWeights(Map<Edge, LinkWeight> weights) {
+    this.weights = weights;
+  }
+
+  void setWeight(Edge edge, LinkWeight weight) {
+    this.weights.put(edge, weight);
+  }
+
+  boolean updateWeight(int src, int dst, double weightChange) {
+    return getWeights(src, dst).updateWeight(weightChange);
+  }
+
+  public void setBound(int src, int dst, double val) {
+    LinkWeight ws = getWeights(src, dst);
+    if (src < dst) {
+      ws.setMax(val);
+    } else {
+      ws.setMin(-val);
+    }
+  }
+
+  void setWeight(Edge e, double val) {
+    LinkWeight ws = this.getWeights(e);
+    ws.setCurrent(val);
   }
 
   @Override

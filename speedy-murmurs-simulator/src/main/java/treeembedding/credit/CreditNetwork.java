@@ -676,13 +676,13 @@ public class CreditNetwork extends Metric {
           int l = paths[j][0];
           for (int i = 1; i < paths[j].length; i++) {
             int k = paths[j][i];
-            Edge e = edgeweights.makeEdge(l, k);
+            Edge e = CreditLinks.makeEdge(l, k);
             double w = edgeweights.getWeight(e);
             if (!originalWeight.containsKey(e)) {
               originalWeight.put(e, w);
             }
 
-            if (!edgeweights.setWeight(l, k, vals[j])) {
+            if (!edgeweights.updateWeight(l, k, vals[j])) {
               succ = false;
               break;
             } else {
@@ -837,12 +837,12 @@ public class CreditNetwork extends Metric {
           int l = paths[j][0];
           for (int i = 1; i < paths[j].length; i++) {
             int k = paths[j][i];
-            Edge e = edgeweights.makeEdge(l, k);
+            Edge e = CreditLinks.makeEdge(l, k);
             double w = edgeweights.getWeight(e);
             if (!originalWeight.containsKey(e)) {
               originalWeight.put(e, w);
             }
-            edgeweights.setWeight(l, k, vals[j]);
+            edgeweights.updateWeight(l, k, vals[j]);
             if (log) {
               System.out.println("----Set weight of (" + l + "," + k + ") to " + edgeweights.getWeight(e)
                       + " (previous " + w + ")");
