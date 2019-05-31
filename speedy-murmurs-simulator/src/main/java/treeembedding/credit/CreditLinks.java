@@ -31,7 +31,7 @@ public class CreditLinks extends GraphProperty {
 
   // returns the LinkWeight object, will be a zeroed object if link doesn't exist. this is because
   // a zeroed link is the same as no link
-  private LinkWeight getWeights(Edge edge) {
+  LinkWeight getWeights(Edge edge) {
     LinkWeight w = this.weights.get(edge);
     if (w == null) {
       return new LinkWeight(edge);

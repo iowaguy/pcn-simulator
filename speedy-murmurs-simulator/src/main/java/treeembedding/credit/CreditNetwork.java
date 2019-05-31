@@ -610,23 +610,23 @@ public class CreditNetwork extends Metric {
     int dest = cur.dst;
     //compute paths and minimum credit along the paths
     double[] mins = new double[roots.length];
-    for (int j = 0; j < mins.length; j++) {
-      paths[j] = ra.getRoute(src, dest, j, g, nodes, exclude);
+    for (int treeIndex = 0; treeIndex < mins.length; treeIndex++) {
+      paths[treeIndex] = ra.getRoute(src, dest, treeIndex, g, nodes, exclude);
 
-      if (paths[j][paths[j].length - 1] == dest) {
+      if (paths[treeIndex][paths[treeIndex].length - 1] == dest) {
         int l = src;
-        int i = 1;
+        int nodeIndex = 1;
         double min = Double.MAX_VALUE;
-        while (i < paths[j].length) {
-          int k = paths[j][i];
+        while (nodeIndex < paths[treeIndex].length) {
+          int k = paths[treeIndex][nodeIndex];
           double w = edgeweights.getMaxTransactionAmount(l, k);
           if (w < min) {
             min = w;
           }
           l = k;
-          i++;
+          nodeIndex++;
         }
-        mins[j] = min;
+        mins[treeIndex] = min;
       }
 
     }
@@ -637,12 +637,13 @@ public class CreditNetwork extends Metric {
     boolean succ = false;
     if (vals != null) {
       succ = true;
-      for (int j = 0; j < paths.length; j++) {
+      for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
 
+        // Attack logic
         if (attack.getType() == AttackType.DROP_ALL) {
           // if byzantine node is on path, do byzantine action
-          for (int i = 1; i < paths[j].length; i++) {
-            if (this.byzantineNodes.contains(paths[j][i])) {
+          for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
+            if (this.byzantineNodes.contains(paths[treeIndex][nodeIndex])) {
               // do byzantine action
               succ = false;
               break;
@@ -653,23 +654,23 @@ public class CreditNetwork extends Metric {
           break;
         }
 
-        if (vals[j] > 0) {
-          int l = paths[j][0];
-          for (int i = 1; i < paths[j].length; i++) {
-            int k = paths[j][i];
+        if (vals[treeIndex] > 0) {
+          int l = paths[treeIndex][0];
+          for (int i = 1; i < paths[treeIndex].length; i++) {
+            int k = paths[treeIndex][i];
             Edge e = CreditLinks.makeEdge(l, k);
-            double w = edgeweights.getWeight(e);
+            LinkWeight w = edgeweights.getWeights(e);
             if (!originalWeight.containsKey(e)) {
-              originalWeight.put(e, w);
+              originalWeight.put(e, w.getCurrent());
             }
 
-            if (!edgeweights.updateWeight(l, k, vals[j])) {
+            if (!edgeweights.updateWeight(l, k, vals[treeIndex])) {
               succ = false;
               break;
             } else {
               if (log) {
                 System.out.println("----Set weight of (" + l + "," + k + ") to " + edgeweights.getWeight(e)
-                        + "(previous " + w + ")");
+                        + "(previous " + w.getCurrent() + ")");
               }
             }
             l = k;

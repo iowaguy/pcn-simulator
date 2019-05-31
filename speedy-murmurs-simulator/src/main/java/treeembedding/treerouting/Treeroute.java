@@ -19,6 +19,7 @@ import treeembedding.Util;
 import treeembedding.credit.CreditLinks;
 
 public abstract class Treeroute extends Metric {
+  public static final double MIN_TRANSACTION = 0.0000001;
   int trials;
   double fraction_root;
   double traffic_max;
@@ -361,7 +362,7 @@ public abstract class Treeroute extends Metric {
     LinkedList<Integer> listall = new LinkedList<>();
     int add = this.nextHop(cur, nodes, destID, dest, exclude, pre);
     while (add != -1) {
-      if (edgeWeights.getMaxTransactionAmount(cur, add) >= weight - 0.0000001) {
+      if (edgeWeights.getMaxTransactionAmount(cur, add) >= weight - MIN_TRANSACTION) {
         list.add(add);
       }
       listall.add(add);
