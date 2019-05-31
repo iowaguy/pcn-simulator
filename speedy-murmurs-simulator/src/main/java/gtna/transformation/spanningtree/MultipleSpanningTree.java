@@ -314,13 +314,13 @@ public class MultipleSpanningTree extends Transformation {
       Vector<Integer> creditIn = new Vector<Integer>();
       Vector<Integer> creditOut = new Vector<Integer>();
       for (int j = 0; j < in.length; j++) {
-        if (ew.getPot(in[j], n.getIndex()) > 0) {
+        if (ew.getMaxTransactionAmount(in[j], n.getIndex()) > 0) {
           creditIn.add(in[j]);
 //						if(in[j] == 19051 || n.getIndex() == 19051){
 //							System.out.println("Added In " + in[j] + " for " + n.getIndex());
 //						}
         }
-        if (ew.getPot(n.getIndex(), out[j]) > 0) {
+        if (ew.getMaxTransactionAmount(n.getIndex(), out[j]) > 0) {
           creditOut.add(out[j]);
 //						if(out[j] == 19051 || n.getIndex() == 19051){
 //							System.out.println("Added Out " + out[j] + " for " + n.getIndex());

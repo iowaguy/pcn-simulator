@@ -387,7 +387,7 @@ public abstract class Treeroute extends Metric {
     LinkedList<Integer> listall = new LinkedList<Integer>();
     int add = this.nextHop(cur, nodes, destID, dest, exclude, pre);
     while (add != -1) {
-      if (edgeWeights.getPot(cur, add) >= weight - 0.0000001) {
+      if (edgeWeights.getMaxTransactionAmount(cur, add) >= weight - 0.0000001) {
         list.add(add);
       }
       listall.add(add);

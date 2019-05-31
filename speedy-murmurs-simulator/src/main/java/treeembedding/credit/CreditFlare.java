@@ -399,7 +399,7 @@ public class CreditFlare extends Metric {
         int node = q.poll();
         int[] out = nodes[node].getOutgoingEdges();
         for (int p : out) {
-          if (!pred.containsKey(p) && edgeweights.getPot(node, p) > 0) {
+          if (!pred.containsKey(p) && edgeweights.getMaxTransactionAmount(node, p) > 0) {
             pred.put(p, node);
             next.add(p);
             if (!contained.contains(p)) {
@@ -437,7 +437,7 @@ public class CreditFlare extends Metric {
         int node = q.poll();
         int[] peers = nodes[node].getOutgoingEdges();
         for (int p : peers) {
-          if (!neighEdges.contains(new Edge(node, p)) && edgeweights.getPot(node, p) > 0) {
+          if (!neighEdges.contains(new Edge(node, p)) && edgeweights.getMaxTransactionAmount(node, p) > 0) {
             neighEdges.add(new Edge(node, p));
             if (!next.contains(p)) {
               next.add(p);
@@ -454,13 +454,13 @@ public class CreditFlare extends Metric {
   private int addLink(int src, int dst, double weight, Graph g) {
     CreditLinks edgeweights = (CreditLinks) g.getProperty("CREDIT_LINKS");
     if (log) System.out.println("Added link " + src + " " + dst + " " + weight);
-    double[] ws = new double[3];
+    LinkWeight ws;
     if (src < dst) {
       ws = edgeweights.getWeights(src, dst);
-      ws[2] = weight;
+      ws.setMax(weight);
     } else {
       ws = edgeweights.getWeights(dst, src);
-      ws[0] = -weight;
+      ws.setMin(-weight);
     }
 
     //compute cost of update
@@ -554,7 +554,7 @@ public class CreditFlare extends Metric {
       mins[j] = Double.MAX_VALUE;
       for (int i = 1; i < p.length; i++) {
 
-        double w = edgeweights.getPot(p[i - 1], p[i]);
+        double w = edgeweights.getMaxTransactionAmount(p[i - 1], p[i]);
         if (w < mins[j]) {
           mins[j] = w;
         }
@@ -631,10 +631,10 @@ public class CreditFlare extends Metric {
       Entry<Edge, Double> entry = it.next();
       int src = entry.getKey().getSrc();
       int dst = entry.getKey().getDst();
-      if (edgeweights.getPot(src, dst) == 0) {
+      if (edgeweights.getMaxTransactionAmount(src, dst) == 0) {
         this.zeroEdges.add(new Edge(src, dst));
       }
-      if (edgeweights.getPot(dst, src) == 0) {
+      if (edgeweights.getMaxTransactionAmount(dst, src) == 0) {
         this.zeroEdges.add(new Edge(dst, src));
       }
     }

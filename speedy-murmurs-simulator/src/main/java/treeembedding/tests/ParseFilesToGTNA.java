@@ -24,6 +24,7 @@ import gtna.io.graphReader.GtnaGraphReader;
 import gtna.io.graphWriter.GtnaGraphWriter;
 import gtna.transformation.partition.LargestWeaklyConnectedComponent;
 import treeembedding.credit.CreditLinks;
+import treeembedding.credit.LinkWeight;
 
 public class ParseFilesToGTNA {
 
@@ -391,10 +392,10 @@ public class ParseFilesToGTNA {
     Graph nG = lcc.transform(g);
     //change credit links
     CreditLinks cL = (CreditLinks) g.getProperty("CREDIT_LINKS");
-    Iterator<Entry<Edge, double[]>> it = cL.getWeights().iterator();
-    Map<Edge, double[]> nWeights = new HashMap<Edge, double[]>();
+    Iterator<Entry<Edge, LinkWeight>> it = cL.getWeights().iterator();
+    Map<Edge, LinkWeight> nWeights = new HashMap<>();
     while (it.hasNext()) {
-      Entry<Edge, double[]> entry = it.next();
+      Entry<Edge, LinkWeight> entry = it.next();
       int src = entry.getKey().getSrc();
       int dst = entry.getKey().getDst();
       int nSrc = lcc.getNewIndex(src);
@@ -746,14 +747,14 @@ public class ParseFilesToGTNA {
     for (int i = 0; i < nodes.length; i++) {
       int[] out = nodes[i].getOutgoingEdges();
       for (int n : out) {
-        if (bi && ew.getPot(i, n) > 0 && ew.getPot(n, i) > 0) {
+        if (bi && ew.getMaxTransactionAmount(i, n) > 0 && ew.getMaxTransactionAmount(n, i) > 0) {
           conns[i]++;
         }
         if (!bi) {
-          if (ew.getPot(n, i) > 0) {
+          if (ew.getMaxTransactionAmount(n, i) > 0) {
             conns[i]++;
           }
-          if (ew.getPot(i, n) > 0) {
+          if (ew.getMaxTransactionAmount(i, n) > 0) {
             conns[i]++;
           }
         }

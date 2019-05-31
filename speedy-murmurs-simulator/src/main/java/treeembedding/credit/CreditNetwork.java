@@ -425,7 +425,7 @@ public class CreditNetwork extends Metric {
     int c = 0;
     for (Edge e : edges.getEdges()) {
       if (e.getSrc() < e.getDst()) {
-        if (ew.getPot(e.getSrc(), e.getDst()) > 0 || ew.getPot(e.getDst(), e.getSrc()) > 0) {
+        if (ew.getMaxTransactionAmount(e.getSrc(), e.getDst()) > 0 || ew.getMaxTransactionAmount(e.getDst(), e.getSrc()) > 0) {
           c++;
         }
       }
@@ -517,16 +517,16 @@ public class CreditNetwork extends Metric {
   private int addLink(int src, int dst, double weight, Graph g) {
     CreditLinks edgeweights = (CreditLinks) g.getProperty("CREDIT_LINKS");
     //if (log) System.out.println("Added link " + src + " " + dst + " " + weight);
-    double[] ws = new double[3];
+    LinkWeight ws;
     double old;
     if (src < dst) {
       ws = edgeweights.getWeights(src, dst);
-      old = ws[2];
-      ws[2] = weight;
+      old = ws.getMax();
+      ws.setMax(weight);
     } else {
       ws = edgeweights.getWeights(dst, src);
-      old = ws[0];
-      ws[0] = -weight;
+      old = ws.getMin();
+      ws.setMin(-weight);
     }
 
     int st = 0;
@@ -598,7 +598,7 @@ public class CreditNetwork extends Metric {
   private boolean isZeroPath(SpanningTree sp, int node, CreditLinks edgeweights) {
     int parent = sp.getParent(node);
     while (parent != -1) {
-      if (edgeweights.getPot(node, parent) > 0 && edgeweights.getPot(parent, node) > 0) {
+      if (edgeweights.getMaxTransactionAmount(node, parent) > 0 && edgeweights.getMaxTransactionAmount(parent, node) > 0) {
         node = parent;
         parent = sp.getParent(node);
       } else {
@@ -638,7 +638,7 @@ public class CreditNetwork extends Metric {
         double min = Double.MAX_VALUE;
         while (i < paths[j].length) {
           int k = paths[j][i];
-          double w = edgeweights.getPot(l, k);
+          double w = edgeweights.getMaxTransactionAmount(l, k);
           if (w < min) {
             min = w;
           }
@@ -847,7 +847,7 @@ public class CreditNetwork extends Metric {
               System.out.println("----Set weight of (" + l + "," + k + ") to " + edgeweights.getWeight(e)
                       + " (previous " + w + ")");
             }
-            if (edgeweights.getPot(l, k) == 0) {
+            if (edgeweights.getMaxTransactionAmount(l, k) == 0) {
               this.zeroEdges.add(e);
             }
             l = k;
@@ -926,10 +926,10 @@ public class CreditNetwork extends Metric {
       Entry<Edge, Double> entry = it.next();
       int src = entry.getKey().getSrc();
       int dst = entry.getKey().getDst();
-      if (edgeweights.getPot(src, dst) == 0) {
+      if (edgeweights.getMaxTransactionAmount(src, dst) == 0) {
         this.zeroEdges.add(new Edge(src, dst));
       }
-      if (edgeweights.getPot(dst, src) == 0) {
+      if (edgeweights.getMaxTransactionAmount(dst, src) == 0) {
         this.zeroEdges.add(new Edge(dst, src));
       }
     }

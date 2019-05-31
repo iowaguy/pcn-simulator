@@ -142,7 +142,7 @@ public class CreditMaxFlow extends Metric {
         double nt = this.newLinks.peek()[0];
         while (nt <= cur.time) {
           double[] link = this.newLinks.poll();
-          this.addLink((int) link[1], (int) link[2], new double[]{link[3], link[4], link[5]}, g);
+          this.addLink((int) link[1], (int) link[2], new LinkWeight(link[3], link[5], link[4]), g);
           nt = this.newLinks.isEmpty() ? Double.MAX_VALUE : this.newLinks.peek()[0];
         }
       }
@@ -267,7 +267,7 @@ public class CreditMaxFlow extends Metric {
       double min = Double.MAX_VALUE;
       int[] respath = resp[0];
       for (int i = 0; i < respath.length - 1; i++) {
-        double a = edgeweights.getPot(respath[i], respath[i + 1]);
+        double a = edgeweights.getMaxTransactionAmount(respath[i], respath[i + 1]);
         if (a < min) {
           min = a;
         }
@@ -331,7 +331,7 @@ public class CreditMaxFlow extends Metric {
       int n1 = q.poll();
       int[] out = nodes[n1].getOutgoingEdges();
       for (int n : out) {
-        if (pre[n][0] == -1 && ew.getPot(n1, n) > 0) {
+        if (pre[n][0] == -1 && ew.getMaxTransactionAmount(n1, n) > 0) {
           pre[n][0] = n1;
           pre[n][1] = pre[n1][1] + 1;
           mes++;
@@ -356,7 +356,7 @@ public class CreditMaxFlow extends Metric {
    * reconnect disconnected branch with root subroot
    */
 
-  private void addLink(int src, int dst, double[] weight, Graph g) {
+  private void addLink(int src, int dst, LinkWeight weight, Graph g) {
     CreditLinks edgeweights = (CreditLinks) g.getProperty("CREDIT_LINKS");
     edgeweights.setWeight(new Edge(src, dst), weight);
   }
