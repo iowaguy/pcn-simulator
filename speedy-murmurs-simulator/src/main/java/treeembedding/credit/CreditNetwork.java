@@ -634,9 +634,9 @@ public class CreditNetwork extends Metric {
     vals = part.partition(g, src, dest, cur.val, mins);
 
     //check if transaction works
-    boolean succ = false;
+    boolean successfull = false;
     if (vals != null) {
-      succ = true;
+      successfull = true;
       for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
 
         // Attack logic
@@ -645,44 +645,44 @@ public class CreditNetwork extends Metric {
           for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
             if (this.byzantineNodes.contains(paths[treeIndex][nodeIndex])) {
               // do byzantine action
-              succ = false;
+              successfull = false;
               break;
             }
           }
         }
-        if (!succ) {
+        if (!successfull) {
           break;
         }
 
         if (vals[treeIndex] > 0) {
-          int l = paths[treeIndex][0];
-          for (int i = 1; i < paths[treeIndex].length; i++) {
-            int k = paths[treeIndex][i];
-            Edge e = CreditLinks.makeEdge(l, k);
-            LinkWeight w = edgeweights.getWeights(e);
-            if (!originalWeight.containsKey(e)) {
-              originalWeight.put(e, w.getCurrent());
+          int currentNodeId = paths[treeIndex][0];
+          for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
+            int nextNodeId = paths[treeIndex][nodeIndex];
+            Edge edge = CreditLinks.makeEdge(currentNodeId, nextNodeId);
+            LinkWeight weights = edgeweights.getWeights(edge);
+            if (!originalWeight.containsKey(edge)) {
+              originalWeight.put(edge, weights.getCurrent());
             }
 
-            if (!edgeweights.updateWeight(l, k, vals[treeIndex])) {
-              succ = false;
+            if (!edgeweights.updateWeight(currentNodeId, nextNodeId, vals[treeIndex])) {
+              successfull = false;
               break;
             } else {
               if (log) {
-                System.out.println("----Set weight of (" + l + "," + k + ") to " + edgeweights.getWeight(e)
-                        + "(previous " + w.getCurrent() + ")");
+                System.out.println("----Set weight of (" + currentNodeId + "," + nextNodeId + ") to " + edgeweights.getWeight(edge)
+                        + "(previous " + weights.getCurrent() + ")");
               }
             }
-            l = k;
+            currentNodeId = nextNodeId;
 
           }
-          if (!succ) {
+          if (!successfull) {
             break;
           }
         }
       }
       // update weights
-      if (succ) {
+      if (successfull) {
         this.setZeros(edgeweights, originalWeight);
         if (log) {
           System.out.println("Success");
@@ -704,7 +704,7 @@ public class CreditNetwork extends Metric {
     //compute metrics
     int[] res = new int[6 + this.roots.length];
     //success
-    if (!succ) {
+    if (!successfull) {
       res[0] = -1;
     }
     //path length
