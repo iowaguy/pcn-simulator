@@ -1,5 +1,9 @@
 package treeembedding.credit;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import gtna.graph.Edge;
 
 public class LinkWeight {
@@ -7,6 +11,7 @@ public class LinkWeight {
   private double min;
   private double max;
   private double current;
+  private Map<Double, Integer> pendingTransactions;
 
   // these are the funds that are not tied up in any concurrent transactions
   private double unlocked;
@@ -17,6 +22,7 @@ public class LinkWeight {
     this.max = 0;
     this.current = 0;
     this.unlocked = 0;
+    this.pendingTransactions = new HashMap<>();
   }
 
   LinkWeight(Edge edge, double min, double max, double current) {
@@ -24,6 +30,8 @@ public class LinkWeight {
     this.min = min;
     this.max = max;
     this.current = current;
+    this.unlocked = current;
+    this.pendingTransactions = new ConcurrentHashMap<>();
   }
 
   public double getMin() {
@@ -49,13 +57,17 @@ public class LinkWeight {
   public synchronized void setCurrent(double current) {
     this.current = current;
   }
-  public double getUnlocked() {
+
+  private void updateCurrent(double weightChange) {
+    this.current += weightChange;
+  }
+
+  private double getUnlocked() {
     return unlocked;
   }
 
-  public synchronized void lockFunds(double lockAmount) {
-    //if ()
-    this.unlocked = lockAmount;
+  private synchronized void updateUnlocked(double unlocked) {
+    this.unlocked += unlocked;
   }
 
   double getMaxTransactionAmount() {
@@ -66,24 +78,53 @@ public class LinkWeight {
     }
   }
 
-  boolean updateWeight(double weightChange) {
+  boolean areFundsAvailable(double weightChange, boolean concurrentTransactions) {
     if (this.edge.getSrc() < this.edge.getDst()) {
-      double dn = getCurrent() + weightChange;
-      if (dn <= getMax()) {
-        setCurrent(dn);
-        return true;
+      weightChange = -weightChange;
+    }
+
+    if (concurrentTransactions) {
+      double newPotentialWeight = getUnlocked() + weightChange;
+      if (weightChange > 0) {
+        return newPotentialWeight <= getMax();
+      } else if (weightChange < 0) {
+        return newPotentialWeight >= getMin();
       } else {
-        return false;
+        return true;
       }
     } else {
-      double dn = getCurrent() - weightChange;
-      if (dn >= getMin()) {
-        setCurrent(dn);
-        return true;
+      double newPotentialWeight = getCurrent() + weightChange;
+      if (weightChange > 0) {
+        return newPotentialWeight <= getMax();
+      } else if (weightChange < 0) {
+        return newPotentialWeight >= getMin();
       } else {
-        return false;
+        return true;
       }
     }
+  }
+
+  boolean prepareUpdateWeight(double weightChange, boolean concurrentTransactions) {
+    if (!areFundsAvailable(weightChange, concurrentTransactions)) {
+      return false;
+    }
+
+    // if key is not in map, put 1 as value, otherwise sum 1 to the current value
+    this.pendingTransactions.merge(weightChange, 1, Integer::sum);
+    if (this.edge.getSrc() < this.edge.getDst()) {
+      if (concurrentTransactions) {
+        updateUnlocked(weightChange);
+      } else {
+        updateCurrent(weightChange);
+      }
+    } else {
+      if (concurrentTransactions) {
+        updateUnlocked(-weightChange);
+      } else {
+        updateCurrent(-weightChange);
+      }
+    }
+    return true;
   }
 
   @Override

@@ -586,7 +586,7 @@ public class CreditFlare extends Metric {
             originalWeight.put(e, w);
           }
 
-          if (!edgeweights.updateWeight(l, k, vals[j])) {
+          if (!edgeweights.prepareUpdateWeight(l, k, vals[j], false)) {
             succ = false;
             break;
           } else {
@@ -616,9 +616,7 @@ public class CreditFlare extends Metric {
 
 
   private void weightUpdate(CreditLinks edgeweights, HashMap<Edge, Double> updateWeight) {
-    Iterator<Entry<Edge, Double>> it = updateWeight.entrySet().iterator();
-    while (it.hasNext()) {
-      Entry<Edge, Double> entry = it.next();
+    for (Entry<Edge, Double> entry : updateWeight.entrySet()) {
       edgeweights.setWeight(entry.getKey(), entry.getValue());
     }
   }
@@ -626,9 +624,7 @@ public class CreditFlare extends Metric {
 
   private void setZeros(CreditLinks edgeweights, HashMap<Edge, Double> updateWeight) {
     this.zeroEdges = new Vector<Edge>();
-    Iterator<Entry<Edge, Double>> it = updateWeight.entrySet().iterator();
-    while (it.hasNext()) {
-      Entry<Edge, Double> entry = it.next();
+    for (Entry<Edge, Double> entry : updateWeight.entrySet()) {
       int src = entry.getKey().getSrc();
       int dst = entry.getKey().getDst();
       if (edgeweights.getMaxTransactionAmount(src, dst) == 0) {

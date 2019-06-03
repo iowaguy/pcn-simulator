@@ -58,7 +58,7 @@ public class CreditNetwork extends Metric {
   Queue<Edge> zeroEdges;
   Graph graph;
   boolean update;
-  HashMap<Edge, Double> originalWeight;
+  HashMap<Edge, LinkWeight> originalWeight;
 
 
   //computed metrics
@@ -598,8 +598,12 @@ public class CreditNetwork extends Metric {
     this.zeroEdges = new ConcurrentLinkedQueue<>();
   }
 
+  /**
+   * Step through transaction one hop at a time, and returns its success status
+   *
+   * @return true for a successful transaction, false otherwise
+   */
   private boolean stepThroughTransaction(double[] vals, int[][] paths, CreditLinks edgeweights) {
-    //check if transaction works
     if (vals == null) {
       transactionFailed(edgeweights);
       return false;
@@ -625,10 +629,11 @@ public class CreditNetwork extends Metric {
           Edge edge = CreditLinks.makeEdge(currentNodeIndex, nextNodeIndex);
           LinkWeight weights = edgeweights.getWeights(edge);
           if (!originalWeight.containsKey(edge)) {
-            originalWeight.put(edge, weights.getCurrent());
+            originalWeight.put(edge, weights);
           }
 
-          if (!edgeweights.updateWeight(currentNodeIndex, nextNodeIndex, vals[treeIndex])) {
+          if (!edgeweights.prepareUpdateWeight(currentNodeIndex, nextNodeIndex, vals[treeIndex],
+                  areTransactionsConcurrent)) {
             transactionFailed(edgeweights);
             return false;
           }
@@ -834,8 +839,8 @@ public class CreditNetwork extends Metric {
     return res;
   }
 
-  private void weightUpdate(CreditLinks edgeweights, HashMap<Edge, Double> updatedEdges) {
-    for (Entry<Edge, Double> entry : updatedEdges.entrySet()) {
+  private void weightUpdate(CreditLinks edgeweights, HashMap<Edge, LinkWeight> updatedEdges) {
+    for (Entry<Edge, LinkWeight> entry : updatedEdges.entrySet()) {
       edgeweights.setWeight(entry.getKey(), entry.getValue());
     }
   }
@@ -847,8 +852,8 @@ public class CreditNetwork extends Metric {
    * @param edgeweights  the current edge weights
    * @param updatedEdges the edges that were affected in the transaction
    */
-  private void setZeros(CreditLinks edgeweights, HashMap<Edge, Double> updatedEdges) {
-    for (Entry<Edge, Double> entry : updatedEdges.entrySet()) {
+  private void setZeros(CreditLinks edgeweights, HashMap<Edge, LinkWeight> updatedEdges) {
+    for (Entry<Edge, LinkWeight> entry : updatedEdges.entrySet()) {
       int src = entry.getKey().getSrc();
       int dst = entry.getKey().getDst();
       if (edgeweights.getMaxTransactionAmount(src, dst) == 0) {

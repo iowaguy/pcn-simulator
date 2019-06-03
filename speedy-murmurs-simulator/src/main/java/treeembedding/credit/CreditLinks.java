@@ -64,8 +64,10 @@ public class CreditLinks extends GraphProperty {
     this.weights.put(edge, weight);
   }
 
-  boolean updateWeight(int src, int dst, double weightChange) {
-    return getWeights(src, dst).updateWeight(weightChange);
+  boolean prepareUpdateWeight(int src, int dst, double weightChange, boolean concurrentTransactions) {
+    LinkWeight weights = getWeights(src, dst);
+    weights.areFundsAvailable(weightChange, concurrentTransactions);
+    return weights.prepareUpdateWeight(weightChange, concurrentTransactions);
   }
 
   public void setBound(int src, int dst, double val) {
