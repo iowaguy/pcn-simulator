@@ -10,6 +10,7 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import gtna.data.Single;
 import gtna.graph.Edge;
@@ -54,7 +55,7 @@ public class CreditNetwork extends Metric {
   int maxTries;
   Queue<double[]> newLinks;
 
-  Vector<Edge> zeroEdges;
+  Queue<Edge> zeroEdges;
   Graph graph;
   boolean update;
   HashMap<Edge, Double> originalWeight;
@@ -131,6 +132,7 @@ public class CreditNetwork extends Metric {
     }
 
     this.attack = attack;
+    this.zeroEdges = new ConcurrentLinkedQueue<>();
   }
 
   public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
@@ -280,7 +282,7 @@ public class CreditNetwork extends Metric {
       //reset to old weights if failed
       if (results[0] == -1) {
         this.weightUpdate(edgeweights, originalWeight);
-        this.zeroEdges = new Vector<Edge>();
+        this.zeroEdges = new ConcurrentLinkedQueue<>();
       }
       cur_count++;
       if (results[0] == 0) {
@@ -350,8 +352,8 @@ public class CreditNetwork extends Metric {
       if (this.dynRepair && zeroEdges != null) {
         for (int j = 0; j < this.roots.length; j++) {
           SpanningTree sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + j);
-          for (int k = 0; k < this.zeroEdges.size(); k++) {
-            Edge e = this.zeroEdges.get(k);
+          while (!this.zeroEdges.isEmpty()) {
+            Edge e = this.zeroEdges.remove();
             int s = e.getSrc();
             int t = e.getDst();
             int cut = -1;
@@ -594,6 +596,49 @@ public class CreditNetwork extends Metric {
     return false;
   }
 
+  private boolean stepThroughTransaction(double[] vals, int[][] paths, CreditLinks edgeweights) {
+    //check if transaction works
+    if (vals == null) {
+      return false;
+    }
+    for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
+      if (vals[treeIndex] != 0) {
+        if (paths[treeIndex][paths[treeIndex].length - 1] == -1) {
+          return false;
+        }
+        int currentNodeIndex = paths[treeIndex][0];
+        for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
+          // Attack logic
+          if (attack.getType() == AttackType.DROP_ALL) {
+            if (this.byzantineNodes.contains(paths[treeIndex][nodeIndex])) {
+              // do byzantine action
+              return false;
+            }
+          }
+
+          int nextNodeIndex = paths[treeIndex][nodeIndex];
+          Edge edge = CreditLinks.makeEdge(currentNodeIndex, nextNodeIndex);
+          LinkWeight weights = edgeweights.getWeights(edge);
+          if (!originalWeight.containsKey(edge)) {
+            originalWeight.put(edge, weights.getCurrent());
+          }
+
+          if (!edgeweights.updateWeight(currentNodeIndex, nextNodeIndex, vals[treeIndex])) {
+            return false;
+          }
+          if (edgeweights.getMaxTransactionAmount(currentNodeIndex, nextNodeIndex) == 0) {
+            this.zeroEdges.add(edge);
+          }
+          currentNodeIndex = nextNodeIndex;
+
+        }
+      }
+    }
+    // update weights
+    this.setZeros(edgeweights, originalWeight);
+    return true;
+  }
+
   /**
    * routing using a multi-part computation: costs are i) finding path (one-way, but 3x path length
    * as each neighbor needs to sign its predecessor and successors) ii) sending shares to all
@@ -634,77 +679,12 @@ public class CreditNetwork extends Metric {
     vals = part.partition(g, src, dest, cur.val, mins);
 
     //check if transaction works
-    boolean successfull = false;
-    if (vals != null) {
-      successfull = true;
-      for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
-
-        // Attack logic
-        if (attack.getType() == AttackType.DROP_ALL) {
-          // if byzantine node is on path, do byzantine action
-          for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
-            if (this.byzantineNodes.contains(paths[treeIndex][nodeIndex])) {
-              // do byzantine action
-              successfull = false;
-              break;
-            }
-          }
-        }
-        if (!successfull) {
-          break;
-        }
-
-        if (vals[treeIndex] > 0) {
-          int currentNodeId = paths[treeIndex][0];
-          for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
-            int nextNodeId = paths[treeIndex][nodeIndex];
-            Edge edge = CreditLinks.makeEdge(currentNodeId, nextNodeId);
-            LinkWeight weights = edgeweights.getWeights(edge);
-            if (!originalWeight.containsKey(edge)) {
-              originalWeight.put(edge, weights.getCurrent());
-            }
-
-            if (!edgeweights.updateWeight(currentNodeId, nextNodeId, vals[treeIndex])) {
-              successfull = false;
-              break;
-            } else {
-              if (log) {
-                System.out.println("----Set weight of (" + currentNodeId + "," + nextNodeId + ") to " + edgeweights.getWeight(edge)
-                        + "(previous " + weights.getCurrent() + ")");
-              }
-            }
-            currentNodeId = nextNodeId;
-
-          }
-          if (!successfull) {
-            break;
-          }
-        }
-      }
-      // update weights
-      if (successfull) {
-        this.setZeros(edgeweights, originalWeight);
-        if (log) {
-          System.out.println("Success");
-        }
-      } else {
-
-        if (log) {
-          System.out.println("Failure");
-        }
-      }
-
-    } else {
-      if (log) {
-        System.out.println("Failure");
-      }
-    }
-
+    boolean successful = stepThroughTransaction(vals, paths, edgeweights);
 
     //compute metrics
     int[] res = new int[6 + this.roots.length];
     //success
-    if (!successfull) {
+    if (!successful) {
       res[0] = -1;
     }
     //path length
@@ -789,69 +769,25 @@ public class CreditNetwork extends Metric {
     //distribute values on paths
     double[] vals = this.part.partition(g, src, dest, cur.val, roots.length);
 
-    //check if transaction works
-    boolean succ = true;
-    this.zeroEdges = new Vector<Edge>();
-    for (int j = 0; j < paths.length; j++) {
-      if (vals[j] != 0) {
+    for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
+      if (vals[treeIndex] != 0) {
         int s = src;
         int d = dest;
-        if (vals[j] < 0) {
+        if (vals[treeIndex] < 0) {
           s = dest;
           d = src;
         }
-        paths[j] = this.ra.getRoute(s, d, j, g, nodes, exclude, edgeweights, vals[j]);
-
-        if (attack.getType() == AttackType.DROP_ALL) {
-          // if byzantine node is on path, do byzantine action
-          for (int i = 1; i < paths[j].length; i++) {
-            if (this.byzantineNodes.contains(paths[j][i])) {
-              // do byzantine action
-              succ = false;
-              break;
-            }
-          }
-        }
-
-        if (paths[j][paths[j].length - 1] == -1) {
-          succ = false;
-        } else {
-          int l = paths[j][0];
-          for (int i = 1; i < paths[j].length; i++) {
-            int k = paths[j][i];
-            Edge e = CreditLinks.makeEdge(l, k);
-            double w = edgeweights.getWeight(e);
-            if (!originalWeight.containsKey(e)) {
-              originalWeight.put(e, w);
-            }
-            edgeweights.updateWeight(l, k, vals[j]);
-            if (log) {
-              System.out.println("----Set weight of (" + l + "," + k + ") to " + edgeweights.getWeight(e)
-                      + " (previous " + w + ")");
-            }
-            if (edgeweights.getMaxTransactionAmount(l, k) == 0) {
-              this.zeroEdges.add(e);
-            }
-            l = k;
-          }
-        }
+        paths[treeIndex] = this.ra.getRoute(s, d, treeIndex, g, nodes, exclude, edgeweights, vals[treeIndex]);
       }
     }
-    if (!succ) {
-      if (log) {
-        System.out.println("Failure");
-      }
-    } else {
-      this.setZeros(edgeweights, originalWeight);
-      if (log) {
-        System.out.println("Success");
-      }
-    }
+
+    //check if transaction works
+    boolean successful = stepThroughTransaction(vals, paths, edgeweights);
 
     //compute metrics
     int[] res = new int[6 + this.roots.length];
     //success
-    if (!succ) {
+    if (!successful) {
       res[0] = -1;
     }
     //path length
@@ -899,7 +835,6 @@ public class CreditNetwork extends Metric {
   }
 
   private void setZeros(CreditLinks edgeweights, HashMap<Edge, Double> updateWeight) {
-    this.zeroEdges = new Vector<>();
     for (Entry<Edge, Double> entry : updateWeight.entrySet()) {
       int src = entry.getKey().getSrc();
       int dst = entry.getKey().getDst();
