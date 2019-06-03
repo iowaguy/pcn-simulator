@@ -273,17 +273,13 @@ public class CreditNetwork extends Metric {
 
       //2: execute the transaction
       int[] results;
-      originalWeight = new HashMap<Edge, Double>();
+      originalWeight = new HashMap<>();
       if (this.multi) {
         results = this.routeMulti(cur, g, nodes, exclude, edgeweights);
       } else {
         results = this.routeAdhoc(cur, g, nodes, exclude, edgeweights);
       }
-      //reset to old weights if failed
-      if (results[0] == -1) {
-        this.weightUpdate(edgeweights, originalWeight);
-        this.zeroEdges = new ConcurrentLinkedQueue<>();
-      }
+
       cur_count++;
       if (results[0] == 0) {
         cur_succ++;
@@ -596,14 +592,22 @@ public class CreditNetwork extends Metric {
     return false;
   }
 
+  // reset to old weights if failed
+  private void transactionFailed(CreditLinks edgeweights) {
+    this.weightUpdate(edgeweights, originalWeight);
+    this.zeroEdges = new ConcurrentLinkedQueue<>();
+  }
+
   private boolean stepThroughTransaction(double[] vals, int[][] paths, CreditLinks edgeweights) {
     //check if transaction works
     if (vals == null) {
+      transactionFailed(edgeweights);
       return false;
     }
     for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
       if (vals[treeIndex] != 0) {
         if (paths[treeIndex][paths[treeIndex].length - 1] == -1) {
+          transactionFailed(edgeweights);
           return false;
         }
         int currentNodeIndex = paths[treeIndex][0];
@@ -612,6 +616,7 @@ public class CreditNetwork extends Metric {
           if (attack.getType() == AttackType.DROP_ALL) {
             if (this.byzantineNodes.contains(paths[treeIndex][nodeIndex])) {
               // do byzantine action
+              transactionFailed(edgeweights);
               return false;
             }
           }
@@ -624,6 +629,7 @@ public class CreditNetwork extends Metric {
           }
 
           if (!edgeweights.updateWeight(currentNodeIndex, nextNodeIndex, vals[treeIndex])) {
+            transactionFailed(edgeweights);
             return false;
           }
           if (edgeweights.getMaxTransactionAmount(currentNodeIndex, nextNodeIndex) == 0) {
@@ -828,21 +834,25 @@ public class CreditNetwork extends Metric {
     return res;
   }
 
-  private void weightUpdate(CreditLinks edgeweights, HashMap<Edge, Double> updateWeight) {
-    for (Entry<Edge, Double> entry : updateWeight.entrySet()) {
+  private void weightUpdate(CreditLinks edgeweights, HashMap<Edge, Double> updatedEdges) {
+    for (Entry<Edge, Double> entry : updatedEdges.entrySet()) {
       edgeweights.setWeight(entry.getKey(), entry.getValue());
     }
   }
 
-  private void setZeros(CreditLinks edgeweights, HashMap<Edge, Double> updateWeight) {
-    for (Entry<Edge, Double> entry : updateWeight.entrySet()) {
+  /**
+   * This function checks if any values in `updatedEdges` have a new weight of zero. If so, it adds
+   * them to the collection of zero edges.
+   *
+   * @param edgeweights  the current edge weights
+   * @param updatedEdges the edges that were affected in the transaction
+   */
+  private void setZeros(CreditLinks edgeweights, HashMap<Edge, Double> updatedEdges) {
+    for (Entry<Edge, Double> entry : updatedEdges.entrySet()) {
       int src = entry.getKey().getSrc();
       int dst = entry.getKey().getDst();
       if (edgeweights.getMaxTransactionAmount(src, dst) == 0) {
-        this.zeroEdges.add(new Edge(src, dst));
-      }
-      if (edgeweights.getMaxTransactionAmount(dst, src) == 0) {
-        this.zeroEdges.add(new Edge(dst, src));
+        this.zeroEdges.add(CreditLinks.makeEdge(src, dst));
       }
     }
   }
