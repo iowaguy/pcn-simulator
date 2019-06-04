@@ -12,6 +12,7 @@ public class LinkWeight {
   private double max;
   private double current;
   private Map<Double, Integer> pendingTransactions;
+  private static final double EPSILON = 0.000000001;
 
   // these are the funds that are not tied up in any concurrent transactions
   private double unlocked;
@@ -32,6 +33,11 @@ public class LinkWeight {
     this.current = current;
     this.unlocked = current;
     this.pendingTransactions = new ConcurrentHashMap<>();
+  }
+
+  boolean isZero() {
+    return ((max - current < EPSILON) && (max - current > -EPSILON)) ||
+            ((current - min < EPSILON) && (current - min > -EPSILON));
   }
 
   public double getMin() {
@@ -72,7 +78,7 @@ public class LinkWeight {
   }
 
   double getMaxTransactionAmount() {
-    if (edge.getSrc() < edge.getDst()) {
+    if (edge.getSrc() > edge.getDst()) {
       return getMax() - getCurrent();
     } else {
       return getCurrent() - getMin();
@@ -128,9 +134,19 @@ public class LinkWeight {
     return true;
   }
 
-  void finalizeUpdateWeight(double weightChange, boolean concurrentTransactions) {
+  void finalizeUpdateWeight(double weightChange, boolean concurrentTransactions)
+          throws TransactionFailedException {
     // remove from pending transactions
-    this.pendingTransactions.remove(weightChange);
+    if (this.pendingTransactions.containsKey(weightChange)) {
+      int num = this.pendingTransactions.get(weightChange);
+      if (num > 1) {
+        this.pendingTransactions.put(weightChange, num - 1);
+      } else {
+        this.pendingTransactions.remove(weightChange);
+      }
+    } else {
+      throw new TransactionFailedException("Cannot finalize a transaction that wasn't prepared");
+    }
 
     if (concurrentTransactions) {
       if (this.edge.getSrc() < this.edge.getDst()) {

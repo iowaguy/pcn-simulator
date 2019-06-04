@@ -239,10 +239,9 @@ public class CreditNetwork extends Metric {
       }
 
       count++;
-      //if (log){
-      //System.out.println("Perform transaction s=" + cur.src + " d= " + cur.dst +
-      //        " val= " + cur.val + " time= " + cur.time);
-      //}
+      if (logger.isDebugEnabled()) {
+        logger.debug(cur.toString());
+      }
 
 
       //1: check if and how many spanning tree re-construction took place since last transaction
@@ -276,24 +275,30 @@ public class CreditNetwork extends Metric {
         cur_succ = 0;
       }
 
-      //2: execute the transaction
-      int[] results;
-      originalWeight = new HashMap<>();
-      if (this.multi) {
-        results = this.routeMulti(cur, g, nodes, exclude, edgeweights);
-      } else {
-        results = this.routeAdhoc(cur, g, nodes, exclude, edgeweights);
+      TransactionResults results = null;
+      try {
+        //2: execute the transaction
+        originalWeight = new HashMap<>();
+        if (this.multi) {
+          results = this.routeMulti(cur, g, nodes, exclude, edgeweights);
+        } else {
+          results = this.routeAdhoc(cur, g, nodes, exclude, edgeweights);
+        }
+
+      } catch (TransactionFailedException e) {
+        logger.error(e.getMessage());
+        e.printStackTrace();
       }
 
       cur_count++;
-      if (results[0] == 0) {
+      if (results.isSuccess()) {
         cur_succ++;
       }
 
       //re-queue if necessary
-      cur.addPath(results[1]);
-      cur.addMes(results[4]);
-      if (results[0] == -1) {
+      cur.addPath(results.getSumPathLength());
+      cur.addMes(results.getRes4());
+      if (!results.isSuccess()) {
         cur.incRequeue(cur.time + rand.nextDouble() * this.requeueInt);
         if (cur.requeue <= this.maxTries) {
           int st = 0;
@@ -308,12 +313,12 @@ public class CreditNetwork extends Metric {
       }
 
       //3 update metrics accordingly
-      path = this.inc(path, results[1]);
-      reLand = this.inc(reLand, results[2]);
-      landSen = this.inc(landSen, results[3]);
-      mes = this.inc(mes, results[4]);
-      del = this.inc(del, results[5]);
-      if (results[0] == 0) {
+      path = this.inc(path, results.getSumPathLength());
+      reLand = this.inc(reLand, results.getSumReceiverLandmarks());
+      landSen = this.inc(landSen, results.getSumSourceDepths());
+      mes = this.inc(mes, results.getRes4());
+      del = this.inc(del, results.getMaxPathLength());
+      if (results.isSuccess()) {
         trys = this.inc(trys, cur.requeue);
         this.success++;
         if (cur.requeue == 0) {
@@ -321,30 +326,30 @@ public class CreditNetwork extends Metric {
         }
         mesAll = this.inc(mesAll, cur.mes);
         pathAll = this.inc(pathAll, cur.path);
-        pathSucc = this.inc(pathSucc, results[1]);
-        mesSucc = this.inc(mesSucc, results[4]);
-        delSucc = this.inc(delSucc, results[5]);
+        pathSucc = this.inc(pathSucc, results.getSumPathLength());
+        mesSucc = this.inc(mesSucc, results.getRes4());
+        delSucc = this.inc(delSucc, results.getMaxPathLength());
       } else {
-        pathFail = this.inc(pathFail, results[1]);
-        mesFail = this.inc(mesFail, results[4]);
-        delFail = this.inc(delFail, results[5]);
+        pathFail = this.inc(pathFail, results.getSumPathLength());
+        mesFail = this.inc(mesFail, results.getRes4());
+        delFail = this.inc(delFail, results.getMaxPathLength());
       }
-      for (int j = 6; j < results.length; j++) {
+      for (int j = 0; j < results.getPathLengths().length; j++) {
         int index = 0;
-        if (results[j] < 0) {
+        if (results.getPathLengths()[j] < 0) {
           index = 1;
         }
-        cPerPath[j - 6][index]++;
+        cPerPath[j][index]++;
         cAllPath[index]++;
-        int val = Math.abs(results[j]);
+        int val = Math.abs(results.getPathLengths()[j]);
         pathS = this.inc(pathS, val);
-        pathSs[j - 6] = this.inc(pathSs[j - 6], val);
+        pathSs[j] = this.inc(pathSs[j], val);
         if (index == 0) {
           pathSF = this.inc(pathSF, val);
-          pathSsF[j - 6] = this.inc(pathSsF[j - 6], val);
+          pathSsF[j] = this.inc(pathSsF[j], val);
         } else {
           pathSNF = this.inc(pathSNF, val);
-          pathSsNF[j - 6] = this.inc(pathSsNF[j - 6], val);
+          pathSsNF[j] = this.inc(pathSsNF[j], val);
         }
       }
 
@@ -622,7 +627,7 @@ public class CreditNetwork extends Metric {
         int currentNodeIndex = paths[treeIndex][0];
         for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
           // Attack logic
-          if (attack.getType() == AttackType.DROP_ALL) {
+          if (attack != null && attack.getType() == AttackType.DROP_ALL) {
             if (this.byzantineNodes.contains(paths[treeIndex][nodeIndex])) {
               // do byzantine action
               transactionFailed(edgeweights);
@@ -662,12 +667,11 @@ public class CreditNetwork extends Metric {
         for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
           int nextNodeIndex = paths[treeIndex][nodeIndex];
           Edge edge = CreditLinks.makeEdge(currentNodeIndex, nextNodeIndex);
-          LinkWeight weights = edgeweights.getWeights(edge);
           if (!originalWeight.containsKey(edge)) {
-            String s = "Tried to finalize a transaction that was never prepared.";
-            logger.error(s);
-            throw new TransactionFailedException(s);
-          } else {
+//            String s = "Tried to finalize a transaction that was never prepared.";
+//            logger.error(s);
+//            throw new TransactionFailedException(s);
+//          } else {
             logger.debug("Removing updated edge from set");
             originalWeight.remove(edge);
           }
@@ -694,11 +698,8 @@ public class CreditNetwork extends Metric {
    * @return {success?0:-1, sum(pathlength), receiver-landmark, landmarks-sender,overall message
    *         count, delay, p1, p2,...}
    */
-  private int[] routeMulti(Transaction cur, Graph g, Node[] nodes, boolean[] exclude, CreditLinks edgeweights) {
-    if (logger.isDebugEnabled()) {
-      logger.debug(cur.toString());
-    }
-
+  private TransactionResults routeMulti(Transaction cur, Graph g, Node[] nodes, boolean[] exclude,
+                                        CreditLinks edgeweights) throws TransactionFailedException {
     int[][] paths = new int[roots.length][];
     double[] vals;
     int src = cur.src;
@@ -709,19 +710,17 @@ public class CreditNetwork extends Metric {
       paths[treeIndex] = ra.getRoute(src, dest, treeIndex, g, nodes, exclude);
 
       if (paths[treeIndex][paths[treeIndex].length - 1] == dest) {
-        int l = src;
-        int nodeIndex = 1;
-        double min = Double.MAX_VALUE;
-        while (nodeIndex < paths[treeIndex].length) {
-          int k = paths[treeIndex][nodeIndex];
-          double w = edgeweights.getMaxTransactionAmount(l, k);
-          if (w < min) {
-            min = w;
+        int currentNodeIndex = src;
+        double currentMaxForPath = Double.MAX_VALUE;
+        for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
+          int nextNodeIndex = paths[treeIndex][nodeIndex];
+          double maxTransactionAmount = edgeweights.getMaxTransactionAmount(currentNodeIndex, nextNodeIndex);
+          if (maxTransactionAmount < currentMaxForPath) {
+            currentMaxForPath = maxTransactionAmount;
           }
-          l = k;
-          nodeIndex++;
+          currentNodeIndex = nextNodeIndex;
         }
-        mins[treeIndex] = min;
+        mins[treeIndex] = currentMaxForPath;
       }
 
     }
@@ -730,21 +729,24 @@ public class CreditNetwork extends Metric {
 
     //check if transaction works
     boolean successful = stepThroughTransaction(vals, paths, edgeweights);
+    if (successful) {
+      finalizeTransaction(vals, paths, edgeweights);
+    }
 
     //compute metrics
-    int[] res = new int[6 + this.roots.length];
+    TransactionResults res = new TransactionResults(this.roots.length);
+
     //success
-    if (!successful) {
-      res[0] = -1;
-    }
+    res.setSuccess(successful);
+
     //path length
     for (int j = 0; j < paths.length; j++) {
       if (paths[j][paths[j].length - 1] == dest) {
-        res[1] = res[1] + paths[j].length - 1;
-        res[6 + j] = paths[j].length - 1;
+        res.addSumPathLength(paths[j].length - 1);
+        res.addPathLength(j, paths[j].length - 1);
       } else {
-        res[1] = res[1] + paths[j].length - 2;
-        res[6 + j] = -(paths[j].length - 2);
+        res.addSumPathLength(paths[j].length - 2);
+        res.addPathLength(j, paths[j].length - 2);
       }
     }
     //receiver-landmarks
@@ -752,7 +754,7 @@ public class CreditNetwork extends Metric {
       SpanningTree sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + j);
       int d = sp.getDepth(dest);
       if (paths[j][paths[j].length - 1] == dest) {
-        res[2] = res[2] + d * paths.length;
+        res.addSumReceiverLandmarks(d * paths.length);
       }
     }
     //landmarks-sender
@@ -760,14 +762,15 @@ public class CreditNetwork extends Metric {
       SpanningTree sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + j);
       int d = sp.getDepth(src);
       if (paths[j][paths[j].length - 1] == dest) {
-        res[3] = res[3] + d;
+        res.addSumSourceDepths(d);
       }
     }
+
     //all
-    res[4] = res[1] + res[2] + res[3];
+    res.setRes4(res.getSumPathLength() + res.getSumReceiverLandmarks() + res.getSumSourceDepths());
     for (int j = 0; j < paths.length; j++) {
       if (vals != null && vals[j] > 0) {
-        res[4] = res[4] + 2 * (paths[j].length - 1);
+        res.setRes4(res.getRes4() + 2 * (paths[j].length - 1));
       }
     }
     //max path
@@ -807,12 +810,14 @@ public class CreditNetwork extends Metric {
     if (vals != null) {
       max = max + 2 * maxp;
     }
-    res[5] = max;
+
+    res.setMaxPathLength(max);
     this.setRoots(paths);
     return res;
   }
 
-  private int[] routeAdhoc(Transaction cur, Graph g, Node[] nodes, boolean[] exclude, CreditLinks edgeweights) {
+  private TransactionResults routeAdhoc(Transaction cur, Graph g, Node[] nodes, boolean[] exclude,
+                                        CreditLinks edgeweights) throws TransactionFailedException {
     int[][] paths = new int[roots.length][];
     int src = cur.src;
     int dest = cur.dst;
@@ -834,30 +839,29 @@ public class CreditNetwork extends Metric {
 
     //check if transaction works
     boolean successful = stepThroughTransaction(vals, paths, edgeweights);
+    finalizeTransaction(vals, paths, edgeweights);
 
     //compute metrics
-    int[] res = new int[6 + this.roots.length];
+    TransactionResults res = new TransactionResults(this.roots.length);
+
     //success
-    if (!successful) {
-      res[0] = -1;
-    }
+    res.setSuccess(successful);
+
     //path length
     for (int j = 0; j < paths.length; j++) {
-      if (vals[j] > 0) {
-        if (paths[j][paths[j].length - 1] == dest) {
-          res[1] = res[1] + paths[j].length - 1;
-          res[6 + j] = paths[j].length - 1;
-        } else {
-          res[1] = res[1] + paths[j].length - 2;
-          res[6 + j] = -(paths[j].length - 2);
-        }
+      if (paths[j][paths[j].length - 1] == dest) {
+        res.addSumPathLength(paths[j].length - 1);
+        res.addPathLength(j, paths[j].length - 1);
+      } else {
+        res.addSumPathLength(paths[j].length - 2);
+        res.addPathLength(j, -(paths[j].length - 2));
       }
     }
     //overall messages
-    if (res[0] != 1) {
-      res[4] = 3 * res[1];
+    if (res.isSuccess()) {
+      res.setRes4(3 * res.getSumPathLength());
     } else {
-      res[4] = 2 * res[2];
+      res.setRes4(2 * res.getSumReceiverLandmarks());
     }
     //max path length
     int max = 0;
@@ -874,7 +878,8 @@ public class CreditNetwork extends Metric {
         }
       }
     }
-    res[5] = 2 * max;
+
+    res.setMaxPathLength(2 * max);
     this.setRoots(paths);
     return res;
   }
