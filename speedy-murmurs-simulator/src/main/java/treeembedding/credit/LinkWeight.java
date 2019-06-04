@@ -60,6 +60,7 @@ public class LinkWeight {
 
   private void updateCurrent(double weightChange) {
     this.current += weightChange;
+    this.unlocked = this.current;
   }
 
   private double getUnlocked() {
@@ -125,6 +126,19 @@ public class LinkWeight {
       }
     }
     return true;
+  }
+
+  void finalizeUpdateWeight(double weightChange, boolean concurrentTransactions) {
+    // remove from pending transactions
+    this.pendingTransactions.remove(weightChange);
+
+    if (concurrentTransactions) {
+      if (this.edge.getSrc() < this.edge.getDst()) {
+        updateCurrent(weightChange);
+      } else {
+        updateCurrent(-weightChange);
+      }
+    }
   }
 
   @Override

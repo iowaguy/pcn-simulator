@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.io.FilenameFilter;
 
@@ -26,6 +29,7 @@ import treeembedding.treerouting.TreerouteSilentW;
 import treeembedding.treerouting.TreerouteTDRAP;
 
 public class Dynamic {
+  private static Logger log = LogManager.getLogger();
 
   /**
    * @param args 0: run 1: config (0- SilentWhispers, 7- SpeedyMurmurs, 10-MaxFlow) 2: steps

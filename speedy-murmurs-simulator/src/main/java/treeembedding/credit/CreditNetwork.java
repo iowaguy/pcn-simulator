@@ -1,5 +1,8 @@
 package treeembedding.credit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -98,6 +101,7 @@ public class CreditNetwork extends Metric {
   private Set<Integer> byzantineNodes;
   private Attack attack;
   private boolean areTransactionsConcurrent;
+  private Logger logger;
 
   public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
                        boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
@@ -133,6 +137,7 @@ public class CreditNetwork extends Metric {
 
     this.attack = attack;
     this.zeroEdges = new ConcurrentLinkedQueue<>();
+    this.logger = LogManager.getLogger();
   }
 
   public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
@@ -637,6 +642,39 @@ public class CreditNetwork extends Metric {
             transactionFailed(edgeweights);
             return false;
           }
+        }
+      }
+    }
+    // update weights
+    this.setZeros(edgeweights, originalWeight);
+    return true;
+  }
+
+  private void finalizeTransaction(double[] vals, int[][] paths, CreditLinks edgeweights)
+          throws TransactionFailedException {
+    if (vals == null) {
+      throw new TransactionFailedException("Transaction values cannot be null");
+    }
+
+    for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
+      if (vals[treeIndex] != 0) {
+        int currentNodeIndex = paths[treeIndex][0];
+        for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
+          int nextNodeIndex = paths[treeIndex][nodeIndex];
+          Edge edge = CreditLinks.makeEdge(currentNodeIndex, nextNodeIndex);
+          LinkWeight weights = edgeweights.getWeights(edge);
+          if (!originalWeight.containsKey(edge)) {
+            String s = "Tried to finalize a transaction that was never prepared.";
+            logger.error(s);
+            throw new TransactionFailedException(s);
+          } else {
+            logger.debug("Removing updated edge from set");
+            originalWeight.remove(edge);
+          }
+
+          edgeweights.finalizeUpdateWeight(currentNodeIndex, nextNodeIndex, vals[treeIndex],
+                  areTransactionsConcurrent);
+
           if (edgeweights.getMaxTransactionAmount(currentNodeIndex, nextNodeIndex) == 0) {
             this.zeroEdges.add(edge);
           }
@@ -645,9 +683,6 @@ public class CreditNetwork extends Metric {
         }
       }
     }
-    // update weights
-    this.setZeros(edgeweights, originalWeight);
-    return true;
   }
 
   /**
@@ -660,6 +695,10 @@ public class CreditNetwork extends Metric {
    *         count, delay, p1, p2,...}
    */
   private int[] routeMulti(Transaction cur, Graph g, Node[] nodes, boolean[] exclude, CreditLinks edgeweights) {
+    if (logger.isDebugEnabled()) {
+      logger.debug(cur.toString());
+    }
+
     int[][] paths = new int[roots.length][];
     double[] vals;
     int src = cur.src;
@@ -780,6 +819,7 @@ public class CreditNetwork extends Metric {
     //distribute values on paths
     double[] vals = this.part.partition(g, src, dest, cur.val, roots.length);
 
+    // build paths
     for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
       if (vals[treeIndex] != 0) {
         int s = src;

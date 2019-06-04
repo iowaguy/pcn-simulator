@@ -70,6 +70,10 @@ public class CreditLinks extends GraphProperty {
     return weights.prepareUpdateWeight(weightChange, concurrentTransactions);
   }
 
+  void finalizeUpdateWeight(int src, int dst, double weightChange, boolean concurrentTransactions) {
+    getWeights(src, dst).finalizeUpdateWeight(weightChange, concurrentTransactions);
+  }
+
   public void setBound(int src, int dst, double val) {
     LinkWeight ws = getWeights(src, dst);
     if (src < dst) {

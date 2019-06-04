@@ -1,6 +1,6 @@
 package treeembedding.credit;
 
-public class Transaction {
+class Transaction {
 
   int src;
   int dst;
@@ -10,24 +10,28 @@ public class Transaction {
   int mes = 0;
   int path = 0;
 
-  public Transaction(double t, double v, int s, int d) {
+  Transaction(double t, double v, int s, int d) {
     this.src = s;
     this.dst = d;
     this.val = v;
     this.time = t;
   }
 
-  public void incRequeue(double nexttime) {
+  void incRequeue(double nexttime) {
     this.requeue++;
     this.time = nexttime;
   }
 
-  public void addPath(int p) {
+  void addPath(int p) {
     this.path = this.path + p;
   }
 
-  public void addMes(int p) {
+  void addMes(int p) {
     this.mes = this.mes + p;
   }
 
+  @Override
+  public String toString() {
+    return "Src=" + src + "; dest=" + dst + "; val=" + val + "; time=" + time;
+  }
 }
