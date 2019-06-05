@@ -8,11 +8,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import gtna.data.Single;
@@ -61,8 +63,6 @@ public class CreditNetwork extends Metric {
   Queue<Edge> zeroEdges;
   Graph graph;
   boolean update;
-  HashMap<Edge, LinkWeight> originalWeight;
-
 
   //computed metrics
   double[] stab; //stabilization overhead over time (in #messages)
@@ -95,13 +95,11 @@ public class CreditNetwork extends Metric {
   double success; // fraction of transactions successful at all
   double[] succs;
 
-  boolean log = false;
-
   private ByzantineNodeSelection byzSelection;
   private Set<Integer> byzantineNodes;
   private Attack attack;
   private boolean areTransactionsConcurrent;
-  private Logger logger;
+  private Logger log;
 
   public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
                        boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
@@ -137,7 +135,7 @@ public class CreditNetwork extends Metric {
 
     this.attack = attack;
     this.zeroEdges = new ConcurrentLinkedQueue<>();
-    this.logger = LogManager.getLogger();
+    this.log = LogManager.getLogger();
   }
 
   public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
@@ -239,8 +237,8 @@ public class CreditNetwork extends Metric {
       }
 
       count++;
-      if (logger.isDebugEnabled()) {
-        logger.debug(cur.toString());
+      if (log.isDebugEnabled()) {
+        log.debug(cur.toString());
       }
 
 
@@ -248,9 +246,7 @@ public class CreditNetwork extends Metric {
       //do 1 (!) re-computation if there was any & set stabilization cost
       if (epoch_cur != epoch_old) {
         if (!this.dynRepair) {
-          if (log) {
-            System.out.println("Recompute spt");
-          }
+          log.debug("Recompute spanning tree");
           for (int i = 0; i < roots.length; i++) {
             g.removeProperty("SPANNINGTREE_" + i);
             g.removeProperty("TREE_COORDINATES_" + i);
@@ -275,21 +271,26 @@ public class CreditNetwork extends Metric {
         cur_succ = 0;
       }
 
+      /////////////// do this asynchnronously ////////////////////////
       TransactionResults results = null;
+      Map<Edge, LinkWeight> pendingModifiedEdges = new ConcurrentHashMap<>();
       try {
         //2: execute the transaction
-        originalWeight = new HashMap<>();
         if (this.multi) {
           results = this.routeMulti(cur, g, nodes, exclude, edgeweights);
         } else {
           results = this.routeAdhoc(cur, g, nodes, exclude, edgeweights);
         }
-
       } catch (TransactionFailedException e) {
-        logger.error(e.getMessage());
+        log.error(e.getMessage());
         e.printStackTrace();
       }
+      //////////////////////////////////////////////////////////////////
 
+      // TODO collect result futures
+      // TODO calculate results as they become available
+
+      pendingModifiedEdges.putAll(results.getModifiedEdges());
       cur_count++;
       if (results.isSuccess()) {
         cur_succ++;
@@ -370,8 +371,8 @@ public class CreditNetwork extends Metric {
               cut = t;
             }
             if (cut != -1) {
-              if (log) {
-                System.out.println("Repair tree " + j + " at expired edge (" + s + "," + t + ")");
+              if (log.isDebugEnabled()) {
+                log.debug("Repair tree " + j + " at expired edge (" + s + "," + t + ")");
               }
               TreeCoordinates coords = (TreeCoordinates) g.getProperty("TREE_COORDINATES_" + j);
               cur_stab = cur_stab + this.repairTree(nodes, sp, coords,
@@ -380,14 +381,14 @@ public class CreditNetwork extends Metric {
           }
         }
       }
+
       if (!this.update) {
-        this.weightUpdate(edgeweights, originalWeight);
+        this.weightUpdate(edgeweights, pendingModifiedEdges);
       }
     }
     if (this.dynRepair) {
       stabMes.add(cur_stab);
     }
-
 
     //compute metrics
     this.pathL = new Distribution(path, count);
@@ -532,7 +533,9 @@ public class CreditNetwork extends Metric {
 
   private int addLink(int src, int dst, double weight, Graph g) {
     CreditLinks edgeweights = (CreditLinks) g.getProperty("CREDIT_LINKS");
-    //if (log) System.out.println("Added link " + src + " " + dst + " " + weight);
+    if (log.isDebugEnabled()) {
+      log.debug("Added link " + src + " " + dst + " " + weight);
+    }
     LinkWeight ws;
     double old;
     if (src < dst) {
@@ -576,8 +579,8 @@ public class CreditNetwork extends Metric {
             cut = dst;
           }
           if (cut != -1) {
-            if (log) {
-              System.out.println("Repair tree " + j + " at expired edge (" + src + "," + dst + ")");
+            if (log.isDebugEnabled()) {
+              log.debug("Repair tree " + j + " at expired edge (" + src + "," + dst + ")");
             }
             TreeCoordinates coords = (TreeCoordinates) g.getProperty("TREE_COORDINATES_" + j);
             st = st + this.repairTree(nodes, sp, coords, cut, (CreditLinks) g.getProperty("CREDIT_LINKS"));
@@ -603,8 +606,8 @@ public class CreditNetwork extends Metric {
   }
 
   // reset to old weights if failed
-  private void transactionFailed(CreditLinks edgeweights) {
-    this.weightUpdate(edgeweights, originalWeight);
+  private void transactionFailed(CreditLinks edgeweights, Map<Edge, LinkWeight> modifiedEdges) {
+    this.weightUpdate(edgeweights, modifiedEdges);
     this.zeroEdges = new ConcurrentLinkedQueue<>();
   }
 
@@ -613,15 +616,15 @@ public class CreditNetwork extends Metric {
    *
    * @return true for a successful transaction, false otherwise
    */
-  private boolean stepThroughTransaction(double[] vals, int[][] paths, CreditLinks edgeweights) {
+  private boolean stepThroughTransaction(double[] vals, int[][] paths, CreditLinks edgeweights, Map<Edge, LinkWeight> modifiedEdges) {
     if (vals == null) {
-      transactionFailed(edgeweights);
+      transactionFailed(edgeweights, modifiedEdges);
       return false;
     }
     for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
       if (vals[treeIndex] != 0) {
         if (paths[treeIndex][paths[treeIndex].length - 1] == -1) {
-          transactionFailed(edgeweights);
+          transactionFailed(edgeweights, modifiedEdges);
           return false;
         }
         int currentNodeIndex = paths[treeIndex][0];
@@ -630,7 +633,7 @@ public class CreditNetwork extends Metric {
           if (attack != null && attack.getType() == AttackType.DROP_ALL) {
             if (this.byzantineNodes.contains(paths[treeIndex][nodeIndex])) {
               // do byzantine action
-              transactionFailed(edgeweights);
+              transactionFailed(edgeweights, modifiedEdges);
               return false;
             }
           }
@@ -638,24 +641,25 @@ public class CreditNetwork extends Metric {
           int nextNodeIndex = paths[treeIndex][nodeIndex];
           Edge edge = CreditLinks.makeEdge(currentNodeIndex, nextNodeIndex);
           LinkWeight weights = edgeweights.getWeights(edge);
-          if (!originalWeight.containsKey(edge)) {
-            originalWeight.put(edge, weights);
+          if (!modifiedEdges.containsKey(edge)) {
+            modifiedEdges.put(edge, weights);
           }
 
           if (!edgeweights.prepareUpdateWeight(currentNodeIndex, nextNodeIndex, vals[treeIndex],
                   areTransactionsConcurrent)) {
-            transactionFailed(edgeweights);
+            transactionFailed(edgeweights, modifiedEdges);
             return false;
           }
         }
       }
     }
     // update weights
-    this.setZeros(edgeweights, originalWeight);
+    this.setZeros(edgeweights, modifiedEdges);
     return true;
   }
 
-  private void finalizeTransaction(double[] vals, int[][] paths, CreditLinks edgeweights)
+  private void finalizeTransaction(double[] vals, int[][] paths, CreditLinks edgeweights,
+                                   Map<Edge, LinkWeight> modifiedEdges)
           throws TransactionFailedException {
     if (vals == null) {
       throw new TransactionFailedException("Transaction values cannot be null");
@@ -667,13 +671,9 @@ public class CreditNetwork extends Metric {
         for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
           int nextNodeIndex = paths[treeIndex][nodeIndex];
           Edge edge = CreditLinks.makeEdge(currentNodeIndex, nextNodeIndex);
-          if (!originalWeight.containsKey(edge)) {
-//            String s = "Tried to finalize a transaction that was never prepared.";
-//            logger.error(s);
-//            throw new TransactionFailedException(s);
-//          } else {
-            logger.debug("Removing updated edge from set");
-            originalWeight.remove(edge);
+          if (!modifiedEdges.containsKey(edge)) {
+            log.debug("Removing updated edge from set");
+            modifiedEdges.remove(edge);
           }
 
           edgeweights.finalizeUpdateWeight(currentNodeIndex, nextNodeIndex, vals[treeIndex],
@@ -728,9 +728,10 @@ public class CreditNetwork extends Metric {
     vals = part.partition(g, src, dest, cur.val, mins);
 
     //check if transaction works
-    boolean successful = stepThroughTransaction(vals, paths, edgeweights);
+    Map<Edge, LinkWeight> modifiedEdges = new HashMap<>();
+    boolean successful = stepThroughTransaction(vals, paths, edgeweights, modifiedEdges);
     if (successful) {
-      finalizeTransaction(vals, paths, edgeweights);
+      finalizeTransaction(vals, paths, edgeweights, modifiedEdges);
     }
 
     //compute metrics
@@ -738,6 +739,8 @@ public class CreditNetwork extends Metric {
 
     //success
     res.setSuccess(successful);
+
+    res.setModifiedEdges(modifiedEdges);
 
     //path length
     for (int j = 0; j < paths.length; j++) {
@@ -838,14 +841,17 @@ public class CreditNetwork extends Metric {
     }
 
     //check if transaction works
-    boolean successful = stepThroughTransaction(vals, paths, edgeweights);
-    finalizeTransaction(vals, paths, edgeweights);
+    Map<Edge, LinkWeight> modifiedEdges = new HashMap<>();
+    boolean successful = stepThroughTransaction(vals, paths, edgeweights, modifiedEdges);
+    finalizeTransaction(vals, paths, edgeweights, modifiedEdges);
 
     //compute metrics
     TransactionResults res = new TransactionResults(this.roots.length);
 
     //success
     res.setSuccess(successful);
+
+    res.setModifiedEdges(modifiedEdges);
 
     //path length
     for (int j = 0; j < paths.length; j++) {
@@ -884,7 +890,7 @@ public class CreditNetwork extends Metric {
     return res;
   }
 
-  private void weightUpdate(CreditLinks edgeweights, HashMap<Edge, LinkWeight> updatedEdges) {
+  private void weightUpdate(CreditLinks edgeweights, Map<Edge, LinkWeight> updatedEdges) {
     for (Entry<Edge, LinkWeight> entry : updatedEdges.entrySet()) {
       edgeweights.setWeight(entry.getKey(), entry.getValue());
     }
@@ -897,7 +903,7 @@ public class CreditNetwork extends Metric {
    * @param edgeweights  the current edge weights
    * @param updatedEdges the edges that were affected in the transaction
    */
-  private void setZeros(CreditLinks edgeweights, HashMap<Edge, LinkWeight> updatedEdges) {
+  private void setZeros(CreditLinks edgeweights, Map<Edge, LinkWeight> updatedEdges) {
     for (Entry<Edge, LinkWeight> entry : updatedEdges.entrySet()) {
       int src = entry.getKey().getSrc();
       int dst = entry.getKey().getDst();

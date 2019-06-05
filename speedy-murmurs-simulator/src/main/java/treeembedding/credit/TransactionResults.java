@@ -1,24 +1,13 @@
 package treeembedding.credit;
 
+import java.util.Map;
+
+import gtna.graph.Edge;
+
 public class TransactionResults {
 
-  public boolean isSuccess() {
-    return success;
-  }
-
-  public void setSuccess(boolean success) {
-    this.success = success;
-  }
-
-  private boolean success; // res[0], success
-
-  int getSumPathLength() {
-    return sumPathLength;
-  }
-
-  void addSumPathLength(int add) {
-    this.sumPathLength += add;
-  }
+  // res[0], success
+  private boolean success;
 
   // res[1], sum of path lengths for a transaction
   private int sumPathLength;
@@ -45,10 +34,36 @@ public class TransactionResults {
   // res[6:pathlength]
   private int[] pathLengths;
 
+  private Map<Edge, LinkWeight> modifiedEdges;
+
   TransactionResults(int numRoots) {
     this.pathLengths = new int[numRoots];
     this.sumPathLength = 0;
     this.maxPathLength = 0;
+  }
+
+  public boolean isSuccess() {
+    return success;
+  }
+
+  public void setSuccess(boolean success) {
+    this.success = success;
+  }
+
+  int getSumPathLength() {
+    return sumPathLength;
+  }
+
+  void addSumPathLength(int add) {
+    this.sumPathLength += add;
+  }
+
+  Map<Edge, LinkWeight> getModifiedEdges() {
+    return modifiedEdges;
+  }
+
+  void setModifiedEdges(Map<Edge, LinkWeight> modifiedEdges) {
+    this.modifiedEdges = modifiedEdges;
   }
 
   int getSumSourceDepths() {
