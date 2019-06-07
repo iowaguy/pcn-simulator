@@ -14,15 +14,18 @@ public class LinkWeight {
   private Map<Double, Integer> pendingTransactions;
   private static final double EPSILON = 0.000000001;
 
-  // these are the funds that are not tied up in any concurrent transactions
-  private double unlocked;
+  // these are the bounds of the funds taking into consideration funds that have been locked up by
+  // concurrent transactions
+  private double unlockedMax;
+  private double unlockedMin;
 
   LinkWeight(Edge edge) {
     this.edge = edge;
     this.min = 0;
     this.max = 0;
     this.current = 0;
-    this.unlocked = 0;
+    this.unlockedMax = 0;
+    this.unlockedMin = 0;
     this.pendingTransactions = new HashMap<>();
   }
 
@@ -31,7 +34,8 @@ public class LinkWeight {
     this.min = min;
     this.max = max;
     this.current = current;
-    this.unlocked = current;
+    this.unlockedMax = max;
+    this.unlockedMin = min;
     this.pendingTransactions = new ConcurrentHashMap<>();
   }
 
@@ -65,76 +69,92 @@ public class LinkWeight {
   }
 
   private void updateCurrent(double weightChange) {
-    this.current += weightChange;
-    this.unlocked = this.current;
+    this.current -= weightChange;
   }
 
-  private double getUnlocked() {
-    return unlocked;
+  private double getUnlockedMax() {
+    return this.unlockedMax;
   }
 
-  private synchronized void updateUnlocked(double unlocked) {
-    this.unlocked += unlocked;
+  private double getUnlockedMin() {
+    return this.unlockedMin;
   }
 
-  double getMaxTransactionAmount() {
-    if (edge.getSrc() > edge.getDst()) {
-      return getMax() - getCurrent();
+  private void setUnlockedMin(double unlockedMin) {
+    this.unlockedMin = unlockedMin;
+  }
+
+  private void setUnlockedMax(double unlockedMax) {
+    this.unlockedMax = unlockedMax;
+  }
+
+  private synchronized void lockFunds(double lockAmount) {
+    if (lockAmount < 0) {
+      // increase unlocked min by -lockAmount
+      setUnlockedMax(getUnlockedMax() + lockAmount);
     } else {
-      return getCurrent() - getMin();
+      // increase unlocked max by lockAmount
+      setUnlockedMin(getUnlockedMin() - lockAmount);
+    }
+  }
+
+  private synchronized void unlockFunds(double unlockAmount) {
+    if (unlockAmount < 0) {
+      // decrease unlocked min by lockAmount
+      setUnlockedMax(getUnlockedMax() - unlockAmount);
+    } else {
+      // increase unlocked max by lockAmount
+      setUnlockedMin(getUnlockedMin() + unlockAmount);
+    }
+  }
+
+  private double getEffectiveMax(boolean concurrentTransactions) {
+    if (concurrentTransactions) {
+      return getUnlockedMax();
+    } else {
+      return getMax();
+    }
+  }
+
+  private double getEffectiveMin(boolean concurrentTransactions) {
+    if (concurrentTransactions) {
+      return getUnlockedMin();
+    } else {
+      return getMin();
+    }
+  }
+
+  // if funds are being sent from a lower numbered node to a higher numbered node, the transaction
+  // is considered "forward"
+  double getMaxTransactionAmount(boolean isForward, boolean concurrentTransactions) {
+    if (isForward) {
+      return getCurrent() - getEffectiveMin(concurrentTransactions);
+    } else {
+      return getEffectiveMax(concurrentTransactions) - getCurrent();
     }
   }
 
   boolean areFundsAvailable(double weightChange, boolean concurrentTransactions) {
-    if (this.edge.getSrc() < this.edge.getDst()) {
-      weightChange = -weightChange;
-    }
+    double newPotentialWeight = getCurrent() - weightChange;
 
-    if (concurrentTransactions) {
-      double newPotentialWeight = getUnlocked() + weightChange;
-      if (weightChange > 0) {
-        return newPotentialWeight <= getMax();
-      } else if (weightChange < 0) {
-        return newPotentialWeight >= getMin();
-      } else {
-        return true;
-      }
-    } else {
-      double newPotentialWeight = getCurrent() + weightChange;
-      if (weightChange > 0) {
-        return newPotentialWeight <= getMax();
-      } else if (weightChange < 0) {
-        return newPotentialWeight >= getMin();
-      } else {
-        return true;
-      }
-    }
+    return newPotentialWeight <= getEffectiveMax(concurrentTransactions) &&
+            newPotentialWeight >= getEffectiveMin(concurrentTransactions);
   }
 
-  boolean prepareUpdateWeight(double weightChange, boolean concurrentTransactions) {
+  synchronized void prepareUpdateWeight(double weightChange, boolean concurrentTransactions)
+          throws InsufficientFundsException {
     if (!areFundsAvailable(weightChange, concurrentTransactions)) {
-      return false;
+      throw new InsufficientFundsException();
     }
 
     // if key is not in map, put 1 as value, otherwise sum 1 to the current value
     this.pendingTransactions.merge(weightChange, 1, Integer::sum);
-    if (this.edge.getSrc() < this.edge.getDst()) {
-      if (concurrentTransactions) {
-        updateUnlocked(weightChange);
-      } else {
-        updateCurrent(weightChange);
-      }
-    } else {
-      if (concurrentTransactions) {
-        updateUnlocked(-weightChange);
-      } else {
-        updateCurrent(-weightChange);
-      }
+    if (concurrentTransactions) {
+      lockFunds(weightChange);
     }
-    return true;
   }
 
-  void finalizeUpdateWeight(double weightChange, boolean concurrentTransactions)
+  synchronized void finalizeUpdateWeight(double weightChange, boolean concurrentTransactions)
           throws TransactionFailedException {
     // remove from pending transactions
     if (this.pendingTransactions.containsKey(weightChange)) {
@@ -149,12 +169,10 @@ public class LinkWeight {
     }
 
     if (concurrentTransactions) {
-      if (this.edge.getSrc() < this.edge.getDst()) {
-        updateCurrent(weightChange);
-      } else {
-        updateCurrent(-weightChange);
-      }
+      unlockFunds(weightChange);
     }
+
+    updateCurrent(weightChange);
   }
 
   @Override

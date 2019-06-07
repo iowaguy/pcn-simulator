@@ -586,17 +586,18 @@ public class CreditFlare extends Metric {
             originalWeight.put(e, w);
           }
 
-          if (!edgeweights.prepareUpdateWeight(l, k, vals[j], false)) {
+          try {
+            edgeweights.prepareUpdateWeight(l, k, vals[j], false);
+          } catch (InsufficientFundsException ex) {
             succ = false;
             break;
-          } else {
-            if (log) {
-              System.out.println("----Set weight of (" + l + "," + k + ") to " + edgeweights.getWeight(e)
-                      + "(previous " + w + ")");
-            }
+          }
+
+          if (log) {
+            System.out.println("----Set weight of (" + l + "," + k + ") to " + edgeweights.getWeight(e)
+                    + "(previous " + w + ")");
           }
           l = k;
-
         }
         if (!succ) {
           break;

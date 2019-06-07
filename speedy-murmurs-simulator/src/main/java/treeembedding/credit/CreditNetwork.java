@@ -6,8 +6,10 @@ import org.apache.logging.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -16,6 +18,11 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import gtna.data.Single;
 import gtna.graph.Edge;
@@ -48,58 +55,74 @@ import treeembedding.vouteoverlay.Treeembedding;
 
 public class CreditNetwork extends Metric {
   //input parameters
-  double epoch; //interval for stabilization overhead (=epoch between spanning tree recomputations if !dynRepair)
-  Vector<Transaction> transactions; //vector of transactions, sorted by time
-  Treeroute ra; //routing algorithm
-  boolean dynRepair; //true if topology changes are immediately fixed rather than recomputation each epoch
-  boolean multi; //using multi-party computation to determine minimum or do routing adhoc
-  double requeueInt; //interval until a failed transaction is re-tried; irrelevant if !dynRepair as
+  private final double epoch; //interval for stabilization overhead (=epoch between spanning tree recomputations if !dynRepair)
+  private Vector<Transaction> transactions; //vector of transactions, sorted by time
+  private Treeroute ra; //routing algorithm
+  private boolean dynRepair; //true if topology changes are immediately fixed rather than recomputation each epoch
+  private boolean multi; //using multi-party computation to determine minimum or do routing adhoc
+  private double requeueInt; //interval until a failed transaction is re-tried; irrelevant if !dynRepair as
   //retry is start of next epoch
-  Partitioner part; //method to partition overall transaction value on paths
-  int[] roots; // spanning tree roots
-  int maxTries;
-  Queue<double[]> newLinks;
+  private Partitioner part; //method to partition overall transaction value on paths
+  private int[] roots; // spanning tree roots
+  private int maxTries;
+  private Queue<double[]> newLinks;
 
-  Queue<Edge> zeroEdges;
-  Graph graph;
-  boolean update;
+  private Queue<Edge> zeroEdges;
+  private Graph graph;
+  private boolean update;
 
   //computed metrics
-  double[] stab; //stabilization overhead over time (in #messages)
-  double stab_av; //average stab overhead
-  Distribution transactionMess; //distribution of #messages needed for one transaction trial
+  private double[] stab; //stabilization overhead over time (in #messages)
+  private double stab_av; //average stab overhead
+  private Distribution transactionMess; //distribution of #messages needed for one transaction trial
   //(i.e., each retransaction count as new transactions)
-  Distribution transactionMessRe; //distribution of #messages needed, counting re-transactions as part of transaction
-  Distribution transactionMessSucc; //messages successful transactions
-  Distribution transactionMessFail; //messages failed transactions
-  Distribution pathL; //distribution of path length (sum over all trees!)
-  Distribution pathLRe; //distribution of path length counting re-transactions as one
-  Distribution pathLSucc; //path length successful transactions
-  Distribution pathLFail; //path length failed transactions
-  Distribution reLandMes; //messages receiver-landmarks communication
-  Distribution landSenMes; //messages receiver-landmarks communication
-  Distribution trials; //Distribution of number of trials needed to get through
-  Distribution path_single; //distribution of single paths
-  Distribution delay; //distribution of hop delay
-  Distribution[] pathsPerTree; //distribution of single paths per tree
-  Distribution path_singleFound; //distribution of single paths, only discovered paths
-  Distribution delaySucc; //distribution of hop delay, successful queries
-  Distribution[] pathsPerTreeFound; //distribution of single paths per tree, only discovered paths
-  Distribution path_singleNF; //distribution of single paths, not found dest
-  Distribution delayFail; //distribution of hop delay, failed queries
-  Distribution[] pathsPerTreeNF; //distribution of single paths per tree, not found dest
-  double[] passRoot;
-  double passRootAll = 0;
-  int rootPath = 0;
-  double success_first; //fraction of transactions successful in first try
-  double success; // fraction of transactions successful at all
-  double[] succs;
+  private Distribution transactionMessRe; //distribution of #messages needed, counting re-transactions as part of transaction
+  private Distribution transactionMessSucc; //messages successful transactions
+  private Distribution transactionMessFail; //messages failed transactions
+  private Distribution pathL; //distribution of path length (sum over all trees!)
+  private Distribution pathLRe; //distribution of path length counting re-transactions as one
+  private Distribution pathLSucc; //path length successful transactions
+  private Distribution pathLFail; //path length failed transactions
+  private Distribution reLandMes; //messages receiver-landmarks communication
+  private Distribution landSenMes; //messages receiver-landmarks communication
+  private Distribution trials; //Distribution of number of trials needed to get through
+  private Distribution path_single; //distribution of single paths
+  private Distribution delay; //distribution of hop delay
+  private Distribution[] pathsPerTree; //distribution of single paths per tree
+  private Distribution path_singleFound; //distribution of single paths, only discovered paths
+  private Distribution delaySucc; //distribution of hop delay, successful queries
+  private Distribution[] pathsPerTreeFound; //distribution of single paths per tree, only discovered paths
+  private Distribution path_singleNF; //distribution of single paths, not found dest
+  private Distribution delayFail; //distribution of hop delay, failed queries
+  private Distribution[] pathsPerTreeNF; //distribution of single paths per tree, not found dest
+  private double[] passRoot;
+  private double passRootAll = 0;
+  private int rootPath = 0;
+  private double success_first; //fraction of transactions successful in first try
+  private double success; // fraction of transactions successful at all
+  private double[] succs;
 
   private ByzantineNodeSelection byzSelection;
   private Set<Integer> byzantineNodes;
   private Attack attack;
   private boolean areTransactionsConcurrent;
   private Logger log;
+  private ExecutorService executor;
+  private Queue<Transaction> toRetry;
+
+  private Map<String, List<Long>> longMetrics;
+
+  private double cur_succ = 0;
+  private int cur_count = 0;
+  private int transactionCount = 0;
+  private List<Integer> cAllPath = new ArrayList<>(2);
+
+
+  private List<List<Long>> pathSs;
+  private List<List<Long>> pathSsF;
+  private List<List<Long>> pathSsNF;
+  private List<List<Integer>> cPerPath;
+
 
   public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
                        boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
@@ -136,6 +159,46 @@ public class CreditNetwork extends Metric {
     this.attack = attack;
     this.zeroEdges = new ConcurrentLinkedQueue<>();
     this.log = LogManager.getLogger();
+    toRetry = new PriorityBlockingQueue<>();
+
+    int threads = 1;
+    if (areTransactionsConcurrent) {
+      threads = 5;
+    }
+    executor = Executors.newFixedThreadPool(threads);
+
+    pathSs = new ArrayList<>(this.roots.length);
+    pathSsF = new ArrayList<>(this.roots.length);
+    pathSsNF = new ArrayList<>(this.roots.length);
+    cPerPath = new ArrayList<>(this.roots.length);
+
+    for (int i = 0; i < this.roots.length; i++) {
+      pathSs.add(new ArrayList<>());
+      pathSsF.add(new ArrayList<>());
+      pathSsNF.add(new ArrayList<>());
+      cPerPath.add(new ArrayList<>());
+    }
+
+    longMetrics = new ConcurrentHashMap<>();
+    longMetrics.put("mesAll", new ArrayList<>());
+    longMetrics.put("pathAll", new ArrayList<>());
+    longMetrics.put("reLand", new ArrayList<>());
+    longMetrics.put("landSen", new ArrayList<>());
+    longMetrics.put("mes", new ArrayList<>());
+    longMetrics.put("trys", new ArrayList<>());
+    longMetrics.put("path", new ArrayList<>());
+    longMetrics.put("pathSucc", new ArrayList<>());
+    longMetrics.put("pathFail", new ArrayList<>());
+    longMetrics.put("mesSucc", new ArrayList<>());
+    longMetrics.put("mesFail", new ArrayList<>());
+    longMetrics.put("pathS", new ArrayList<>());
+    longMetrics.put("pathSF", new ArrayList<>());
+    longMetrics.put("pathSNF", new ArrayList<>());
+    longMetrics.put("del", new ArrayList<>());
+    longMetrics.put("delSucc", new ArrayList<>());
+    longMetrics.put("delFail", new ArrayList<>());
+    cAllPath.add(0);
+    cAllPath.add(0);
   }
 
   public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
@@ -160,6 +223,150 @@ public class CreditNetwork extends Metric {
             attack, false);
   }
 
+  private Future<TransactionResults> transactionResultsFuture(Transaction cur, Graph g, Node[] nodes,
+                                                              boolean[] exclude, CreditLinks edgeweights) {
+    return executor.submit(() -> transact(cur, g, nodes, exclude, edgeweights));
+  }
+
+  private TransactionResults transact(Transaction currentTransaction, Graph g, Node[] nodes, boolean[] exclude,
+                                      CreditLinks edgeweights) {
+    TransactionResults results = null;
+    try {
+      // execute the transaction
+      if (this.multi) {
+        results = this.routeMulti(currentTransaction, g, nodes, exclude, edgeweights);
+      } else {
+        results = this.routeAdhoc(currentTransaction, g, nodes, exclude, edgeweights);
+      }
+    } catch (TransactionFailedException e) {
+      log.error(e.getStackTrace());
+      e.printStackTrace();
+    }
+
+
+    //re-queue if necessary
+    currentTransaction.addPath(results.getSumPathLength());
+    currentTransaction.addMes(results.getRes4());
+    if (!results.isSuccess()) {
+      Random rand = new Random();
+      currentTransaction.incRequeue(currentTransaction.time + rand.nextDouble() * this.requeueInt);
+      if (currentTransaction.requeue <= this.maxTries) {
+        toRetry.add(currentTransaction);
+      } else {
+        this.inc("mesAll", currentTransaction.mes);
+        this.inc("pathAll", currentTransaction.path);
+      }
+    }
+
+    if (!this.update) {
+      this.weightUpdate(edgeweights, results.getModifiedEdges());
+    }
+
+    calculateMetrics(results, currentTransaction);
+    return results;
+  }
+
+  private synchronized void calculateMetrics(TransactionResults results,
+                                             Transaction currentTransaction) {
+    cur_count++;
+    if (results.isSuccess()) {
+      cur_succ++;
+    }
+
+    //3 update metrics accordingly
+    this.inc("path", results.getSumPathLength());
+    this.inc("reLand", results.getSumReceiverLandmarks());
+    this.inc("landSen", results.getSumSourceDepths());
+    this.inc("mes", results.getRes4());
+    this.inc("del", results.getMaxPathLength());
+    if (results.isSuccess()) {
+      this.inc("trys", currentTransaction.requeue);
+      this.success++;
+      if (currentTransaction.requeue == 0) {
+        this.success_first++;
+      }
+      this.inc("mesAll", currentTransaction.mes);
+      this.inc("pathAll", currentTransaction.path);
+      this.inc("pathSucc", results.getSumPathLength());
+      this.inc("mesSucc", results.getRes4());
+      this.inc("delSucc", results.getMaxPathLength());
+    } else {
+      this.inc("pathFail", results.getSumPathLength());
+      this.inc("mesFail", results.getRes4());
+      this.inc("delFail", results.getMaxPathLength());
+    }
+    for (int j = 0; j < results.getPathLengths().length; j++) {
+      int index = 0;
+      if (results.getPathLengths()[j] < 0) {
+        index = 1;
+      }
+      incI(cPerPath.get(j), index);
+      //.set(index, cPerPath.get(j).get(index) + 1);
+      incI(cAllPath, index);
+      //cAllPath.set(index, cAllPath.get(index) + 1);
+      int val = Math.abs(results.getPathLengths()[j]);
+      this.inc("pathS", val);
+      this.inc(pathSs.get(j), val);
+      if (index == 0) {
+        this.inc("pathSF", val);
+        this.inc(pathSsF.get(j), val);
+      } else {
+        this.inc("pathSNF", val);
+        this.inc(pathSsNF.get(j), val);
+      }
+    }
+  }
+
+  private Transaction getNextTransaction() {
+    //0: decide which is next transaction: previous one or new one?
+    Transaction nextTransaction = transactionCount < this.transactions.size() ? this.transactions.get(transactionCount) : null;
+    Transaction transactionNeedingRetry = toRetry.peek();
+    Transaction currentTransaction = null;
+    if (nextTransaction != null && (transactionNeedingRetry == null || nextTransaction.time < transactionNeedingRetry.time)) {
+      currentTransaction = nextTransaction;
+      transactionCount++;
+    } else {
+      currentTransaction = toRetry.poll();
+    }
+
+    return currentTransaction;
+  }
+
+  private boolean areTransactionsAvailable() {
+    return transactionCount < this.transactions.size() || !toRetry.isEmpty();
+  }
+
+  private int addLinks(Transaction currentTransaction, Graph g) {
+    int stabilityMessages = 0;
+    if (!this.newLinks.isEmpty()) {
+      double timeAdded = this.newLinks.peek()[0];
+      while (timeAdded <= currentTransaction.time) {
+        double[] link = this.newLinks.poll();
+        int st = this.addLink((int) link[1], (int) link[2], link[3], g);
+        stabilityMessages += st;
+        timeAdded = this.newLinks.isEmpty() ? Double.MAX_VALUE : this.newLinks.peek()[0];
+      }
+    }
+
+    return stabilityMessages;
+  }
+
+  // this will block until the current result is available
+  private void blockUntilAsyncTransactionsComplete(Queue<Future<TransactionResults>> pendingTransactions) {
+    for (Future<TransactionResults> res : pendingTransactions) {
+      try {
+        res.get();
+      } catch (InterruptedException | ExecutionException e) {
+        log.error(e.getMessage());
+        e.printStackTrace();
+      }
+    }
+  }
+
+  private int calculateEpoch(Transaction t) {
+    return (int) Math.floor(t.time / epoch);
+  }
+
   @Override
   public void computeData(Graph g, Network n, HashMap<String, Metric> m) {
     //init: construct trees (currently randomly) and init variables
@@ -169,34 +376,17 @@ public class CreditNetwork extends Metric {
       g = embed.transform(g);
     }
 
-    int count = 0;
-    long[] trys = new long[2];
-    long[] path = new long[2];
-    long[] pathAll = new long[2];
-    long[] pathSucc = new long[2];
-    long[] pathFail = new long[2];
-    long[] mes = new long[2];
-    long[] mesAll = new long[2];
-    long[] mesSucc = new long[2];
-    long[] mesFail = new long[2];
-    long[] landSen = new long[2];
-    long[] reLand = new long[2];
-    long[] pathS = new long[2];
-    long[][] pathSs = new long[this.roots.length][2];
-    long[] pathSF = new long[2];
-    long[][] pathSsF = new long[this.roots.length][2];
-    long[] pathSNF = new long[2];
-    long[][] pathSsNF = new long[this.roots.length][2];
-    int[][] cPerPath = new int[this.roots.length][2];
-    int[] cAllPath = new int[2];
-    long[] del = new long[2];
-    long[] delSucc = new long[2];
-    long[] delFail = new long[2];
+    int totalTransactionAttemptCount = 0;
+
+
+
+
+
     success_first = 0;
     success = 0;
     this.passRoot = new double[this.roots.length];
-    Vector<Integer> stabMes = new Vector<Integer>();
-    Vector<Double> succR = new Vector<Double>();
+    Vector<Integer> stabMes = new Vector<>();
+    Vector<Double> succR = new Vector<>();
     Node[] nodes = g.getNodes();
     boolean[] exclude = new boolean[nodes.length];
 
@@ -204,158 +394,83 @@ public class CreditNetwork extends Metric {
     this.byzantineNodes = this.byzSelection.conscript(nodes);
 
     //go over transactions
-    LinkedList<Transaction> toRetry = new LinkedList<Transaction>();
-    int epoch_old = 0;
-    int epoch_cur = 0;
-    int cur_stab = 0;
-    int c = 0;
-    double cur_succ = 0;
-    int cur_count = 0;
-    Random rand = new Random();
+
+    int lastEpoch = 0;
+    int stabilizationMessages = 0;
+
+    Queue<Future<TransactionResults>> pendingTransactions = new LinkedList<>();
+
+
     CreditLinks edgeweights = (CreditLinks) g.getProperty("CREDIT_LINKS");
-    while (c < this.transactions.size() || toRetry.size() > 0) {
-      //0: decide which is next transaction: previous one or new one? and add new links if any
-      Transaction a = c < this.transactions.size() ? this.transactions.get(c) : null;
-      Transaction b = toRetry.peek();
-      Transaction cur = null;
-      if (a != null && (b == null || a.time < b.time)) {
-        cur = a;
-        c++;
-      } else {
-        cur = toRetry.poll();
-      }
+    while (areTransactionsAvailable()) {
+      Transaction currentTransaction = getNextTransaction();
 
-      epoch_cur = (int) Math.floor(cur.time / epoch);
-      if (!this.newLinks.isEmpty()) {
-        double nt = this.newLinks.peek()[0];
-        while (nt <= cur.time) {
-          double[] link = this.newLinks.poll();
-          int st = this.addLink((int) link[1], (int) link[2], link[3], g);
-          cur_stab = cur_stab + st;
-          nt = this.newLinks.isEmpty() ? Double.MAX_VALUE : this.newLinks.peek()[0];
-        }
-      }
+      // calculate epoch
+      int currentEpoch = calculateEpoch(currentTransaction);
 
-      count++;
-      if (log.isDebugEnabled()) {
-        log.debug(cur.toString());
-      }
+      // add new links if any
+      stabilizationMessages += addLinks(currentTransaction, g);
 
+      totalTransactionAttemptCount++;
+      if (log.isInfoEnabled()) {
+        log.info(currentTransaction.toString());
+      }
 
       //1: check if and how many spanning tree re-construction took place since last transaction
       //do 1 (!) re-computation if there was any & set stabilization cost
-      if (epoch_cur != epoch_old) {
+      if (currentEpoch != lastEpoch) {
         if (!this.dynRepair) {
+          // if the epoch has changed and there are no dynamic repairs, wait until async
+          // transactions are done, then rebalance
+          blockUntilAsyncTransactionsComplete(pendingTransactions);
+
           log.debug("Recompute spanning tree");
           for (int i = 0; i < roots.length; i++) {
             g.removeProperty("SPANNINGTREE_" + i);
             g.removeProperty("TREE_COORDINATES_" + i);
           }
           g = embed.transform(g);
-          for (int j = epoch_old + 1; j <= epoch_cur; j++) {
+          for (int j = lastEpoch + 1; j <= currentEpoch; j++) {
             stabMes.add(this.roots.length * 2 * this.computeNonZeroEdges(g, edgeweights));
           }
         } else {
-          stabMes.add(cur_stab);
-          for (int j = epoch_old + 2; j <= epoch_cur; j++) {
+          stabMes.add(stabilizationMessages);
+          for (int j = lastEpoch + 2; j <= currentEpoch; j++) {
             stabMes.add(0);
           }
-          cur_stab = 0;
+          stabilizationMessages = 0;
         }
         cur_succ = cur_count == 0 ? 1 : cur_succ / cur_count;
         succR.add(cur_succ);
-        for (int j = epoch_old + 2; j <= epoch_cur; j++) {
+        for (int j = lastEpoch + 2; j <= currentEpoch; j++) {
           succR.add(1.0);
         }
         cur_count = 0;
         cur_succ = 0;
       }
 
-      /////////////// do this asynchnronously ////////////////////////
-      TransactionResults results = null;
-      Map<Edge, LinkWeight> pendingModifiedEdges = new ConcurrentHashMap<>();
-      try {
-        //2: execute the transaction
-        if (this.multi) {
-          results = this.routeMulti(cur, g, nodes, exclude, edgeweights);
-        } else {
-          results = this.routeAdhoc(cur, g, nodes, exclude, edgeweights);
-        }
-      } catch (TransactionFailedException e) {
-        log.error(e.getMessage());
-        e.printStackTrace();
-      }
+      /////////////// do this asynchronously ////////////////////////
+//      TransactionResults results = null;
+//      Map<Edge, LinkWeight> pendingModifiedEdges = new ConcurrentHashMap<>();
+//      try {
+//        //2: execute the transaction
+//        if (this.multi) {
+//          results = this.routeMulti(cur, g, nodes, exclude, edgeweights);
+//        } else {
+//          results = this.routeAdhoc(cur, g, nodes, exclude, edgeweights);
+//        }
+//      } catch (TransactionFailedException e) {
+//        log.error(e.getMessage());
+//        e.printStackTrace();
+//      }
       //////////////////////////////////////////////////////////////////
 
-      // TODO collect result futures
-      // TODO calculate results as they become available
-
-      pendingModifiedEdges.putAll(results.getModifiedEdges());
-      cur_count++;
-      if (results.isSuccess()) {
-        cur_succ++;
-      }
-
-      //re-queue if necessary
-      cur.addPath(results.getSumPathLength());
-      cur.addMes(results.getRes4());
-      if (!results.isSuccess()) {
-        cur.incRequeue(cur.time + rand.nextDouble() * this.requeueInt);
-        if (cur.requeue <= this.maxTries) {
-          int st = 0;
-          while (st < toRetry.size() && toRetry.get(st).time < cur.time) {
-            st++;
-          }
-          toRetry.add(st, cur);
-        } else {
-          mesAll = this.inc(mesAll, cur.mes);
-          pathAll = this.inc(pathAll, cur.path);
-        }
-      }
-
-      //3 update metrics accordingly
-      path = this.inc(path, results.getSumPathLength());
-      reLand = this.inc(reLand, results.getSumReceiverLandmarks());
-      landSen = this.inc(landSen, results.getSumSourceDepths());
-      mes = this.inc(mes, results.getRes4());
-      del = this.inc(del, results.getMaxPathLength());
-      if (results.isSuccess()) {
-        trys = this.inc(trys, cur.requeue);
-        this.success++;
-        if (cur.requeue == 0) {
-          this.success_first++;
-        }
-        mesAll = this.inc(mesAll, cur.mes);
-        pathAll = this.inc(pathAll, cur.path);
-        pathSucc = this.inc(pathSucc, results.getSumPathLength());
-        mesSucc = this.inc(mesSucc, results.getRes4());
-        delSucc = this.inc(delSucc, results.getMaxPathLength());
-      } else {
-        pathFail = this.inc(pathFail, results.getSumPathLength());
-        mesFail = this.inc(mesFail, results.getRes4());
-        delFail = this.inc(delFail, results.getMaxPathLength());
-      }
-      for (int j = 0; j < results.getPathLengths().length; j++) {
-        int index = 0;
-        if (results.getPathLengths()[j] < 0) {
-          index = 1;
-        }
-        cPerPath[j][index]++;
-        cAllPath[index]++;
-        int val = Math.abs(results.getPathLengths()[j]);
-        pathS = this.inc(pathS, val);
-        pathSs[j] = this.inc(pathSs[j], val);
-        if (index == 0) {
-          pathSF = this.inc(pathSF, val);
-          pathSsF[j] = this.inc(pathSsF[j], val);
-        } else {
-          pathSNF = this.inc(pathSNF, val);
-          pathSsNF[j] = this.inc(pathSsNF[j], val);
-        }
-      }
+      // collect result futures
+      Future<TransactionResults> futureResults = transactionResultsFuture(currentTransaction, g, nodes, exclude, edgeweights);
+      pendingTransactions.add(futureResults);
 
       //4 post-processing: remove edges set to 0, update spanning tree if dynRapir
-      epoch_old = epoch_cur;
+      lastEpoch = currentEpoch;
       if (this.dynRepair && zeroEdges != null) {
         for (int j = 0; j < this.roots.length; j++) {
           SpanningTree sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + j);
@@ -375,46 +490,42 @@ public class CreditNetwork extends Metric {
                 log.debug("Repair tree " + j + " at expired edge (" + s + "," + t + ")");
               }
               TreeCoordinates coords = (TreeCoordinates) g.getProperty("TREE_COORDINATES_" + j);
-              cur_stab = cur_stab + this.repairTree(nodes, sp, coords,
+              stabilizationMessages = stabilizationMessages + this.repairTree(nodes, sp, coords,
                       cut, (CreditLinks) g.getProperty("CREDIT_LINKS"));
             }
           }
         }
       }
-
-      if (!this.update) {
-        this.weightUpdate(edgeweights, pendingModifiedEdges);
-      }
     }
     if (this.dynRepair) {
-      stabMes.add(cur_stab);
+      stabMes.add(stabilizationMessages);
     }
 
     //compute metrics
-    this.pathL = new Distribution(path, count);
-    this.transactionMess = new Distribution(mes, count);
-    this.pathLRe = new Distribution(pathAll, transactions.size());
-    this.transactionMessRe = new Distribution(mesAll, transactions.size());
-    this.pathLSucc = new Distribution(pathSucc, (int) this.success);
-    this.transactionMessSucc = new Distribution(mesSucc, (int) this.success);
-    this.pathLFail = new Distribution(pathFail, count - (int) this.success);
-    this.transactionMessFail = new Distribution(mesFail, count - (int) this.success);
-    this.reLandMes = new Distribution(reLand, count);
-    this.landSenMes = new Distribution(landSen, count);
-    this.trials = new Distribution(trys, (int) this.success);
-    this.path_single = new Distribution(pathS, cAllPath[0] + cAllPath[1]);
-    this.path_singleFound = new Distribution(pathSF, cAllPath[0]);
-    this.path_singleNF = new Distribution(pathSNF, cAllPath[1]);
-    this.delay = new Distribution(del, count);
-    this.delaySucc = new Distribution(delSucc, (int) this.success);
-    this.delayFail = new Distribution(delFail, count - (int) this.success);
+    this.pathL = new Distribution(convertListToLongArray("path"), totalTransactionAttemptCount);
+    this.transactionMess = new Distribution(convertListToLongArray("mes"), totalTransactionAttemptCount);
+    this.pathLRe = new Distribution(convertListToLongArray("pathAll"), transactions.size());
+    this.transactionMessRe = new Distribution(convertListToLongArray("mesAll"), transactions.size());
+    this.pathLSucc = new Distribution(convertListToLongArray("pathSucc"), (int) this.success);
+    this.transactionMessSucc = new Distribution(convertListToLongArray("mesSucc"), (int) this.success);
+    this.pathLFail = new Distribution(convertListToLongArray("pathFail"), totalTransactionAttemptCount - (int) this.success);
+    this.transactionMessFail = new Distribution(convertListToLongArray("mesFail"), totalTransactionAttemptCount - (int) this.success);
+    this.reLandMes = new Distribution(convertListToLongArray("reLand"), totalTransactionAttemptCount);
+    this.landSenMes = new Distribution(convertListToLongArray("landSen"), totalTransactionAttemptCount);
+    this.trials = new Distribution(convertListToLongArray("trys"), (int) this.success);
+    this.path_single = new Distribution(convertListToLongArray("pathS"), cAllPath.get(0) + cAllPath.get(1));
+    this.path_singleFound = new Distribution(convertListToLongArray("pathSF"), cAllPath.get(0));
+    this.path_singleNF = new Distribution(convertListToLongArray("pathSNF"), cAllPath.get(1));
+    this.delay = new Distribution(convertListToLongArray("del"), totalTransactionAttemptCount);
+    this.delaySucc = new Distribution(convertListToLongArray("delSucc"), (int) this.success);
+    this.delayFail = new Distribution(convertListToLongArray("delFail"), totalTransactionAttemptCount - (int) this.success);
     this.pathsPerTree = new Distribution[this.roots.length];
     this.pathsPerTreeFound = new Distribution[this.roots.length];
     this.pathsPerTreeNF = new Distribution[this.roots.length];
     for (int j = 0; j < this.pathsPerTree.length; j++) {
-      this.pathsPerTree[j] = new Distribution(pathSs[j], cPerPath[j][0] + cPerPath[j][1]);
-      this.pathsPerTreeFound[j] = new Distribution(pathSsF[j], cPerPath[j][0]);
-      this.pathsPerTreeNF[j] = new Distribution(pathSsNF[j], cPerPath[j][1]);
+      this.pathsPerTree[j] = new Distribution(convertListToLongArray(pathSs.get(j)), cPerPath.get(j).get(0) + cPerPath.get(j).get(1));
+      this.pathsPerTreeFound[j] = new Distribution(convertListToLongArray(pathSsF.get(j)), cPerPath.get(j).get(0));
+      this.pathsPerTreeNF[j] = new Distribution(convertListToLongArray(pathSsNF.get(j)), cPerPath.get(j).get(1));
     }
     this.success = this.success / (double) transactions.size();
     this.success_first = this.success_first / (double) transactions.size();
@@ -431,10 +542,18 @@ public class CreditNetwork extends Metric {
     this.stab_av = this.stab_av / (double) stab.length;
     this.passRootAll = this.passRootAll / this.rootPath;
     for (int j = 0; j < this.passRoot.length; j++) {
-      this.passRoot[j] = this.passRoot[j] / count;
+      this.passRoot[j] = this.passRoot[j] / totalTransactionAttemptCount;
     }
     this.graph = g;
 
+  }
+
+  private long[] convertListToLongArray(String propName) {
+    return convertListToLongArray(longMetrics.get(propName));
+  }
+
+  private long[] convertListToLongArray(List<Long> list) {
+    return list.stream().mapToLong(l -> l).toArray();
   }
 
   private int computeNonZeroEdges(Graph g, CreditLinks ew) {
@@ -442,7 +561,8 @@ public class CreditNetwork extends Metric {
     int c = 0;
     for (Edge e : edges.getEdges()) {
       if (e.getSrc() < e.getDst()) {
-        if (ew.getMaxTransactionAmount(e.getSrc(), e.getDst()) > 0 || ew.getMaxTransactionAmount(e.getDst(), e.getSrc()) > 0) {
+        if (ew.getMaxTransactionAmount(e.getSrc(), e.getDst(), areTransactionsConcurrent) > 0 ||
+                ew.getMaxTransactionAmount(e.getDst(), e.getSrc(), areTransactionsConcurrent) > 0) {
           c++;
         }
       }
@@ -453,7 +573,7 @@ public class CreditNetwork extends Metric {
   /**
    * reconnect disconnected branch with root subroot
    */
-  private int repairTree(Node[] nodes, SpanningTree sp, TreeCoordinates coords, int subroot, CreditLinks ew) {
+  private synchronized int repairTree(Node[] nodes, SpanningTree sp, TreeCoordinates coords, int subroot, CreditLinks ew) {
     if (!update) {
       int mes = 0;
       Queue<Integer> q1 = new LinkedList<Integer>();
@@ -462,9 +582,9 @@ public class CreditNetwork extends Metric {
       while (!q1.isEmpty()) {
         int node = q1.poll();
         int[] kids = sp.getChildren(node);
-        for (int i = 0; i < kids.length; i++) {
+        for (int kid : kids) {
           mes++;
-          q1.add(kids[i]);
+          q1.add(kid);
         }
         mes = mes + MultipleSpanningTree.potParents(graph, nodes[node],
                 Direct.EITHER, ew).length;
@@ -595,7 +715,8 @@ public class CreditNetwork extends Metric {
   private boolean isZeroPath(SpanningTree sp, int node, CreditLinks edgeweights) {
     int parent = sp.getParent(node);
     while (parent != -1) {
-      if (edgeweights.getMaxTransactionAmount(node, parent) > 0 && edgeweights.getMaxTransactionAmount(parent, node) > 0) {
+      if (edgeweights.getMaxTransactionAmount(node, parent, areTransactionsConcurrent) > 0 &&
+              edgeweights.getMaxTransactionAmount(parent, node, areTransactionsConcurrent) > 0) {
         node = parent;
         parent = sp.getParent(node);
       } else {
@@ -645,9 +766,12 @@ public class CreditNetwork extends Metric {
             modifiedEdges.put(edge, weights);
           }
 
-          if (!edgeweights.prepareUpdateWeight(currentNodeIndex, nextNodeIndex, vals[treeIndex],
-                  areTransactionsConcurrent)) {
+          try {
+            edgeweights.prepareUpdateWeight(currentNodeIndex, nextNodeIndex, vals[treeIndex],
+                    areTransactionsConcurrent);
+          } catch (InsufficientFundsException e) {
             transactionFailed(edgeweights, modifiedEdges);
+            e.printStackTrace();
             return false;
           }
         }
@@ -714,7 +838,7 @@ public class CreditNetwork extends Metric {
         double currentMaxForPath = Double.MAX_VALUE;
         for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
           int nextNodeIndex = paths[treeIndex][nodeIndex];
-          double maxTransactionAmount = edgeweights.getMaxTransactionAmount(currentNodeIndex, nextNodeIndex);
+          double maxTransactionAmount = edgeweights.getMaxTransactionAmount(currentNodeIndex, nextNodeIndex, areTransactionsConcurrent);
           if (maxTransactionAmount < currentMaxForPath) {
             currentMaxForPath = maxTransactionAmount;
           }
@@ -907,7 +1031,7 @@ public class CreditNetwork extends Metric {
     for (Entry<Edge, LinkWeight> entry : updatedEdges.entrySet()) {
       int src = entry.getKey().getSrc();
       int dst = entry.getKey().getDst();
-      if (edgeweights.getMaxTransactionAmount(src, dst) == 0) {
+      if (edgeweights.getMaxTransactionAmount(src, dst, areTransactionsConcurrent) == 0) {
         this.zeroEdges.add(CreditLinks.makeEdge(src, dst));
       }
     }
@@ -1059,7 +1183,7 @@ public class CreditNetwork extends Metric {
   }
 
   private LinkedList<double[]> readLinks(String file) {
-    LinkedList<double[]> vec = new LinkedList<double[]>();
+    LinkedList<double[]> vec = new LinkedList<>();
     try {
       BufferedReader br = new BufferedReader(new FileReader(file));
       String line;
@@ -1081,17 +1205,31 @@ public class CreditNetwork extends Metric {
     return vec;
   }
 
-
-  private long[] inc(long[] values, int index) {
-    try {
-      values[index]++;
-      return values;
-    } catch (ArrayIndexOutOfBoundsException e) {
-      long[] valuesNew = new long[index + 1];
-      System.arraycopy(values, 0, valuesNew, 0, values.length);
-      valuesNew[index] = 1;
-      return valuesNew;
+  private void inc(List<Long> values, int index) {
+    if (index < values.size()) {
+      values.set(index, values.get(index) + 1);
+    } else {
+      for (int i = 0; i < index; i++) {
+        values.add(0L);
+      }
+      values.add(1L);
     }
+  }
+
+  private void incI(List<Integer> values, int index) {
+    if (index < values.size()) {
+      values.set(index, values.get(index) + 1);
+    } else {
+      for (int i = 0; i < index; i++) {
+        values.add(0);
+      }
+      values.add(1);
+    }
+  }
+
+  private void inc(String propName, int index) {
+    List<Long> values = longMetrics.get(propName);
+    inc(values, index);
   }
 
   private void setRoots(int[][] paths) {
@@ -1105,8 +1243,5 @@ public class CreditNetwork extends Metric {
         }
       }
     }
-
   }
-
-
 }

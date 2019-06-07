@@ -48,8 +48,12 @@ public class CreditLinks extends GraphProperty {
   }
 
   public double getMaxTransactionAmount(int src, int dst) {
+    return getMaxTransactionAmount(src, dst, true);
+  }
+
+  public double getMaxTransactionAmount(int src, int dst, boolean concurrentTransactions) {
     LinkWeight weights = this.getWeights(makeEdge(src, dst));
-    return weights.getMaxTransactionAmount();
+    return weights.getMaxTransactionAmount(src < dst, concurrentTransactions);
   }
 
 
@@ -65,12 +69,11 @@ public class CreditLinks extends GraphProperty {
     this.weights.put(edge, weight);
   }
 
-  boolean prepareUpdateWeight(int src, int dst, double weightChange, boolean concurrentTransactions) {
+  void prepareUpdateWeight(int src, int dst, double weightChange, boolean concurrentTransactions)
+          throws InsufficientFundsException {
     LinkWeight weights = getWeights(src, dst);
     if (weights.areFundsAvailable(weightChange, concurrentTransactions)) {
-      return weights.prepareUpdateWeight(weightChange, concurrentTransactions);
-    } else {
-      return false;
+      weights.prepareUpdateWeight(weightChange, concurrentTransactions);
     }
   }
 

@@ -1,6 +1,6 @@
 package treeembedding.credit;
 
-class Transaction {
+class Transaction implements Comparable<Transaction> {
 
   int src;
   int dst;
@@ -32,6 +32,11 @@ class Transaction {
 
   @Override
   public String toString() {
-    return "Src=" + src + "; dest=" + dst + "; val=" + val + "; time=" + time;
+    return "src=" + src + "; dest=" + dst + "; val=" + val + "; time=" + time;
+  }
+
+  @Override
+  public int compareTo(Transaction o) {
+    return Double.compare(time, o.time);
   }
 }
