@@ -51,39 +51,26 @@ def running_mean(x, N):
 
 def get_static_data_path_config(config_dict):
     algo = config_dict["routing_algorithm"]
-    dir = f'{config_dict["simulation_type"]}-{config_dict["data_set_name"]}-{algo}-{config_dict[
-        "trees"]}-{config_dict["attempts"]}-{config_dict["iterations"]}'
-    if not config_dict["attack_properties"] == None and config_dict["attack_properties"][
-        "attackers"] != 0:
-        dir += f'-{config_dict["attack_properties"]["attack_type"]}-{
-        config_dict["attack_properties"]["attacker_selection"]}-{config_dict["attack_properties"][
-            "attackers"]}'
+    dir = f'{config_dict["simulation_type"]}-{config_dict["data_set_name"]}-{algo}-{config_dict["trees"]}-{config_dict["attempts"]}-{config_dict["iterations"]}'
+    if not config_dict["attack_properties"] == None and config_dict["attack_properties"]["attackers"] != 0:
+        dir += f'-{config_dict["attack_properties"]["attack_type"]}-{config_dict["attack_properties"]["attacker_selection"]}-{config_dict["attack_properties"]["attackers"]}'
 
-    dir2 = f'/READABLE_FILE_{algo_info[algo][
-        "token"]}-{static_node_count}/0/CREDIT_NETWORK-STATIC-{static_epoch}-TREE_ROUTE_{
-    algo_info[algo]["run_token"]}-{config_dict["trees"]}-2000.0-RANDOM_PARTITIONER-{config_dict[
-        "attempts"]}/'
+    dir2 = f'/READABLE_FILE_{algo_info[algo]["token"]}-{static_node_count}/0/CREDIT_NETWORK-STATIC-{static_epoch}-TREE_ROUTE_{algo_info[algo]["run_token"]}-{config_dict["trees"]}-2000.0-RANDOM_PARTITIONER-{config_dict["attempts"]}/'
 
     return (dir, dir2)
 
 
 def get_static_data_path(algo, tree, attempts):
-    return f'{static_data_root}/READABLE_FILE_{algo_info[algo][
-        "token"]}-{static_node_count}/0/CREDIT_NETWORK-STATIC-{static_epoch}-TREE_ROUTE_{
-    algo_info[algo]["run_token"]}-{tree}-2000.0-RANDOM_PARTITIONER-{attempts}'
+    return f'{static_data_root}/READABLE_FILE_{algo_info[algo]["token"]}-{static_node_count}/0/CREDIT_NETWORK-STATIC-{static_epoch}-TREE_ROUTE_{algo_info[algo]["run_token"]}-{tree}-2000.0-RANDOM_PARTITIONER-{attempts}'
 
 
 def get_dynamic_data_path(algo, tree, attempts, step):
     step += 1
     retries = attempts - 1
     if algo == maxflow:
-        return f'{dynamic_data_root}/READABLE_FILE_{algo_info[algo][
-            "short_name"]}-P{step}-{dynamic_node_count}/0/CREDIT_MAX_FLOW-0.0-0'
+        return f'{dynamic_data_root}/READABLE_FILE_{algo_info[algo]["short_name"]}-P{step}-{dynamic_node_count}/0/CREDIT_MAX_FLOW-0.0-0'
     else:
-        return f'{dynamic_data_root}{algo_info[algo][
-            "short_name"]}-P{step}-{dynamic_node_count}/0/CREDIT_NETWORK-{algo_info[algo][
-            "short_name"]}-P{step}-{dynamic_epoch}-TREE_ROUTE_{algo_info[algo][
-            "run_token"]}-{tree}-331.10490994417796-RANDOM_PARTITIONER-{retries}'
+        return f'{dynamic_data_root}{algo_info[algo]["short_name"]}-P{step}-{dynamic_node_count}/0/CREDIT_NETWORK-{algo_info[algo]["short_name"]}-P{step}-{dynamic_epoch}-TREE_ROUTE_{algo_info[algo]["run_token"]}-{tree}-331.10490994417796-RANDOM_PARTITIONER-{retries}'
 
 
 def extract_kv_pairs_from_singles(singles_path):
@@ -103,12 +90,42 @@ def extract_from_singles(algo, attempts, trees, key):
         x_vs_key.append(float(singles_pairs[key]))
     return x_vs_key
 
+def extract_from_singles_config_average(config_dict_list, key, sorting_key1=None, sorting_key2=None):
+    import os
+    import numpy
+
+    x_vs_key = []
+    buckets = extract_from_singles_config(config_dict_list, key, sorting_key1, sorting_key2)
+    for bucket in buckets:
+        vals = []
+        for config_dict in buckets[bucket]:
+            static_data_path = get_static_data_path_config(config_dict)
+            data_path = os.getcwd() + f'/{data_root}/' + static_data_path[0] + static_data_path[1] + singles
+            singles_pairs = extract_kv_pairs_from_singles(data_path)
+            vals.append(float(singles_pairs[key]))
+        x_vs_key.append(numpy.mean(vals))
+
+    return x_vs_key
+
+def extract_from_singles_config_stddev(config_dict_list, key, sorting_key1=None, sorting_key2=None):
+    import os
+    import numpy
+
+    x_vs_key = []
+    buckets = extract_from_singles_config(config_dict_list, key, sorting_key1, sorting_key2)
+    for bucket in buckets:
+        vals = []
+        for config_dict in buckets[bucket]:
+            static_data_path = get_static_data_path_config(config_dict)
+            data_path = os.getcwd() + f'/{data_root}/' + static_data_path[0] + static_data_path[1] + singles
+            singles_pairs = extract_kv_pairs_from_singles(data_path)
+            vals.append(float(singles_pairs[key]))
+        x_vs_key.append(numpy.std(vals))
+
+    return x_vs_key
 
 # this will also calculate averages if there are multiple runs
 def extract_from_singles_config(config_dict_list, key, sorting_key1=None, sorting_key2=None):
-    import os
-    import numpy
-    x_vs_key = []
     buckets = {}
 
     # sort configs into buckets, where each bucket is the same except for the transaction set
@@ -133,18 +150,7 @@ def extract_from_singles_config(config_dict_list, key, sorting_key1=None, sortin
         #     data_path = os.getcwd() + f'/{data_root}/' + static_data_path[0] + static_data_path[1] + singles
         #     singles_pairs = extract_kv_pairs_from_singles(data_path)
         #     x_vs_key.append(float(singles_pairs[key]))
-
-    for bucket in buckets:
-        vals = []
-        for config_dict in buckets[bucket]:
-            static_data_path = get_static_data_path_config(config_dict)
-            data_path = os.getcwd() + f'/{data_root}/' + static_data_path[0] + static_data_path[
-                1] + singles
-            singles_pairs = extract_kv_pairs_from_singles(data_path)
-            vals.append(float(singles_pairs[key]))
-        x_vs_key.append(numpy.mean(vals))
-
-    return x_vs_key
+    return buckets
 
 
 def extract_from_singles_attempts(algo, num_attempts, trees, key):
@@ -294,8 +300,7 @@ def run_static(transaction_set, algo, attempts, trees, attack, force=False):
     if not force and os.path.isdir(get_static_data_path(algo, trees, attempts)):
         print('Run exists. Skipping...')
         return
-    print(f'Running: java -cp {classpath} treeembedding.tests.Static {transaction_set} {
-    algo_info[algo][ID]} {attempts} {trees} {attack}')
+    print(f'Running: java -cp {classpath} treeembedding.tests.Static {transaction_set} {algo_info[algo][ID]} {attempts} {trees} {attack}')
     subprocess.run(
         ['java', '-cp', f'{classpath}', 'treeembedding.tests.Static', f'{transaction_set}',
          f'{algo_info[algo][ID]}', f'{attempts}', f'{trees}', f'{attack}'])
@@ -308,10 +313,8 @@ def run_dynamic(transaction_set, algo, attempts, trees, step, force=False):
         print('Run exists. Skipping...')
         return
     else:
-        print(f'Running: java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {
-        algo_info[algo][ID]} {step}')
-        subprocess.run(
-            ['java', '-cp', f'{classpath}', 'treeembedding.tests.Dynamic', f'{transaction_set}',
+        print(f'Running: java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {algo_info[algo][ID]} {step}')
+        subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Dynamic', f'{transaction_set}',
              f'{algo_info[algo][ID]}', f'{step}'])
 
 
@@ -328,14 +331,11 @@ def run_static_config(config_dict, output_dir, force=False):
 
     algo = config_dict['routing_algorithm']
     # if directory exists without file, then delete the directory
-    if os.path.isdir(os.getcwd() + f'/{data_root}/' + get_static_data_path_config(config_dict)[
-        0] + f'/READABLE_FILE_{algo_info[algo]["token"]}-{static_node_count}/'):
+    if os.path.isdir(os.getcwd() + f'/{data_root}/' + get_static_data_path_config(config_dict)[0] + f'/READABLE_FILE_{algo_info[algo]["token"]}-{static_node_count}/'):
         static_data_path = get_static_data_path_config(config_dict)
         if not os.path.isfile(
-                os.getcwd() + f'/{data_root}/' + static_data_path[0] + static_data_path[
-                    1] + '/_singles.txt'):
-            shutil.rmtree(os.getcwd() + f'/{data_root}/' + get_static_data_path_config(config_dict)[
-                0] + f'/READABLE_FILE_{algo_info[algo]["token"]}-{static_node_count}/')
+                os.getcwd() + f'/{data_root}/' + static_data_path[0] + static_data_path[1] + '/_singles.txt'):
+            shutil.rmtree(os.getcwd() + f'/{data_root}/' + get_static_data_path_config(config_dict)[0] + f'/READABLE_FILE_{algo_info[algo]["token"]}-{static_node_count}/')
 
     print(f'Running: java -cp {classpath} treeembedding.tests.Static {output_dir}')
     subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Static', f'{output_dir}'])
@@ -351,13 +351,10 @@ def run_dynamic_config(transaction_set, algo, attempts, trees, step, force=False
         print('Run exists. Skipping...')
         return 'Run exists. Skipping...'
     else:
-        print(f'Running: java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {
-        algo_info[algo][ID]} {step}')
-        subprocess.run(
-            ['java', '-cp', f'{classpath}', 'treeembedding.tests.Dynamic', f'{transaction_set}',
+        print(f'Running: java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {algo_info[algo][ID]} {step}')
+        subprocess.run(['java', '-cp', f'{classpath}', 'treeembedding.tests.Dynamic', f'{transaction_set}',
              f'{algo_info[algo][ID]}', f'{step}'])
-        return f'java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {
-        algo_info[algo][ID]} {step}'
+        return f'java -cp {classpath} treeembedding.tests.Dynamic {transaction_set} {algo_info[algo][ID]} {step}'
 
 
 def parse_config(config_text):
