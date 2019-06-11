@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import gtna.graph.Edge;
+import treeembedding.credit.exceptions.InsufficientFundsException;
+import treeembedding.credit.exceptions.TransactionFailedException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

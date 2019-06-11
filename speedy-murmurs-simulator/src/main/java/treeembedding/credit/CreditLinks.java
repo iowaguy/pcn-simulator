@@ -9,6 +9,8 @@ import gtna.graph.Edge;
 import gtna.graph.GraphProperty;
 import gtna.io.Filereader;
 import gtna.io.Filewriter;
+import treeembedding.credit.exceptions.InsufficientFundsException;
+import treeembedding.credit.exceptions.TransactionFailedException;
 
 public class CreditLinks extends GraphProperty {
 
@@ -51,7 +53,7 @@ public class CreditLinks extends GraphProperty {
     return getMaxTransactionAmount(src, dst, true);
   }
 
-  public double getMaxTransactionAmount(int src, int dst, boolean concurrentTransactions) {
+  double getMaxTransactionAmount(int src, int dst, boolean concurrentTransactions) {
     LinkWeight weights = this.getWeights(makeEdge(src, dst));
     return weights.getMaxTransactionAmount(src < dst, concurrentTransactions);
   }
@@ -74,6 +76,8 @@ public class CreditLinks extends GraphProperty {
     LinkWeight weights = getWeights(src, dst);
     if (weights.areFundsAvailable(weightChange, concurrentTransactions)) {
       weights.prepareUpdateWeight(weightChange, concurrentTransactions);
+    } else {
+      throw new InsufficientFundsException();
     }
   }
 

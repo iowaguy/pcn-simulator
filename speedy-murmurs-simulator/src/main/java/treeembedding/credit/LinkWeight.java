@@ -1,10 +1,11 @@
 package treeembedding.credit;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import gtna.graph.Edge;
+import treeembedding.credit.exceptions.InsufficientFundsException;
+import treeembedding.credit.exceptions.TransactionFailedException;
 
 public class LinkWeight {
   private Edge edge;
@@ -26,7 +27,7 @@ public class LinkWeight {
     this.current = 0;
     this.unlockedMax = 0;
     this.unlockedMin = 0;
-    this.pendingTransactions = new HashMap<>();
+    this.pendingTransactions = new ConcurrentHashMap<>();
   }
 
   LinkWeight(Edge edge, double min, double max, double current) {

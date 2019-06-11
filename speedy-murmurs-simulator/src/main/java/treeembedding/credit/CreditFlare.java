@@ -27,6 +27,7 @@ import gtna.util.Distribution;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 import gtna.util.parameter.StringParameter;
+import treeembedding.credit.exceptions.InsufficientFundsException;
 import treeembedding.credit.partioner.Partitioner;
 
 public class CreditFlare extends Metric {

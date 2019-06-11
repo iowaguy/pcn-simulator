@@ -47,6 +47,8 @@ import treeembedding.byzantine.Attack;
 import treeembedding.byzantine.AttackType;
 import treeembedding.byzantine.ByzantineNodeSelection;
 import treeembedding.byzantine.NoByzantineNodeSelection;
+import treeembedding.credit.exceptions.InsufficientFundsException;
+import treeembedding.credit.exceptions.TransactionFailedException;
 import treeembedding.credit.partioner.Partitioner;
 import treeembedding.treerouting.TreeCoordinates;
 import treeembedding.treerouting.Treeroute;
@@ -239,7 +241,6 @@ public class CreditNetwork extends Metric {
         results = this.routeAdhoc(currentTransaction, g, nodes, exclude, edgeweights);
       }
     } catch (TransactionFailedException e) {
-      log.error(e.getStackTrace());
       e.printStackTrace();
     }
 
@@ -378,10 +379,6 @@ public class CreditNetwork extends Metric {
 
     int totalTransactionAttemptCount = 0;
 
-
-
-
-
     success_first = 0;
     success = 0;
     this.passRoot = new double[this.roots.length];
@@ -393,13 +390,9 @@ public class CreditNetwork extends Metric {
     // generate byzantine nodes
     this.byzantineNodes = this.byzSelection.conscript(nodes);
 
-    //go over transactions
-
     int lastEpoch = 0;
     int stabilizationMessages = 0;
-
     Queue<Future<TransactionResults>> pendingTransactions = new LinkedList<>();
-
 
     CreditLinks edgeweights = (CreditLinks) g.getProperty("CREDIT_LINKS");
     while (areTransactionsAvailable()) {
@@ -748,7 +741,7 @@ public class CreditNetwork extends Metric {
           transactionFailed(edgeweights, modifiedEdges);
           return false;
         }
-        int currentNodeIndex = paths[treeIndex][0];
+        int currentNodeId = paths[treeIndex][0];
         for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
           // Attack logic
           if (attack != null && attack.getType() == AttackType.DROP_ALL) {
@@ -759,21 +752,22 @@ public class CreditNetwork extends Metric {
             }
           }
 
-          int nextNodeIndex = paths[treeIndex][nodeIndex];
-          Edge edge = CreditLinks.makeEdge(currentNodeIndex, nextNodeIndex);
+          int nextNodeId = paths[treeIndex][nodeIndex];
+          Edge edge = CreditLinks.makeEdge(currentNodeId, nextNodeId);
           LinkWeight weights = edgeweights.getWeights(edge);
           if (!modifiedEdges.containsKey(edge)) {
             modifiedEdges.put(edge, weights);
           }
 
           try {
-            edgeweights.prepareUpdateWeight(currentNodeIndex, nextNodeIndex, vals[treeIndex],
+            edgeweights.prepareUpdateWeight(currentNodeId, nextNodeId, vals[treeIndex],
                     areTransactionsConcurrent);
           } catch (InsufficientFundsException e) {
             transactionFailed(edgeweights, modifiedEdges);
-            e.printStackTrace();
             return false;
           }
+
+          currentNodeId = nextNodeId;
         }
       }
     }
@@ -838,7 +832,8 @@ public class CreditNetwork extends Metric {
         double currentMaxForPath = Double.MAX_VALUE;
         for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
           int nextNodeIndex = paths[treeIndex][nodeIndex];
-          double maxTransactionAmount = edgeweights.getMaxTransactionAmount(currentNodeIndex, nextNodeIndex, areTransactionsConcurrent);
+          double maxTransactionAmount = edgeweights.getMaxTransactionAmount(currentNodeIndex,
+                  nextNodeIndex, areTransactionsConcurrent);
           if (maxTransactionAmount < currentMaxForPath) {
             currentMaxForPath = maxTransactionAmount;
           }
