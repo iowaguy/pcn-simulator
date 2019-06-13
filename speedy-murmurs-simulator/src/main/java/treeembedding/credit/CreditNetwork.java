@@ -261,8 +261,8 @@ public class CreditNetwork extends Metric {
       if (currentTransaction.requeue <= this.maxTries) {
         toRetry.add(currentTransaction);
       } else {
-        this.inc("mesAll", currentTransaction.mes);
-        this.inc("pathAll", currentTransaction.path);
+        incrementCount("mesAll", currentTransaction.mes);
+        incrementCount("pathAll", currentTransaction.path);
       }
     }
 
@@ -282,45 +282,45 @@ public class CreditNetwork extends Metric {
     }
 
     //3 update metrics accordingly
-    this.inc("path", results.getSumPathLength());
-    this.inc("reLand", results.getSumReceiverLandmarks());
-    this.inc("landSen", results.getSumSourceDepths());
-    this.inc("mes", results.getRes4());
-    this.inc("del", results.getMaxPathLength());
+    incrementCount("path", results.getSumPathLength());
+    incrementCount("reLand", results.getSumReceiverLandmarks());
+    incrementCount("landSen", results.getSumSourceDepths());
+    incrementCount("mes", results.getRes4());
+    incrementCount("del", results.getMaxPathLength());
     if (results.isSuccess()) {
-      this.inc(ATTEMPTS, currentTransaction.requeue);
+      incrementCount(ATTEMPTS, currentTransaction.requeue);
       this.success++;
       if (currentTransaction.requeue == 0) {
         this.success_first++;
       }
-      this.inc("mesAll", currentTransaction.mes);
-      this.inc("pathAll", currentTransaction.path);
-      this.inc("pathSucc", results.getSumPathLength());
-      this.inc("mesSucc", results.getRes4());
-      this.inc("delSucc", results.getMaxPathLength());
+      incrementCount("mesAll", currentTransaction.mes);
+      incrementCount("pathAll", currentTransaction.path);
+      incrementCount("pathSucc", results.getSumPathLength());
+      incrementCount("mesSucc", results.getRes4());
+      incrementCount("delSucc", results.getMaxPathLength());
     } else {
-      this.inc("pathFail", results.getSumPathLength());
-      this.inc("mesFail", results.getRes4());
-      this.inc("delFail", results.getMaxPathLength());
+      incrementCount("pathFail", results.getSumPathLength());
+      incrementCount("mesFail", results.getRes4());
+      incrementCount("delFail", results.getMaxPathLength());
     }
     for (int j = 0; j < results.getPathLengths().length; j++) {
       int index = 0;
       if (results.getPathLengths()[j] < 0) {
         index = 1;
       }
-      incI(cPerPath.get(j), index);
+      incrementIntegerCount(cPerPath.get(j), index);
       //.set(index, cPerPath.get(j).get(index) + 1);
-      incI(cAllPath, index);
+      incrementIntegerCount(cAllPath, index);
       //cAllPath.set(index, cAllPath.get(index) + 1);
       int pathLength = Math.abs(results.getPathLengths()[j]);
-      this.inc(SINGLE_PATHS, pathLength);
-      this.inc(pathSs.get(j), pathLength);
+      incrementCount(SINGLE_PATHS, pathLength);
+      incrementCount(pathSs.get(j), pathLength);
       if (index == 0) {
-        this.inc(SINGLE_PATHS_DEST_FOUND, pathLength);
-        this.inc(pathSsF.get(j), pathLength);
+        incrementCount(SINGLE_PATHS_DEST_FOUND, pathLength);
+        incrementCount(pathSsF.get(j), pathLength);
       } else {
-        this.inc(SINGLE_PATHS_DEST_NOT_FOUND, pathLength);
-        this.inc(pathSsNF.get(j), pathLength);
+        incrementCount(SINGLE_PATHS_DEST_NOT_FOUND, pathLength);
+        incrementCount(pathSsNF.get(j), pathLength);
       }
     }
   }
@@ -665,15 +665,15 @@ public class CreditNetwork extends Metric {
         //new edge might be useful if any of nodes connected to tree by zero edge
         for (int j = 0; j < this.roots.length; j++) {
           SpanningTree sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + j);
-          boolean zpSrc = this.isZeroPath(sp, src, edgeweights);
-          boolean zpDst = this.isZeroPath(sp, dst, edgeweights);
+          boolean zpSrc = isZeroPath(sp, src, edgeweights);
+          boolean zpDst = isZeroPath(sp, dst, edgeweights);
           if (zpSrc) {
             TreeCoordinates coords = (TreeCoordinates) g.getProperty("TREE_COORDINATES_" + j);
-            st = st + this.repairTree(nodes, sp, coords, src, (CreditLinks) g.getProperty("CREDIT_LINKS"));
+            st = st + repairTree(nodes, sp, coords, src, (CreditLinks) g.getProperty("CREDIT_LINKS"));
           }
           if (zpDst) {
             TreeCoordinates coords = (TreeCoordinates) g.getProperty("TREE_COORDINATES_" + j);
-            st = st + this.repairTree(nodes, sp, coords, dst, (CreditLinks) g.getProperty("CREDIT_LINKS"));
+            st = st + repairTree(nodes, sp, coords, dst, (CreditLinks) g.getProperty("CREDIT_LINKS"));
           }
         }
       }
@@ -693,7 +693,7 @@ public class CreditNetwork extends Metric {
               log.debug("Repair tree " + j + " at expired edge (" + src + "," + dst + ")");
             }
             TreeCoordinates coords = (TreeCoordinates) g.getProperty("TREE_COORDINATES_" + j);
-            st = st + this.repairTree(nodes, sp, coords, cut, (CreditLinks) g.getProperty("CREDIT_LINKS"));
+            st = st + repairTree(nodes, sp, coords, cut, (CreditLinks) g.getProperty("CREDIT_LINKS"));
           }
 
         }
@@ -1198,7 +1198,7 @@ public class CreditNetwork extends Metric {
     return vec;
   }
 
-  private void inc(List<Long> values, int index) {
+  private void incrementCount(List<Long> values, int index) {
     if (index < values.size()) {
       values.set(index, values.get(index) + 1);
     } else {
@@ -1209,7 +1209,7 @@ public class CreditNetwork extends Metric {
     }
   }
 
-  private void incI(List<Integer> values, int index) {
+  private void incrementIntegerCount(List<Integer> values, int index) {
     if (index < values.size()) {
       values.set(index, values.get(index) + 1);
     } else {
@@ -1220,9 +1220,9 @@ public class CreditNetwork extends Metric {
     }
   }
 
-  private void inc(String propName, int index) {
+  private void incrementCount(String propName, int index) {
     List<Long> values = longMetrics.get(propName);
-    inc(values, index);
+    incrementCount(values, index);
   }
 
   private void setRoots(int[][] paths) {
