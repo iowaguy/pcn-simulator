@@ -47,14 +47,51 @@ public class RunConfig {
   @JsonProperty("concurrent_transactions")
   private boolean concurrentTransactions;
 
+  @JsonProperty("network_latency_ms")
+  private int networkLatencyMs;
+
   private String runDirPath;
 
-  public boolean areTransactionsConcurrent() {
+  @JsonProperty("concurrent_transactions_count")
+  private int concurrentTransactionsCount;
+
+  @JsonProperty("new_links_path")
+  private String newLinksPath;
+
+  public boolean isConcurrentTransactions() {
     return concurrentTransactions;
   }
 
   public void setConcurrentTransactions(boolean concurrentTransactions) {
     this.concurrentTransactions = concurrentTransactions;
+  }
+
+  public String getNewLinksPath() {
+    return newLinksPath;
+  }
+
+  public void setNewLinksPath(String newLinksPath) {
+    this.newLinksPath = newLinksPath;
+  }
+
+  public int getConcurrentTransactionsCount() {
+    return concurrentTransactionsCount;
+  }
+
+  public void setConcurrentTransactionsCount(int concurrentTransactionsCount) {
+    this.concurrentTransactionsCount = concurrentTransactionsCount;
+  }
+
+  public int getNetworkLatencyMs() {
+    return networkLatencyMs;
+  }
+
+  public void setNetworkLatencyMs(int networkLatencyMs) {
+    this.networkLatencyMs = networkLatencyMs;
+  }
+
+  public boolean areTransactionsConcurrent() {
+    return concurrentTransactions;
   }
 
   public String getRunDirPath() {

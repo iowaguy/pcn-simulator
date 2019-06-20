@@ -32,7 +32,7 @@ public class NegativeCredit {
     int[] roots = Misc.selectRoots(degs, false, trees, run);
 
     CreditNetwork credit = new CreditNetwork(transactions, name, 1.0, voute,
-            true, false, 1.0, part, roots, tries, false, null, null);
+            true, false, 1.0, part, roots, tries, false, null, null, null);
     Network net = new ReadableFile(name, name, graph, null);
     Series.generate(net, new Metric[]{credit}, run, run);
 

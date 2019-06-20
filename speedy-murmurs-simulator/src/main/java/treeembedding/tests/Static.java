@@ -117,25 +117,25 @@ public class Static {
       // vary dynRepair, multi, routing algo -> 8 poss + 2 treeonly
       // versions
       CreditNetwork silentW = new CreditNetwork(transList, name, epoch,
-              sW, false, true, tl, part, roots, tries, up, byz, attackProperties);
+              sW, false, true, tl, part, roots, tries, up, byz, attackProperties, runConfig);
       CreditNetwork silentWnoMul = new CreditNetwork(transList, name,
-              epoch, sW, false, false, tl, part, roots, tries, up, byz, attackProperties);
+              epoch, sW, false, false, tl, part, roots, tries, up, byz, attackProperties, runConfig);
       CreditNetwork silentWdyn = new CreditNetwork(transList, name,
-              epoch, sW, true, true, tl, part, roots, tries, up, byz, attackProperties);
+              epoch, sW, true, true, tl, part, roots, tries, up, byz, attackProperties, runConfig);
       CreditNetwork silentWdynNoMul = new CreditNetwork(transList, name,
-              epoch, sW, true, false, tl, part, roots, tries, up, byz, attackProperties);
+              epoch, sW, true, false, tl, part, roots, tries, up, byz, attackProperties, runConfig);
       CreditNetwork vouteMulnoDyn = new CreditNetwork(transList, name,
-              epoch, voute, false, true, tl, part, roots, tries, up, byz, attackProperties);
+              epoch, voute, false, true, tl, part, roots, tries, up, byz, attackProperties, runConfig);
       CreditNetwork voutenoDyn = new CreditNetwork(transList, name,
-              epoch, voute, false, false, tl, part, roots, tries, up, byz, attackProperties);
+              epoch, voute, false, false, tl, part, roots, tries, up, byz, attackProperties, runConfig);
       CreditNetwork vouteMul = new CreditNetwork(transList, name, epoch,
-              voute, true, true, tl, part, roots, tries, up, byz, attackProperties);
+              voute, true, true, tl, part, roots, tries, up, byz, attackProperties, runConfig);
       CreditNetwork voutenoMul = new CreditNetwork(transList, name,
-              epoch, voute, true, false, tl, part, roots, tries, up, byz, attackProperties);
+              epoch, voute, true, false, tl, part, roots, tries, up, byz, attackProperties, runConfig);
       CreditNetwork treeonly1 = new CreditNetwork(transList, name, epoch,
-              only, false, true, tl, part, roots, tries, up, byz, attackProperties);
+              only, false, true, tl, part, roots, tries, up, byz, attackProperties, runConfig);
       CreditNetwork treeonly2 = new CreditNetwork(transList, name, epoch,
-              only, true, false, tl, part, roots, tries, up, byz, attackProperties);
+              only, true, false, tl, part, roots, tries, up, byz, attackProperties, runConfig);
 
       Metric[] m = new Metric[]{silentW, silentWnoMul, silentWdyn,
               silentWdynNoMul, vouteMulnoDyn, voutenoDyn, vouteMul,

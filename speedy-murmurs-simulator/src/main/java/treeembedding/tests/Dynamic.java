@@ -51,7 +51,7 @@ public class Dynamic {
     }
 
     if (runConfig == null) {
-      System.out.println("Unable to parse run configuration file");
+      log.error("Unable to parse run configuration file");
       return;
     }
 
@@ -59,11 +59,9 @@ public class Dynamic {
 
     // General parameters
     Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", Boolean.toString(!runConfig.isForceOverwrite()));
-    //String results = "./data/";
     Config.overwrite("MAIN_DATA_FOLDER", runDirPath);
-    //String path = "../data/";
 
-    int config = runConfig.getRoutingAlgorithm().getId(); // Integer.parseInt(args[1]);
+    int config = runConfig.getRoutingAlgorithm().getId();
     int step = runConfig.getStep();
     String prefix;
     switch (config) {
@@ -79,25 +77,25 @@ public class Dynamic {
       default:
         throw new IllegalArgumentException("Routing algorithm not supported");
     }
-    String graph, trans, newlinks;
+    String graph;
+    String trans = runConfig.getBasePath() + "/" + runConfig.getTransactionPath();
+    String newlinks = runConfig.getBasePath() + "/" + runConfig.getNewLinksPath();
     if (step == 0) {
-      graph = runConfig.getBasePath() + "/jan2013-lcc-t0.graph";
-      trans = runConfig.getBasePath() + "/jan2013-trans-lcc-noself-uniq-1.txt";
-      newlinks = runConfig.getBasePath() + "/jan2013-newlinks-lcc-sorted-uniq-t0.txt";
+      graph = runConfig.getBasePath() + "/" + runConfig.getTopologyPath();
     } else {
       graph = runDirPath + "READABLE_FILE_" + prefix + "-P" + step + "-93502/0/";
       FilenameFilter fileNameFilter = (dir, name) -> name.contains("CREDIT_NETWORK") || name.contains("CREDIT_MAX");
       String[] files = (new File(graph)).list(fileNameFilter);
       graph = graph + files[0] + "/graph.txt";
-      trans = runConfig.getBasePath() + "/jan2013-trans-lcc-noself-uniq-" + (step + 1) + ".txt";
-      newlinks = runConfig.getBasePath() + "/jan2013-newlinks-lcc-sorted-uniq-t" + (step) + ".txt";
     }
     switch (config) {
       case 0:
-        runDynSWSM(new String[]{graph, "SW-P" + (step + 1), trans, newlinks, /* algo */ "0", /* run */ "0"}, runConfig);
+        runDynSWSM(new String[]{graph, "SW-P" + (step + 1), trans, newlinks, /* algo */ "0",
+                /* run */ "0"}, runConfig);
         break;
       case 7:
-        runDynSWSM(new String[]{graph, "SM-P" + (step + 1), trans, newlinks, /* algo */ "7", /* run */ "0"}, runConfig);
+        runDynSWSM(new String[]{graph, "SM-P" + (step + 1), trans, newlinks, /* algo */ "7",
+                /* run */ "0"}, runConfig);
         break;
       case 10:
         runMaxFlow(graph, trans, "M-P" + (step + 1), newlinks, runConfig);
@@ -141,7 +139,7 @@ public class Dynamic {
 
     Network net = new ReadableFile(name, name, graph, null);
     CreditNetwork cred = new CreditNetwork(trans, name, epoch, ra,
-            dyn, multi, req, part, roots, max, add, byz, attackProperties, runConfig.areTransactionsConcurrent());
+            dyn, multi, req, part, roots, max, add, byz, attackProperties, runConfig);
     Series.generate(net, new Metric[]{cred}, i, i);
   }
 

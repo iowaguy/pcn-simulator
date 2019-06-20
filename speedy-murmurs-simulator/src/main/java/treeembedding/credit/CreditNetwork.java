@@ -43,6 +43,7 @@ import gtna.util.parameter.DoubleParameter;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 import gtna.util.parameter.StringParameter;
+import treeembedding.RunConfig;
 import treeembedding.byzantine.Attack;
 import treeembedding.byzantine.AttackType;
 import treeembedding.byzantine.ByzantineNodeSelection;
@@ -130,11 +131,13 @@ public class CreditNetwork extends Metric {
   private List<List<Long>> pathSsNF;
   private List<List<Integer>> cPerPath;
 
+  private int networkLatency;
+
 
   public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
                        boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
                        String links, boolean up, ByzantineNodeSelection byzSelection, Attack attack,
-                       boolean areTransactionsConcurrent) {
+                       RunConfig runConfig) {
     super("CREDIT_NETWORK", new Parameter[]{new StringParameter("NAME", name), new DoubleParameter("EPOCH", epoch),
             new StringParameter("RA", ra.getKey()), new BooleanParameter("DYN_REPAIR", dynRep),
             new BooleanParameter("MULTI", multi), new IntParameter("TREES", roots.length),
@@ -149,7 +152,8 @@ public class CreditNetwork extends Metric {
     this.part = part;
     this.roots = roots;
     this.maxTries = max;
-    this.areTransactionsConcurrent = areTransactionsConcurrent;
+    this.areTransactionsConcurrent = runConfig.areTransactionsConcurrent();
+    this.networkLatency = runConfig.getNetworkLatencyMs();
     if (links != null) {
       this.newLinks = this.readLinks(links);
     } else {
@@ -169,8 +173,8 @@ public class CreditNetwork extends Metric {
     toRetry = new PriorityBlockingQueue<>();
 
     int threads = 1;
-    if (areTransactionsConcurrent) {
-      threads = 5;
+    if (this.areTransactionsConcurrent) {
+      threads = runConfig.getConcurrentTransactionsCount();
     }
     executor = Executors.newFixedThreadPool(threads);
 
@@ -213,23 +217,23 @@ public class CreditNetwork extends Metric {
   public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
                        boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
                        String links, ByzantineNodeSelection byz, Attack attack,
-                       boolean areTransactionsConcurrent) {
+                       RunConfig runConfig) {
     this(file, name, epoch, ra, dynRep, multi, requeueInt, part, roots, max, links, true, byz,
-            attack, areTransactionsConcurrent);
+            attack, runConfig);
   }
 
   public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
                        boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
-                       boolean areTransactionsConcurrent) {
+                       RunConfig runConfig) {
     this(file, name, epoch, ra, dynRep, multi, requeueInt, part, roots, max, null, true,
-            null, null, areTransactionsConcurrent);
+            null, null, runConfig);
   }
 
   public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
                        boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
-                       boolean up, ByzantineNodeSelection byzSelection, Attack attack) {
+                       boolean up, ByzantineNodeSelection byzSelection, Attack attack, RunConfig runConfig) {
     this(file, name, epoch, ra, dynRep, multi, requeueInt, part, roots, max, null, up, byzSelection,
-            attack, false);
+            attack, runConfig);
   }
 
   private Future<TransactionResults> transactionResultsFuture(Transaction cur, Graph g, Node[] nodes,
@@ -722,6 +726,15 @@ public class CreditNetwork extends Metric {
     this.zeroEdges = new ConcurrentLinkedQueue<>();
   }
 
+  private void simulateNetworkLatency() {
+    try {
+      // need to multiply by two because the latency should include both the forward routing and the
+      // return path
+      Thread.sleep(this.networkLatency * 2);
+    } catch (InterruptedException e) {
+      // do nothing
+    }
+  }
   /**
    * Step through transaction one hop at a time, and returns its success status
    *
@@ -740,6 +753,8 @@ public class CreditNetwork extends Metric {
         }
         int currentNodeId = paths[treeIndex][0];
         for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
+          simulateNetworkLatency();
+
           // Attack logic
           if (attack != null && attack.getType() == AttackType.DROP_ALL) {
             if (this.byzantineNodes.contains(paths[treeIndex][nodeIndex])) {
@@ -956,7 +971,6 @@ public class CreditNetwork extends Metric {
         paths[treeIndex] = this.ra.getRoute(s, d, treeIndex, g, nodes, exclude, edgeweights, vals[treeIndex]);
       }
     }
-
     //check if transaction works
     Map<Edge, LinkWeight> modifiedEdges = new HashMap<>();
     boolean successful = stepThroughTransaction(vals, paths, edgeweights, modifiedEdges);
