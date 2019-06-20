@@ -1,4 +1,4 @@
-package treeembedding.tests;
+package treeembedding.runners;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -705,7 +705,7 @@ public class ParseFilesToGTNA {
     Date date;
     try {
       date = dateFormat.parse(dateString);
-      long unixTime = (long) date.getTime() / 1000;
+      long unixTime = date.getTime() / 1000;
       return unixTime;
     } catch (ParseException e) {
       // TODO Auto-generated catch block

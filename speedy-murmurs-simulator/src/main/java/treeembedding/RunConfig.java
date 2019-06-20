@@ -58,10 +58,6 @@ public class RunConfig {
   @JsonProperty("new_links_path")
   private String newLinksPath;
 
-  public boolean isConcurrentTransactions() {
-    return concurrentTransactions;
-  }
-
   public void setConcurrentTransactions(boolean concurrentTransactions) {
     this.concurrentTransactions = concurrentTransactions;
   }
@@ -140,14 +136,6 @@ public class RunConfig {
 
   public void setTopologyPath(String topologyPath) {
     this.topologyPath = topologyPath;
-  }
-
-  public String getLinkWeightsPath() {
-    return linkWeightsPath;
-  }
-
-  public void setLinkWeightsPath(String linkWeightsPath) {
-    this.linkWeightsPath = linkWeightsPath;
   }
 
   public String getTransactionPath() {

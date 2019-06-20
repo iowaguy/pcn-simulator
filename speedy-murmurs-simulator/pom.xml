@@ -99,7 +99,7 @@
                                 <goal>java</goal>
                             </goals>
                             <configuration>
-                                <mainClass>treeembedding.tests.Static</mainClass>
+                                <mainClass>treeembedding.runners.Static</mainClass>
                                 <includePluginDependencies>false</includePluginDependencies>
                             </configuration>
                         </execution>
@@ -109,7 +109,7 @@
                                 <goal>java</goal>
                             </goals>
                             <configuration>
-                                <mainClass>treeembedding.tests.Dynamic</mainClass>
+                                <mainClass>treeembedding.runners.Dynamic</mainClass>
                                 <includePluginDependencies>false</includePluginDependencies>
                             </configuration>
                         </execution>

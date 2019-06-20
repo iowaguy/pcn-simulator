@@ -1,4 +1,4 @@
-package treeembedding.tests;
+package treeembedding.runners;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,6 +11,7 @@ import gtna.metrics.Metric;
 import gtna.networks.Network;
 import gtna.networks.util.ReadableFile;
 import gtna.util.Config;
+import treeembedding.RoutingAlgorithm;
 import treeembedding.RunConfig;
 import treeembedding.byzantine.Attack;
 import treeembedding.byzantine.AttackerSelection;
@@ -20,10 +21,6 @@ import treeembedding.credit.CreditMaxFlow;
 import treeembedding.credit.CreditNetwork;
 import treeembedding.credit.partioner.Partitioner;
 import treeembedding.credit.partioner.RandomPartitioner;
-import treeembedding.treerouting.Treeroute;
-import treeembedding.treerouting.TreerouteOnly;
-import treeembedding.treerouting.TreerouteSilentW;
-import treeembedding.treerouting.TreerouteTDRAP;
 
 public class Static {
 
@@ -62,7 +59,8 @@ public class Static {
     int iterations = runConfig.getIterations();
 
     // configuration in terms of routing algorithm 0-10, see below
-    int config = runConfig.getRoutingAlgorithm().getId();
+    RoutingAlgorithm routingAlgorithm = runConfig.getRoutingAlgorithm();
+    //int config = runConfig.getRoutingAlgorithm().getId();
 
     // file of transactions + graph
     String transList = runConfig.getBasePath() + "/" + runConfig.getTransactionPath();
@@ -84,7 +82,7 @@ public class Static {
     boolean up = false;
 
 
-    if (config == 10) {
+    if (routingAlgorithm == RoutingAlgorithm.MAXFLOW) {
       // max flow
       CreditMaxFlow m = new CreditMaxFlow(transList, name, tl, tries, up,
               epoch);
@@ -97,57 +95,28 @@ public class Static {
 
       Attack attackProperties = runConfig.getAttackProperties();
 
-
       // partition transaction value randomly
       Partitioner part = new RandomPartitioner();
-      // file with degree information + select highest degree nodes as
-      // roots
+
+      // file with degree information + select highest degree nodes as roots
       String degFile = path + "/degOrder-bi.txt";
       int[] roots = Misc.selectRoots(degFile, false, trees, iterations);
-
-      Treeroute sW = new TreerouteSilentW();
-      Treeroute voute = new TreerouteTDRAP();
-      Treeroute only = new TreerouteOnly();
 
       ByzantineNodeSelection byz = null;
       if (attackProperties != null && attackProperties.getSelection() == AttackerSelection.RANDOM) {
         byz = new RandomByzantineNodeSelection(attackProperties.getNumAttackers());
       }
 
-      // vary dynRepair, multi, routing algo -> 8 poss + 2 treeonly
-      // versions
-      CreditNetwork silentW = new CreditNetwork(transList, name, epoch,
-              sW, false, true, tl, part, roots, tries, up, byz, attackProperties, runConfig);
-      CreditNetwork silentWnoMul = new CreditNetwork(transList, name,
-              epoch, sW, false, false, tl, part, roots, tries, up, byz, attackProperties, runConfig);
-      CreditNetwork silentWdyn = new CreditNetwork(transList, name,
-              epoch, sW, true, true, tl, part, roots, tries, up, byz, attackProperties, runConfig);
-      CreditNetwork silentWdynNoMul = new CreditNetwork(transList, name,
-              epoch, sW, true, false, tl, part, roots, tries, up, byz, attackProperties, runConfig);
-      CreditNetwork vouteMulnoDyn = new CreditNetwork(transList, name,
-              epoch, voute, false, true, tl, part, roots, tries, up, byz, attackProperties, runConfig);
-      CreditNetwork voutenoDyn = new CreditNetwork(transList, name,
-              epoch, voute, false, false, tl, part, roots, tries, up, byz, attackProperties, runConfig);
-      CreditNetwork vouteMul = new CreditNetwork(transList, name, epoch,
-              voute, true, true, tl, part, roots, tries, up, byz, attackProperties, runConfig);
-      CreditNetwork voutenoMul = new CreditNetwork(transList, name,
-              epoch, voute, true, false, tl, part, roots, tries, up, byz, attackProperties, runConfig);
-      CreditNetwork treeonly1 = new CreditNetwork(transList, name, epoch,
-              only, false, true, tl, part, roots, tries, up, byz, attackProperties, runConfig);
-      CreditNetwork treeonly2 = new CreditNetwork(transList, name, epoch,
-              only, true, false, tl, part, roots, tries, up, byz, attackProperties, runConfig);
+      CreditNetwork creditNetwork = new CreditNetwork(transList, name, epoch, routingAlgorithm, tl, part, roots, tries, up, byz, attackProperties, runConfig);
 
-      Metric[] m = new Metric[]{silentW, silentWnoMul, silentWdyn,
-              silentWdynNoMul, vouteMulnoDyn, voutenoDyn, vouteMul,
-              voutenoMul, treeonly1, treeonly2};
       String[] com = {"SW-PER-MUL", "SW-PER", "SW-DYN-MUL", "SW-DYN",
               "V-PER-MUL", "V-PER", "V-DYN-MUL", "V-DYN", "TREE-ONLY1",
               "TREE-ONLY1"};
 
+      int config = routingAlgorithm.getId();
       Network network = new ReadableFile(com[config], com[config], graph,
               null);
-      //Series s = Series.generate(network, new Metric[] { m[config] }, iterations, iterations);
-      Series s = Series.generate(network, new Metric[]{m[config]}, 0, iterations - 1);
+      Series s = Series.generate(network, new Metric[]{creditNetwork}, 0, iterations - 1);
     }
 
   }

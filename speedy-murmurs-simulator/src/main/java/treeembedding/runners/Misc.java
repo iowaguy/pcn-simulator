@@ -1,4 +1,4 @@
-package treeembedding.tests;
+package treeembedding.runners;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

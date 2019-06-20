@@ -43,6 +43,7 @@ import gtna.util.parameter.DoubleParameter;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 import gtna.util.parameter.StringParameter;
+import treeembedding.RoutingAlgorithm;
 import treeembedding.RunConfig;
 import treeembedding.byzantine.Attack;
 import treeembedding.byzantine.AttackType;
@@ -132,21 +133,23 @@ public class CreditNetwork extends Metric {
   private List<List<Integer>> cPerPath;
 
   private int networkLatency;
+  private RoutingAlgorithm routingAlgorithm;
 
 
-  public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
-                       boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
+  public CreditNetwork(String file, String name, double epoch, RoutingAlgorithm algo,
+                       double requeueInt, Partitioner part, int[] roots, int max,
                        String links, boolean up, ByzantineNodeSelection byzSelection, Attack attack,
                        RunConfig runConfig) {
     super("CREDIT_NETWORK", new Parameter[]{new StringParameter("NAME", name), new DoubleParameter("EPOCH", epoch),
-            new StringParameter("RA", ra.getKey()), new BooleanParameter("DYN_REPAIR", dynRep),
-            new BooleanParameter("MULTI", multi), new IntParameter("TREES", roots.length),
+            new StringParameter("RA", algo.getTreeroute().getKey()), new BooleanParameter("DYN_REPAIR", algo.doesDynamicRepair()),
+            new BooleanParameter("MULTI", algo.usesMPC()), new IntParameter("TREES", roots.length),
             new DoubleParameter("REQUEUE_INTERVAL", requeueInt), new StringParameter("PARTITIONER", part.getName()),
             new IntParameter("MAX_TRIES", max)});
+    this.routingAlgorithm = algo;
     this.epoch = epoch;
-    this.ra = ra;
-    this.multi = multi;
-    this.dynRepair = dynRep;
+    this.ra = routingAlgorithm.getTreeroute();
+    this.multi = routingAlgorithm.usesMPC();
+    this.dynRepair = routingAlgorithm.doesDynamicRepair();
     transactions = this.readList(file);
     this.requeueInt = requeueInt;
     this.part = part;
@@ -214,25 +217,25 @@ public class CreditNetwork extends Metric {
     cAllPath.add(0);
   }
 
-  public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
-                       boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
+  public CreditNetwork(String file, String name, double epoch, RoutingAlgorithm algo,
+                       double requeueInt, Partitioner part, int[] roots, int max,
                        String links, ByzantineNodeSelection byz, Attack attack,
                        RunConfig runConfig) {
-    this(file, name, epoch, ra, dynRep, multi, requeueInt, part, roots, max, links, true, byz,
+    this(file, name, epoch, algo, requeueInt, part, roots, max, links, true, byz,
             attack, runConfig);
   }
 
-  public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
-                       boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
+  public CreditNetwork(String file, String name, double epoch, RoutingAlgorithm algo,
+                       double requeueInt, Partitioner part, int[] roots, int max,
                        RunConfig runConfig) {
-    this(file, name, epoch, ra, dynRep, multi, requeueInt, part, roots, max, null, true,
+    this(file, name, epoch, algo, requeueInt, part, roots, max, null, true,
             null, null, runConfig);
   }
 
-  public CreditNetwork(String file, String name, double epoch, Treeroute ra, boolean dynRep,
-                       boolean multi, double requeueInt, Partitioner part, int[] roots, int max,
+  public CreditNetwork(String file, String name, double epoch, RoutingAlgorithm algo,
+                       double requeueInt, Partitioner part, int[] roots, int max,
                        boolean up, ByzantineNodeSelection byzSelection, Attack attack, RunConfig runConfig) {
-    this(file, name, epoch, ra, dynRep, multi, requeueInt, part, roots, max, null, up, byzSelection,
+    this(file, name, epoch, algo, requeueInt, part, roots, max, null, up, byzSelection,
             attack, runConfig);
   }
 
