@@ -60,6 +60,8 @@ public class Distribution {
   }
 
   public Distribution(double[] distribution) {
+    if (distribution.length == 0) return;
+
     this.distribution = distribution;
     this.cdf = this.computeCdf();
     this.min = this.computeMin();

@@ -85,7 +85,13 @@ public class Aggregation {
                                         int runs, String key) {
     double[][][] data = new double[runs][][];
     for (int run = 0; run < runs; run++) {
-      data[run] = DataReader.readDouble2D(s.getFilenameRun(run, m, key));
+      String filenameRun = s.getFilenameRun(run, m, key);
+      File f = new File(filenameRun);
+      if (f.exists()) {
+        data[run] = DataReader.readDouble2D(filenameRun);
+      } else {
+        data[run] = new double[2][2];
+      }
     }
     boolean cdf = Config.getBoolean(key + "_DATA_IS_CDF");
     double[] x = Aggregation.extractX(data);
@@ -302,7 +308,7 @@ public class Aggregation {
     return new double[]{var, varLow, varUp};
   }
 
-  public static double[] computeConfLowUp(double values[], double avg,
+  public static double[] computeConfLowUp(double[] values, double avg,
                                           double z, double var) {
     double dev = Math.sqrt(var);
     double confLow = avg - z * dev / Math.sqrt(values.length);

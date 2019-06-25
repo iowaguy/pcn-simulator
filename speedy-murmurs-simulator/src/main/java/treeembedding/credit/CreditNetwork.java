@@ -134,7 +134,11 @@ public class CreditNetwork extends Metric {
 
   private int networkLatency;
   private RoutingAlgorithm routingAlgorithm;
+  private CreditLinks creditLinks;
 
+  public CreditLinks getCreditLinks() {
+    return this.creditLinks;
+  }
 
   public CreditNetwork(String file, String name, double epoch, RoutingAlgorithm algo,
                        double requeueInt, Partitioner part, int[] roots, int max,
@@ -191,6 +195,8 @@ public class CreditNetwork extends Metric {
       pathSsF.add(new ArrayList<>());
       pathSsNF.add(new ArrayList<>());
       cPerPath.add(new ArrayList<>());
+      cPerPath.get(i).add(0);
+      cPerPath.get(i).add(1);
     }
 
     longMetrics = new ConcurrentHashMap<>();
@@ -490,6 +496,7 @@ public class CreditNetwork extends Metric {
     }
     // don't want metrics to be computed before all transactions are done
     blockUntilAsyncTransactionsComplete(pendingTransactions);
+    this.creditLinks = edgeweights;
 
     if (this.dynRepair) {
       stabMes.add(stabilizationMessages);
@@ -1056,8 +1063,11 @@ public class CreditNetwork extends Metric {
             this.key + "_MESSAGES_RE", folder);
     succ &= DataWriter.writeWithIndex(this.transactionMessSucc.getDistribution(),
             this.key + "_MESSAGES_SUCC", folder);
-    succ &= DataWriter.writeWithIndex(this.transactionMessFail.getDistribution(),
-            this.key + "_MESSAGES_FAIL", folder);
+
+    if (this.transactionMessFail.getDistribution() != null) {
+      succ &= DataWriter.writeWithIndex(this.transactionMessFail.getDistribution(),
+              this.key + "_MESSAGES_FAIL", folder);
+    }
 
     succ &= DataWriter.writeWithIndex(this.pathL.getDistribution(),
             this.key + "_PATH_LENGTH", folder);
@@ -1065,8 +1075,11 @@ public class CreditNetwork extends Metric {
             this.key + "_PATH_LENGTH_RE", folder);
     succ &= DataWriter.writeWithIndex(this.pathLSucc.getDistribution(),
             this.key + "_PATH_LENGTH_SUCC", folder);
-    succ &= DataWriter.writeWithIndex(this.pathLFail.getDistribution(),
-            this.key + "_PATH_LENGTH_FAIL", folder);
+
+    if (this.pathLFail.getDistribution() != null) {
+      succ &= DataWriter.writeWithIndex(this.pathLFail.getDistribution(),
+              this.key + "_PATH_LENGTH_FAIL", folder);
+    }
 
     succ &= DataWriter.writeWithIndex(this.reLandMes.getDistribution(),
             this.key + "_REC_LANDMARK", folder);
@@ -1081,8 +1094,12 @@ public class CreditNetwork extends Metric {
             this.key + "_PATH_SINGLE", folder);
     succ &= DataWriter.writeWithIndex(this.path_singleFound.getDistribution(),
             this.key + "_PATH_SINGLE_FOUND", folder);
-    succ &= DataWriter.writeWithIndex(this.path_singleNF.getDistribution(),
-            this.key + "_PATH_SINGLE_NF", folder);
+
+    if (this.path_singleNF.getDistribution() != null) {
+      succ &= DataWriter.writeWithIndex(this.path_singleNF.getDistribution(),
+              this.key + "_PATH_SINGLE_NF", folder);
+    }
+
     succ &= DataWriter.writeWithIndex(this.succs,
             this.key + "_SUCC_RATIOS", folder);
 
@@ -1090,8 +1107,11 @@ public class CreditNetwork extends Metric {
             this.key + "_DELAY", folder);
     succ &= DataWriter.writeWithIndex(this.delaySucc.getDistribution(),
             this.key + "_DELAY_SUCC", folder);
-    succ &= DataWriter.writeWithIndex(this.delayFail.getDistribution(),
-            this.key + "_DELAY_FAIL", folder);
+
+    if (this.delayFail.getDistribution() != null) {
+      succ &= DataWriter.writeWithIndex(this.delayFail.getDistribution(),
+              this.key + "_DELAY_FAIL", folder);
+    }
 
     double[][] s1 = new double[this.roots.length][];
     double[][] s2 = new double[this.roots.length][];
@@ -1112,7 +1132,12 @@ public class CreditNetwork extends Metric {
     succ &= DataWriter.writeWithIndex(av3, this.key + "_PATH_PERTREE_NF_AV", folder);
     succ &= DataWriter.writeWithoutIndex(s1, this.key + "_PATH_PERTREE", folder);
     succ &= DataWriter.writeWithoutIndex(s2, this.key + "_PATH_PERTREE_FOUND", folder);
-    succ &= DataWriter.writeWithoutIndex(s3, this.key + "_PATH_PERTREE_NF", folder);
+    for (double[] doubles : s3) {
+      if (doubles == null) {
+        break;
+      }
+      succ &= DataWriter.writeWithoutIndex(s3, this.key + "_PATH_PERTREE_NF", folder);
+    }
 
     succ &= DataWriter.writeWithIndex(this.passRoot, this.key + "_ROOT_TRAF", folder);
 
