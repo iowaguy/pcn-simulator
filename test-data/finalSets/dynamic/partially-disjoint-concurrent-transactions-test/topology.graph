@@ -1,0 +1,13 @@
+# Name of the Graph:
+G (Nodes = 93502)
+# Number of Nodes:
+6
+# Number of Edges:
+5
+
+0:2
+1:2
+2:0;1;3
+3:2;4;5
+4:3
+5:3

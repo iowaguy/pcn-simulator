@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import gtna.graph.Edge;
 import gtna.graph.GraphProperty;
@@ -20,7 +21,7 @@ public class CreditLinks extends GraphProperty {
 
 
   public CreditLinks() {
-    this.weights = new HashMap<>();
+    this.weights = new ConcurrentHashMap<>();
   }
 
   static Edge makeEdge(int src, int dst) {
@@ -71,7 +72,7 @@ public class CreditLinks extends GraphProperty {
     this.weights.put(edge, weight);
   }
 
-  void prepareUpdateWeight(int src, int dst, double weightChange, boolean concurrentTransactions)
+  synchronized void prepareUpdateWeight(int src, int dst, double weightChange, boolean concurrentTransactions)
           throws InsufficientFundsException {
     LinkWeight weights = getWeights(src, dst);
     if (weights.areFundsAvailable(weightChange, concurrentTransactions)) {
@@ -81,7 +82,7 @@ public class CreditLinks extends GraphProperty {
     }
   }
 
-  void finalizeUpdateWeight(int src, int dst, double weightChange, boolean concurrentTransactions)
+  synchronized void finalizeUpdateWeight(int src, int dst, double weightChange, boolean concurrentTransactions)
           throws TransactionFailedException {
     getWeights(src, dst).finalizeUpdateWeight(weightChange, concurrentTransactions);
   }

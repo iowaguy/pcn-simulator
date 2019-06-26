@@ -20,6 +20,7 @@ class CreditNetworkTest {
   private static final String TEST_DATA_BASE = "../test-data/finalSets/dynamic";
   private RunConfig runConfig;
   private static final int EPOCH = 100;
+  private static final double ACCEPTABLE_ERROR = 0.0001;
 
   @BeforeEach
   void setup() {
@@ -68,49 +69,138 @@ class CreditNetworkTest {
   void singlePathLinkUpdateSilentWhispers() {
     String testDir = "/single-transaction-test";
     CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SILENTWHISPERS, testDir);
-    assertEquals(90.0, edgeweights.getWeight(0, 2));
-    assertEquals(90.0, edgeweights.getWeight(2, 3));
-    assertEquals(90.0, edgeweights.getWeight(3, 5));
-    assertEquals(100.0, edgeweights.getWeight(3, 4));
+    assertEquals(90.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(90.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(90.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
   }
 
   @Test
   void singlePathLinkUpdateSpeedyMurmurs() {
     String testDir = "/single-transaction-test";
     CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir);
-    assertEquals(90.0, edgeweights.getWeight(0, 2));
-    assertEquals(90.0, edgeweights.getWeight(2, 3));
-    assertEquals(90.0, edgeweights.getWeight(3, 5));
-    assertEquals(100.0, edgeweights.getWeight(3, 4));
+    assertEquals(90.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(90.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(90.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
   }
+
+  @Test
+  void singlePathConcurrentSilentWhispers() {
+    String testDir = "/concurrent-transactions-test";
+    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SILENTWHISPERS, testDir);
+    assertEquals(70.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(70.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(70.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+  }
+
+  @Test
+  void singlePathConcurrentSpeedyMurmurs() {
+    String testDir = "/concurrent-transactions-test";
+    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir);
+    assertEquals(70.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(70.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(70.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+  }
+
+  // many concurrent transactions
+  @Test
+  void singlePathManyConcurrentSilentWhispers() {
+    String testDir = "/many-concurrent-transactions-test";
+    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SILENTWHISPERS, testDir);
+    assertEquals(24.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(24.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(24.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+  }
+
+  // TODO fix test. it is failing because sometimes speedymurmurs is not finding a path, even though
+  // it should always find a path in this topology
+  @Test
+  void singlePathManyConcurrentSpeedyMurmurs() {
+    String testDir = "/many-concurrent-transactions-test";
+    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir);
+    assertEquals(24.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(24.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(24.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+  }
+
+  // multiple paths that are partially disjoint
+  @Test
+  void multiplePartiallyDisjointPathsSilentWhispers() {
+    String testDir = "/partially-disjoint-concurrent-transactions-test";
+    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SILENTWHISPERS, testDir);
+    assertEquals(90.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(70.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(90.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(80.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
+    assertEquals(80.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+  }
+
+  @Test
+  void multiplePartiallyDisjointPathsSpeedyMurmurs() {
+    String testDir = "/partially-disjoint-concurrent-transactions-test";
+    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir);
+    assertEquals(90.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(70.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(90.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(80.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
+    assertEquals(80.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+  }
+
+
+  // transactions in opposite directions
+  @Test
+  void oppositeDirectionsConcurrentSilentWhispers() {
+    String testDir = "/opposite-directions-concurrent-transactions-test";
+    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SILENTWHISPERS, testDir);
+    assertEquals(110.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(110.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(110.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+  }
+
+  @Test
+  void oppositeDirectionsConcurrentSpeedyMurmurs() {
+    String testDir = "/opposite-directions-concurrent-transactions-test";
+    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir);
+    assertEquals(110.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(110.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(110.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+  }
+
+
 
   /*
   The goal with these is to test out a transaction that goes along two (at least partially) disjoint
   paths. Couldn't get it to work, because I couldn't find a way to force the tree creation to use
   disjoint paths.
-
-  @Test
+*/
+  /*@Test
   void multiPathLinkUpdateSilentWhispers() {
     String testDir = "/multipath-single-transaction-test";
     CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SILENTWHISPERS, testDir);
-    assertEquals(0.0, edgeweights.getWeight(0, 2));
-    assertEquals(0.0, edgeweights.getWeight(2, 3));
-    assertEquals(0.0, edgeweights.getWeight(3, 5));
-    assertEquals(0.0, edgeweights.getWeight(0, 1));
-    assertEquals(0.0, edgeweights.getWeight(1, 2));
-    assertEquals(100.0, edgeweights.getWeight(3, 4));
+    assertEquals(0.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeight(0, 1), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
   }
 
   @Test
   void multiPathLinkUpdateSpeedyMurmurs() {
     String testDir = "/multipath-single-transaction-test";
     CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir);
-    assertEquals(edgeweights.getWeight(0, 2), 0.0);
-    assertEquals(edgeweights.getWeight(2, 3), 0.0);
-    assertEquals(edgeweights.getWeight(3, 5), 0.0);
-    assertEquals(edgeweights.getWeight(0, 1), 0.0);
-    assertEquals(edgeweights.getWeight(1, 2), 0.0);
-    assertEquals(edgeweights.getWeight(3, 4), 100.0);
+    assertEquals(edgeweights.getWeight(0, 2), 0.0, ACCEPTABLE_ERROR);
+    assertEquals(edgeweights.getWeight(2, 3), 0.0, ACCEPTABLE_ERROR);
+    assertEquals(edgeweights.getWeight(3, 5), 0.0, ACCEPTABLE_ERROR);
+    assertEquals(edgeweights.getWeight(0, 1), 0.0, ACCEPTABLE_ERROR);
+    assertEquals(edgeweights.getWeight(1, 2), 0.0, ACCEPTABLE_ERROR);
+    assertEquals(edgeweights.getWeight(3, 4), 100.0, ACCEPTABLE_ERROR);
   }*/
-  // TODO make a transaction and topology that goes along multiple paths and check all of them
 }

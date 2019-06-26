@@ -758,6 +758,7 @@ public class CreditNetwork extends Metric {
     for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
       if (vals[treeIndex] != 0) {
         if (paths[treeIndex][paths[treeIndex].length - 1] == -1) {
+          // could not find a path
           transactionFailed(edgeweights, modifiedEdges);
           return false;
         }
@@ -782,6 +783,9 @@ public class CreditNetwork extends Metric {
           }
 
           try {
+            if (log.isInfoEnabled()) {
+              log.info("Prepare: cur=" + currentNodeId + "; next=" + nextNodeId + "; val=" + vals[treeIndex]);
+            }
             edgeweights.prepareUpdateWeight(currentNodeId, nextNodeId, vals[treeIndex],
                     areTransactionsConcurrent);
           } catch (InsufficientFundsException e) {
@@ -815,7 +819,9 @@ public class CreditNetwork extends Metric {
             log.debug("Removing updated edge from set");
             modifiedEdges.remove(edge);
           }
-
+          if (log.isInfoEnabled()) {
+            log.info("Finalize: cur=" + currentNodeIndex + "; next=" + nextNodeIndex + "; val=" + vals[treeIndex]);
+          }
           edgeweights.finalizeUpdateWeight(currentNodeIndex, nextNodeIndex, vals[treeIndex],
                   areTransactionsConcurrent);
 
@@ -984,7 +990,9 @@ public class CreditNetwork extends Metric {
     //check if transaction works
     Map<Edge, LinkWeight> modifiedEdges = new HashMap<>();
     boolean successful = stepThroughTransaction(vals, paths, edgeweights, modifiedEdges);
-    finalizeTransaction(vals, paths, edgeweights, modifiedEdges);
+    if (successful) {
+      finalizeTransaction(vals, paths, edgeweights, modifiedEdges);
+    }
 
     //compute metrics
     TransactionResults res = new TransactionResults(this.roots.length);
@@ -1056,11 +1064,13 @@ public class CreditNetwork extends Metric {
 
   @Override
   public boolean writeData(String folder) {
-    boolean succ = true;
-    succ &= DataWriter.writeWithIndex(this.transactionMess.getDistribution(),
+    boolean succ = DataWriter.writeWithIndex(this.transactionMess.getDistribution(),
             this.key + "_MESSAGES", folder);
-    succ &= DataWriter.writeWithIndex(this.transactionMessRe.getDistribution(),
-            this.key + "_MESSAGES_RE", folder);
+    if (this.transactionMessRe.getDistribution() != null) {
+      succ &= DataWriter.writeWithIndex(this.transactionMessRe.getDistribution(),
+              this.key + "_MESSAGES_RE", folder);
+    }
+
     succ &= DataWriter.writeWithIndex(this.transactionMessSucc.getDistribution(),
             this.key + "_MESSAGES_SUCC", folder);
 
@@ -1136,7 +1146,11 @@ public class CreditNetwork extends Metric {
       if (doubles == null) {
         break;
       }
-      succ &= DataWriter.writeWithoutIndex(s3, this.key + "_PATH_PERTREE_NF", folder);
+      try {
+        succ &= DataWriter.writeWithoutIndex(s3, this.key + "_PATH_PERTREE_NF", folder);
+      } catch (NullPointerException e) {
+        e.printStackTrace();
+      }
     }
 
     succ &= DataWriter.writeWithIndex(this.passRoot, this.key + "_ROOT_TRAF", folder);
