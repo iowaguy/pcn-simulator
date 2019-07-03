@@ -116,7 +116,7 @@ public class Static {
       int config = routingAlgorithm.getId();
       Network network = new ReadableFile(com[config], com[config], graph,
               null);
-      Series s = Series.generate(network, new Metric[]{creditNetwork}, 0, iterations - 1);
+      Series.generate(network, new Metric[]{creditNetwork}, 0, iterations - 1);
     }
 
   }

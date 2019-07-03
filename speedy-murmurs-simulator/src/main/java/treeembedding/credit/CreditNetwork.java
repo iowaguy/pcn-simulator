@@ -1,7 +1,11 @@
 package treeembedding.credit;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -133,10 +137,10 @@ public class CreditNetwork extends Metric {
   private List<List<Integer>> cPerPath;
 
   private int networkLatency;
-  private RoutingAlgorithm routingAlgorithm;
   private CreditLinks creditLinks;
 
-  public CreditLinks getCreditLinks() {
+  // used for unit tests
+  CreditLinks getCreditLinks() {
     return this.creditLinks;
   }
 
@@ -149,11 +153,10 @@ public class CreditNetwork extends Metric {
             new BooleanParameter("MULTI", algo.usesMPC()), new IntParameter("TREES", roots.length),
             new DoubleParameter("REQUEUE_INTERVAL", requeueInt), new StringParameter("PARTITIONER", part.getName()),
             new IntParameter("MAX_TRIES", max)});
-    this.routingAlgorithm = algo;
     this.epoch = epoch;
-    this.ra = routingAlgorithm.getTreeroute();
-    this.multi = routingAlgorithm.usesMPC();
-    this.dynRepair = routingAlgorithm.doesDynamicRepair();
+    this.ra = algo.getTreeroute();
+    this.multi = algo.usesMPC();
+    this.dynRepair = algo.doesDynamicRepair();
     transactions = this.readList(file);
     this.requeueInt = requeueInt;
     this.part = part;
@@ -176,7 +179,14 @@ public class CreditNetwork extends Metric {
 
     this.attack = attack;
     this.zeroEdges = new ConcurrentLinkedQueue<>();
+
+    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    Configuration config = ctx.getConfiguration();
+    LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+    loggerConfig.setLevel(Level.getLevel(runConfig.getLogLevel().toUpperCase()));
+    ctx.updateLoggers();  // This causes all Loggers to refetch information from their LoggerConfig.
     this.log = LogManager.getLogger();
+
     toRetry = new PriorityBlockingQueue<>();
 
     int threads = 1;
@@ -494,6 +504,7 @@ public class CreditNetwork extends Metric {
         }
       }
     }
+    this.executor.shutdown();
     // don't want metrics to be computed before all transactions are done
     blockUntilAsyncTransactionsComplete(pendingTransactions);
     this.creditLinks = edgeweights;
@@ -738,9 +749,7 @@ public class CreditNetwork extends Metric {
 
   private void simulateNetworkLatency() {
     try {
-      // need to multiply by two because the latency should include both the forward routing and the
-      // return path
-      Thread.sleep(this.networkLatency * 2);
+      Thread.sleep(this.networkLatency);
     } catch (InterruptedException e) {
       // do nothing
     }
@@ -813,6 +822,7 @@ public class CreditNetwork extends Metric {
       if (vals[treeIndex] != 0) {
         int currentNodeIndex = paths[treeIndex][0];
         for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
+          simulateNetworkLatency();
           int nextNodeIndex = paths[treeIndex][nodeIndex];
           Edge edge = CreditLinks.makeEdge(currentNodeIndex, nextNodeIndex);
           if (!modifiedEdges.containsKey(edge)) {
@@ -878,6 +888,7 @@ public class CreditNetwork extends Metric {
     Map<Edge, LinkWeight> modifiedEdges = new HashMap<>();
     boolean successful = stepThroughTransaction(vals, paths, edgeweights, modifiedEdges);
     if (successful) {
+      // TODO simulate attack
       finalizeTransaction(vals, paths, edgeweights, modifiedEdges);
     }
 
@@ -991,6 +1002,7 @@ public class CreditNetwork extends Metric {
     Map<Edge, LinkWeight> modifiedEdges = new HashMap<>();
     boolean successful = stepThroughTransaction(vals, paths, edgeweights, modifiedEdges);
     if (successful) {
+      // TODO simulate attack
       finalizeTransaction(vals, paths, edgeweights, modifiedEdges);
     }
 

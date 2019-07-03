@@ -58,6 +58,17 @@ public class RunConfig {
   @JsonProperty("new_links_path")
   private String newLinksPath;
 
+  @JsonProperty("log_level")
+  private String logLevel;
+
+  public String getLogLevel() {
+    if (logLevel == null) {
+      return "INFO";
+    } else {
+      return logLevel;
+    }
+  }
+
   public void setConcurrentTransactions(boolean concurrentTransactions) {
     this.concurrentTransactions = concurrentTransactions;
   }
