@@ -46,17 +46,6 @@ run_info = {
     }
 }
 
-# def get_static_data_path(algo, tree, attempts):
-#     return f'{run_info["static"]["data_root"]}/READABLE_FILE_{algo_info[algo]["token"]}-{run_info["static"]["node_count"]}/0/CREDIT_NETWORK-STATIC-{run_info["static"]["epoch"]}-TREE_ROUTE_{algo_info[algo]["run_token"]}-{tree}-2000.0-RANDOM_PARTITIONER-{attempts}'
-
-
-# def get_dynamic_data_path(algo, tree, attempts, step):
-#     retries = attempts - 1
-#     if algo == maxflow:
-#         return f'{run_info["dynamic"]["data_root"]}/READABLE_FILE_{algo_info[algo]["short_name"]}-P{step}-{run_info["dynamic"]["node_count"]}/0/CREDIT_MAX_FLOW-0.0-0'
-#     else:
-#         return f'{run_info["dynamic"]["data_root"]}/{algo_info[algo]["short_name"]}-P{step}-{run_info["dynamic"]["node_count"]}/0/CREDIT_NETWORK-{algo_info[algo]["short_name"]}-P{step}-{run_info["dynamic"]["epoch"]}-TREE_ROUTE_{algo_info[algo]["run_token"]}-{tree}-331.10490994417796-RANDOM_PARTITIONER-{retries}'
-
 def get_output_base_path(config_dict):
     algo = config_dict["routing_algorithm"]
 
