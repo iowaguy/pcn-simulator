@@ -62,10 +62,66 @@ import treeembedding.treerouting.TreerouteSilentW;
 import treeembedding.vouteoverlay.Treeembedding;
 
 public class CreditNetwork extends Metric {
-  private static final String SINGLE_PATHS_DEST_FOUND = "pathSF";
-  private static final String SINGLE_PATHS_DEST_NOT_FOUND = "pathSNF";
-  private static final String SINGLE_PATHS = "pathS";
-  private static final String ATTEMPTS = "trys";
+  private static final String SINGLE_PATHS_DEST_FOUND = "pathSF"; //distribution of single paths, only discovered paths
+  private static final String SINGLE_PATHS_DEST_NOT_FOUND = "pathSNF"; //distribution of single paths, not found dest
+  private static final String SINGLE_PATHS = "pathS"; //distribution of single paths
+  private static final String ATTEMPTS = "trys"; //Distribution of number of trials needed to get through
+  private static final String MESSAGES_ALL = "mesAll"; //distribution of #messages needed, counting re-transactions as part of transaction
+  private static final String PATHS_ALL = "pathAll"; //distribution of path length counting re-transactions as one
+  private static final String RECEIVER_LANDMARK_MESSAGES = "reLand"; //messages receiver-landmarks communication
+  private static final String LANDMARK_SENDER_MESSAGES = "landSen"; //messages sender-landmarks communication
+  private static final String MESSAGES = "mes"; //distribution of #messages needed for one transaction trial i.e. each retry counts as a new transaction
+  private static final String PATH = "path"; //distribution of path length (sum over all trees!)
+  private static final String PATH_SUCCESS = "pathSucc"; //path length successful transactions
+  private static final String PATH_FAIL = "pathFail"; //path length failed transactions
+  private static final String MESSAGES_SUCCESS = "mesSucc"; //messages successful transactions
+  private static final String MESSAGES_FAIL = "mesFail"; //messages failed transactions
+  private static final String DELAY = "del"; //distribution of hop delay
+  private static final String DELAY_SUCCESS = "delSucc"; //distribution of hop delay, successful queries
+  private static final String DELAY_FAIL = "delFail"; //distribution of hop delay, failed queries
+
+  private static final Map<String, String> FILE_SUFFIXES;
+  private static final Map<String, String> SINGLE_NAMES;
+  static {
+    FILE_SUFFIXES = new HashMap<>();
+    FILE_SUFFIXES.put(MESSAGES, "_MESSAGES");
+    FILE_SUFFIXES.put(MESSAGES_ALL, "_MESSAGES_RE");
+    FILE_SUFFIXES.put(MESSAGES_SUCCESS, "_MESSAGES_SUCC");
+    FILE_SUFFIXES.put(MESSAGES_FAIL, "_MESSAGES_FAIL");
+    FILE_SUFFIXES.put(PATH, "_PATH_LENGTH");
+    FILE_SUFFIXES.put(PATHS_ALL, "_PATH_LENGTH_RE");
+    FILE_SUFFIXES.put(PATH_SUCCESS, "_PATH_LENGTH_SUCC");
+    FILE_SUFFIXES.put(PATH_FAIL, "_PATH_LENGTH_FAIL");
+    FILE_SUFFIXES.put(RECEIVER_LANDMARK_MESSAGES, "_REC_LANDMARK");
+    FILE_SUFFIXES.put(LANDMARK_SENDER_MESSAGES, "_LANDMARK_SRC");
+    FILE_SUFFIXES.put(ATTEMPTS, "_TRIALS");
+    FILE_SUFFIXES.put(SINGLE_PATHS, "_PATH_SINGLE");
+    FILE_SUFFIXES.put(SINGLE_PATHS_DEST_FOUND, "_PATH_SINGLE_FOUND");
+    FILE_SUFFIXES.put(SINGLE_PATHS_DEST_NOT_FOUND, "_PATH_SINGLE_NF");
+    FILE_SUFFIXES.put(DELAY, "_DELAY");
+    FILE_SUFFIXES.put(DELAY_SUCCESS, "_DELAY_SUCC");
+    FILE_SUFFIXES.put(DELAY_FAIL, "_DELAY_FAIL");
+
+    SINGLE_NAMES = new HashMap<>();
+    SINGLE_NAMES.put(MESSAGES, "CREDIT_NETWORK_MES_AV");
+    SINGLE_NAMES.put(MESSAGES_ALL, "CREDIT_NETWORK_MES_RE_AV");
+    SINGLE_NAMES.put(MESSAGES_SUCCESS, "CREDIT_NETWORK_MES_SUCC_AV");
+    SINGLE_NAMES.put(MESSAGES_FAIL, "CREDIT_NETWORK_MES_FAIL_AV");
+    SINGLE_NAMES.put(PATH, "CREDIT_NETWORK_PATH_AV");
+    SINGLE_NAMES.put(PATHS_ALL, "CREDIT_NETWORK_PATH_RE_AV");
+    SINGLE_NAMES.put(PATH_SUCCESS, "CREDIT_NETWORK_PATH_SUCC_AV");
+    SINGLE_NAMES.put(PATH_FAIL, "CREDIT_NETWORK_PATH_FAIL_AV");
+    SINGLE_NAMES.put(RECEIVER_LANDMARK_MESSAGES, "CREDIT_NETWORK_REC_LAND_MES_AV");
+    SINGLE_NAMES.put(LANDMARK_SENDER_MESSAGES, "CREDIT_NETWORK_LAND_SRC_MES_AV");
+    SINGLE_NAMES.put(SINGLE_PATHS, "CREDIT_NETWORK_PATH_SINGLE_AV");
+    SINGLE_NAMES.put(SINGLE_PATHS_DEST_FOUND, "CREDIT_NETWORK_PATH_SINGLE_FOUND_AV");
+    SINGLE_NAMES.put(SINGLE_PATHS_DEST_NOT_FOUND, "CREDIT_NETWORK_PATH_SINGLE_NF_AV");
+    SINGLE_NAMES.put(DELAY, "CREDIT_NETWORK_DELAY_AV");
+    SINGLE_NAMES.put(DELAY_SUCCESS, "CREDIT_NETWORK_DELAY_SUCC_AV");
+    SINGLE_NAMES.put(DELAY_FAIL, "CREDIT_NETWORK_DELAY_FAIL_AV");
+
+  }
+  private Map<String, Distribution> distributions;
 
   //input parameters
   private final double epoch; //interval for stabilization overhead (=epoch between spanning tree recomputations if !dynRepair)
@@ -87,26 +143,9 @@ public class CreditNetwork extends Metric {
   //computed metrics
   private double[] stab; //stabilization overhead over time (in #messages)
   private double stab_av; //average stab overhead
-  private Distribution transactionMess; //distribution of #messages needed for one transaction trial
-  //(i.e., each retransaction count as new transactions)
-  private Distribution transactionMessRe; //distribution of #messages needed, counting re-transactions as part of transaction
-  private Distribution transactionMessSucc; //messages successful transactions
-  private Distribution transactionMessFail; //messages failed transactions
-  private Distribution pathL; //distribution of path length (sum over all trees!)
-  private Distribution pathLRe; //distribution of path length counting re-transactions as one
-  private Distribution pathLSucc; //path length successful transactions
-  private Distribution pathLFail; //path length failed transactions
-  private Distribution reLandMes; //messages receiver-landmarks communication
-  private Distribution landSenMes; //messages receiver-landmarks communication
-  private Distribution trials; //Distribution of number of trials needed to get through
-  private Distribution path_single; //distribution of single paths
-  private Distribution delay; //distribution of hop delay
+
   private Distribution[] pathsPerTree; //distribution of single paths per tree
-  private Distribution path_singleFound; //distribution of single paths, only discovered paths
-  private Distribution delaySucc; //distribution of hop delay, successful queries
   private Distribution[] pathsPerTreeFound; //distribution of single paths per tree, only discovered paths
-  private Distribution path_singleNF; //distribution of single paths, not found dest
-  private Distribution delayFail; //distribution of hop delay, failed queries
   private Distribution[] pathsPerTreeNF; //distribution of single paths per tree, not found dest
   private double[] passRoot;
   private double passRootAll = 0;
@@ -210,27 +249,29 @@ public class CreditNetwork extends Metric {
     }
 
     longMetrics = new ConcurrentHashMap<>();
-    longMetrics.put("mesAll", new ArrayList<>());
-    longMetrics.put("pathAll", new ArrayList<>());
-    longMetrics.put("reLand", new ArrayList<>());
-    longMetrics.put("landSen", new ArrayList<>());
-    longMetrics.put("mes", new ArrayList<>());
+    longMetrics.put(MESSAGES_ALL, new ArrayList<>());
+    longMetrics.put(PATHS_ALL, new ArrayList<>());
+    longMetrics.put(RECEIVER_LANDMARK_MESSAGES, new ArrayList<>());
+    longMetrics.put(LANDMARK_SENDER_MESSAGES, new ArrayList<>());
+    longMetrics.put(MESSAGES, new ArrayList<>());
     longMetrics.put(ATTEMPTS, new ArrayList<>());
-    longMetrics.put("path", new ArrayList<>());
-    longMetrics.put("pathSucc", new ArrayList<>());
-    longMetrics.put("pathFail", new ArrayList<>());
-    longMetrics.put("mesSucc", new ArrayList<>());
-    longMetrics.put("mesFail", new ArrayList<>());
+    longMetrics.put(PATH, new ArrayList<>());
+    longMetrics.put(PATH_SUCCESS, new ArrayList<>());
+    longMetrics.put(PATH_FAIL, new ArrayList<>());
+    longMetrics.put(MESSAGES_SUCCESS, new ArrayList<>());
+    longMetrics.put(MESSAGES_FAIL, new ArrayList<>());
     longMetrics.put(SINGLE_PATHS, new ArrayList<>());
     longMetrics.put(SINGLE_PATHS_DEST_FOUND, new ArrayList<>());
     longMetrics.put(SINGLE_PATHS_DEST_NOT_FOUND, new ArrayList<>());
-    longMetrics.put("del", new ArrayList<>());
-    longMetrics.put("delSucc", new ArrayList<>());
-    longMetrics.put("delFail", new ArrayList<>());
+    longMetrics.put(DELAY, new ArrayList<>());
+    longMetrics.put(DELAY_SUCCESS, new ArrayList<>());
+    longMetrics.put(DELAY_FAIL, new ArrayList<>());
 
     // initialize to start with zeros
     cAllPath.add(0);
     cAllPath.add(0);
+
+    this.distributions = new HashMap<>();
   }
 
   public CreditNetwork(String file, String name, double epoch, RoutingAlgorithm algo,
@@ -514,23 +555,26 @@ public class CreditNetwork extends Metric {
     }
 
     //compute metrics
-    this.pathL = new Distribution(convertListToLongArray("path"), totalTransactionAttemptCount);
-    this.transactionMess = new Distribution(convertListToLongArray("mes"), totalTransactionAttemptCount);
-    this.pathLRe = new Distribution(convertListToLongArray("pathAll"), transactions.size());
-    this.transactionMessRe = new Distribution(convertListToLongArray("mesAll"), transactions.size());
-    this.pathLSucc = new Distribution(convertListToLongArray("pathSucc"), (int) this.success);
-    this.transactionMessSucc = new Distribution(convertListToLongArray("mesSucc"), (int) this.success);
-    this.pathLFail = new Distribution(convertListToLongArray("pathFail"), totalTransactionAttemptCount - (int) this.success);
-    this.transactionMessFail = new Distribution(convertListToLongArray("mesFail"), totalTransactionAttemptCount - (int) this.success);
-    this.reLandMes = new Distribution(convertListToLongArray("reLand"), totalTransactionAttemptCount);
-    this.landSenMes = new Distribution(convertListToLongArray("landSen"), totalTransactionAttemptCount);
-    this.trials = new Distribution(convertListToLongArray(ATTEMPTS), (int) this.success);
-    this.path_single = new Distribution(convertListToLongArray(SINGLE_PATHS), cAllPath.get(0) + cAllPath.get(1));
-    this.path_singleFound = new Distribution(convertListToLongArray(SINGLE_PATHS_DEST_FOUND), cAllPath.get(0));
-    this.path_singleNF = new Distribution(convertListToLongArray(SINGLE_PATHS_DEST_NOT_FOUND), cAllPath.get(1));
-    this.delay = new Distribution(convertListToLongArray("del"), totalTransactionAttemptCount);
-    this.delaySucc = new Distribution(convertListToLongArray("delSucc"), (int) this.success);
-    this.delayFail = new Distribution(convertListToLongArray("delFail"), totalTransactionAttemptCount - (int) this.success);
+
+
+    distributions.put(PATH, new Distribution(convertListToLongArray(PATH), totalTransactionAttemptCount));
+    distributions.put(MESSAGES, new Distribution(convertListToLongArray(MESSAGES), totalTransactionAttemptCount));
+    distributions.put(PATHS_ALL, new Distribution(convertListToLongArray(PATHS_ALL), transactions.size()));
+    distributions.put(MESSAGES_ALL, new Distribution(convertListToLongArray(MESSAGES_ALL), transactions.size()));
+    distributions.put(PATH_SUCCESS, new Distribution(convertListToLongArray(PATH_SUCCESS), (int) this.success));
+    distributions.put(MESSAGES_SUCCESS, new Distribution(convertListToLongArray(MESSAGES_SUCCESS), (int) this.success));
+    distributions.put(PATH_FAIL, new Distribution(convertListToLongArray(PATH_FAIL), totalTransactionAttemptCount - (int) this.success));
+    distributions.put(MESSAGES_FAIL,new Distribution(convertListToLongArray(MESSAGES_FAIL), totalTransactionAttemptCount - (int) this.success));
+    distributions.put(RECEIVER_LANDMARK_MESSAGES, new Distribution(convertListToLongArray(RECEIVER_LANDMARK_MESSAGES), totalTransactionAttemptCount));
+    distributions.put(LANDMARK_SENDER_MESSAGES, new Distribution(convertListToLongArray(LANDMARK_SENDER_MESSAGES), totalTransactionAttemptCount));
+    distributions.put(ATTEMPTS, new Distribution(convertListToLongArray(ATTEMPTS), (int) this.success));
+    distributions.put(SINGLE_PATHS, new Distribution(convertListToLongArray(SINGLE_PATHS), cAllPath.get(0) + cAllPath.get(1)));
+    distributions.put(SINGLE_PATHS_DEST_FOUND, new Distribution(convertListToLongArray(SINGLE_PATHS_DEST_FOUND), cAllPath.get(0)));
+    distributions.put(SINGLE_PATHS_DEST_NOT_FOUND, new Distribution(convertListToLongArray(SINGLE_PATHS_DEST_NOT_FOUND), cAllPath.get(1)));
+    distributions.put(DELAY, new Distribution(convertListToLongArray(DELAY), totalTransactionAttemptCount));
+    distributions.put(DELAY_SUCCESS, new Distribution(convertListToLongArray(DELAY_SUCCESS), (int) this.success));
+    distributions.put(DELAY_FAIL, new Distribution(convertListToLongArray(DELAY_FAIL), totalTransactionAttemptCount - (int) this.success));
+
     this.pathsPerTree = new Distribution[this.roots.length];
     this.pathsPerTreeFound = new Distribution[this.roots.length];
     this.pathsPerTreeNF = new Distribution[this.roots.length];
@@ -1076,64 +1120,18 @@ public class CreditNetwork extends Metric {
 
   @Override
   public boolean writeData(String folder) {
-    boolean succ = DataWriter.writeWithIndex(this.transactionMess.getDistribution(),
-            this.key + "_MESSAGES", folder);
-    if (this.transactionMessRe.getDistribution() != null) {
-      succ &= DataWriter.writeWithIndex(this.transactionMessRe.getDistribution(),
-              this.key + "_MESSAGES_RE", folder);
-    }
-
-    succ &= DataWriter.writeWithIndex(this.transactionMessSucc.getDistribution(),
-            this.key + "_MESSAGES_SUCC", folder);
-
-    if (this.transactionMessFail.getDistribution() != null) {
-      succ &= DataWriter.writeWithIndex(this.transactionMessFail.getDistribution(),
-              this.key + "_MESSAGES_FAIL", folder);
-    }
-
-    succ &= DataWriter.writeWithIndex(this.pathL.getDistribution(),
-            this.key + "_PATH_LENGTH", folder);
-    succ &= DataWriter.writeWithIndex(this.pathLRe.getDistribution(),
-            this.key + "_PATH_LENGTH_RE", folder);
-    succ &= DataWriter.writeWithIndex(this.pathLSucc.getDistribution(),
-            this.key + "_PATH_LENGTH_SUCC", folder);
-
-    if (this.pathLFail.getDistribution() != null) {
-      succ &= DataWriter.writeWithIndex(this.pathLFail.getDistribution(),
-              this.key + "_PATH_LENGTH_FAIL", folder);
-    }
-
-    succ &= DataWriter.writeWithIndex(this.reLandMes.getDistribution(),
-            this.key + "_REC_LANDMARK", folder);
-    succ &= DataWriter.writeWithIndex(this.landSenMes.getDistribution(),
-            this.key + "_LANDMARK_SRC", folder);
-    succ &= DataWriter.writeWithIndex(this.trials.getDistribution(),
-            this.key + "_TRIALS", folder);
-    succ &= DataWriter.writeWithIndex(this.stab,
-            this.key + "_STABILIZATION", folder);
-
-    succ &= DataWriter.writeWithIndex(this.path_single.getDistribution(),
-            this.key + "_PATH_SINGLE", folder);
-    succ &= DataWriter.writeWithIndex(this.path_singleFound.getDistribution(),
-            this.key + "_PATH_SINGLE_FOUND", folder);
-
-    if (this.path_singleNF.getDistribution() != null) {
-      succ &= DataWriter.writeWithIndex(this.path_singleNF.getDistribution(),
-              this.key + "_PATH_SINGLE_NF", folder);
+    boolean succ = true;
+    for (String dataKey: distributions.keySet()) {
+      if (distributions.get(dataKey).getDistribution() != null) {
+        succ &= DataWriter.writeWithIndex(distributions.get(dataKey).getDistribution(),
+                this.key + FILE_SUFFIXES.get(dataKey), folder);
+      }
     }
 
     succ &= DataWriter.writeWithIndex(this.succs,
             this.key + "_SUCC_RATIOS", folder);
-
-    succ &= DataWriter.writeWithIndex(this.delay.getDistribution(),
-            this.key + "_DELAY", folder);
-    succ &= DataWriter.writeWithIndex(this.delaySucc.getDistribution(),
-            this.key + "_DELAY_SUCC", folder);
-
-    if (this.delayFail.getDistribution() != null) {
-      succ &= DataWriter.writeWithIndex(this.delayFail.getDistribution(),
-              this.key + "_DELAY_FAIL", folder);
-    }
+    succ &= DataWriter.writeWithIndex(this.stab,
+            this.key + "_STABILIZATION", folder);
 
     double[][] s1 = new double[this.roots.length][];
     double[][] s2 = new double[this.roots.length][];
@@ -1177,34 +1175,20 @@ public class CreditNetwork extends Metric {
 
   @Override
   public Single[] getSingles() {
-    Single m_av = new Single("CREDIT_NETWORK_MES_AV", this.transactionMess.getAverage());
-    Single m_Re_av = new Single("CREDIT_NETWORK_MES_RE_AV", this.transactionMessRe.getAverage());
-    Single m_S_av = new Single("CREDIT_NETWORK_MES_SUCC_AV", this.transactionMessSucc.getAverage());
-    Single m_F_av = new Single("CREDIT_NETWORK_MES_FAIL_AV", this.transactionMessFail.getAverage());
+    List<Single> l = new ArrayList<>(20);
+    for (String dataKey: distributions.keySet()) {
+      l.add(new Single(SINGLE_NAMES.get(dataKey), distributions.get(dataKey).getAverage()));
+    }
+    Single[] singles = l.toArray(new Single[20]);
 
-    Single p_av = new Single("CREDIT_NETWORK_PATH_AV", this.pathL.getAverage());
-    Single p_Re_av = new Single("CREDIT_NETWORK_PATH_RE_AV", this.pathLRe.getAverage());
-    Single p_S_av = new Single("CREDIT_NETWORK_PATH_SUCC_AV", this.pathLSucc.getAverage());
-    Single p_F_av = new Single("CREDIT_NETWORK_PATH_FAIL_AV", this.pathLFail.getAverage());
+    singles[16] = new Single("CREDIT_NETWORK_STAB_AV", this.stab_av);
+    singles[17] = new Single("CREDIT_NETWORK_ROOT_TRAF_AV", this.passRootAll);
+    singles[18] = new Single("CREDIT_NETWORK_SUCCESS_DIRECT", this.success_first);
+    singles[19] = new Single("CREDIT_NETWORK_SUCCESS", this.success);
 
-    Single reL_av = new Single("CREDIT_NETWORK_REC_LAND_MES_AV", this.reLandMes.getAverage());
-    Single ls_av = new Single("CREDIT_NETWORK_LAND_SRC_MES_AV", this.landSenMes.getAverage());
-
-    Single pP_av = new Single("CREDIT_NETWORK_PATH_SINGLE_AV", this.path_single.getAverage());
-    Single pPF_av = new Single("CREDIT_NETWORK_PATH_SINGLE_FOUND_AV", this.path_singleFound.getAverage());
-    Single pPNF_av = new Single("CREDIT_NETWORK_PATH_SINGLE_NF_AV", this.path_singleNF.getAverage());
-
-    Single s_av = new Single("CREDIT_NETWORK_STAB_AV", this.stab_av);
-    Single rt = new Single("CREDIT_NETWORK_ROOT_TRAF_AV", this.passRootAll);
-    Single s1 = new Single("CREDIT_NETWORK_SUCCESS_DIRECT", this.success_first);
-    Single s = new Single("CREDIT_NETWORK_SUCCESS", this.success);
-
-    Single d1 = new Single("CREDIT_NETWORK_DELAY_AV", this.delay.getAverage());
-    Single d2 = new Single("CREDIT_NETWORK_DELAY_SUCC_AV", this.delaySucc.getAverage());
-    Single d3 = new Single("CREDIT_NETWORK_DELAY_FAIL_AV", this.delayFail.getAverage());
-
-    return new Single[]{m_av, m_Re_av, m_S_av, m_F_av, p_av, p_Re_av, p_S_av, p_F_av,
-            reL_av, ls_av, s_av, s1, s, pP_av, pPF_av, pPNF_av, rt, d1, d2, d3};
+    //return new Single[]{m_av, m_Re_av, m_S_av, m_F_av, p_av, p_Re_av, p_S_av, p_F_av,
+    //reL_av, ls_av, s_av, s1, s, pP_av, pPF_av, pPNF_av, rt, d1, d2, d3};
+    return singles;
   }
 
   @Override
