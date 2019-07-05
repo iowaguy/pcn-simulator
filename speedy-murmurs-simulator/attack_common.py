@@ -4,89 +4,37 @@ import simulation_common
 import attack_1 as attack1
 import dynamic_latency_baseline as dlb
 
-# these will hold the configs that are used in the simulations
-
-## Run a single simulation
-# def run_static(transaction_set, algo, attempts, trees, attack, force=False):
-#     import os
-#     import simulation_common
-
-#     # skip run if it has already happened
-#     if not force and os.path.isdir(simulation_common.get_static_data_path(algo, trees, attempts)):
-#         print('Run exists. Skipping...')
-#         return
-#     print(f'Running: java -cp {simulation_common.classpath} treeembedding.runners.Static {transaction_set} {simulation_common.algo_info[algo][ID]} {attempts} {trees} {attack}')
-#     subprocess.run(['java', '-cp', f'{simulation_common.classpath}', 'treeembedding.runners.Static', f'{transaction_set}',
-#                     f'{simulation_common.algo_info[algo][ID]}', f'{attempts}', f'{trees}', f'{attack}'])
-
-
-# def run_dynamic(transaction_set, algo, attempts, trees, step, force=False):
-#     import os
-#     import simulation_common
-
-#     # skip run if it has already happened
-#     if not force and os.path.isdir(get_dynamic_data_path(algo, trees, attempts, step)):
-#         print('Run exists. Skipping...')
-#         return
-#     else:
-#         print(f'Running: java -cp {simulation_common.classpath} treeembedding.runners.Dynamic {transaction_set} {simulation_common.algo_info[algo][simulation_common.ID]} {step}')
-#         subprocess.run(['java', '-cp', f'{simulation_common.classpath}', 'treeembedding.runners.Dynamic', f'{transaction_set}',
-#                         f'{simulation_common.algo_info[algo][simulation_common.ID]}', f'{step}'])
-
-
-# def run_dynamic_config(config_dict, output_dir, force=False):
-#     import os
-#     import subprocess
-#     import shutil
-#     import simulation_common
-
-#     # skip run if it has already happened
-#     if not force and os.path.isfile(
-#             simulation_common.get_dynamic_data_path(config_dict['routing_algorithm'], config_dict['trees'],
-#                                                     config_dict['attempts'], config_dict['step']) + '/' + simulation_common.singles):
-#         print('Run exists. Skipping...')
-#         return 'Run exists. Skipping...'
-
-#     algo = config_dict['routing_algorithm']
-#     base = os.getcwd() + f'/{simulation_common.data_root}/' + simulation_common.get_output_base_path(config_dict)
-#     dynamic_data_path = simulation_common.get_dynamic_data_path_config(config_dict)
-
-#     # if directory exists without file, then delete the directory
-#     if os.path.isdir(base + dynamic_data_path[0]):
-#         path = base + dynamic_data_path[0] + '/' + dynamic_data_path[1]
-#         if not os.path.isfile(path + simulation_common.singles):
-#             shutil.rmtree(path)
-
-#     print(f'Running: java -cp {simulation_common.classpath} {simulation_common.run_info["dynamic"]["class"]} {output_dir}')
-#     subprocess.run(['java', '-cp', f'{simulation_common.classpath}', f'{simulation_common.run_info["dynamic"]["class"]}', f'{output_dir}'])
-#     return f'java -cp {simulation_common.classpath} {simulation_common.run_info["dynamic"]["class"]} {output_dir}'
-
-
 def run_config(config_dict, output_dir, force=False):
     import os
     import subprocess
     import shutil
     import simulation_common
 
+    base = os.getcwd() + f'/{simulation_common.data_root}/' + simulation_common.get_output_base_path(config_dict)
+
     # skip run if it has already happened
     if not force:
         tmp_path = None
         if config_dict['simulation_type'] == "static":
-            tmp_path = simulation_common.get_static_data_path(config_dict['routing_algorithm'], config_dict['trees'],
-                                                              config_dict['attempts'])
+            tmp_path = simulation_common.get_static_data_path_config(config_dict)
+
+            # tmp_path = simulation_common.get_static_data_path_config(config_dict['routing_algorithm'], config_dict['trees'],
+            #                                                   config_dict['attempts'])
         elif config_dict['simulation_type'] == "dynamic":
-            tmp_path = simulation_common.get_dynamic_data_path(config_dict['routing_algorithm'], config_dict['trees'],
-                                                               config_dict['attempts'], config_dict['step'])
+            tmp_path = simulation_common.get_dynamic_data_path_config(config_dict)
+            # tmp_path = simulation_common.get_dynamic_data_path_config(config_dict['routing_algorithm'], config_dict['trees'],
+            #                                                    config_dict['attempts'], config_dict['step'])
         else:
             print(f"Invalid simulation type: {config_dict['simulation_type']}")
             return f"Invalid simulation type: {config_dict['simulation_type']}"
 
-        if os.path.isfile(tmp_path + '/' + simulation_common.singles):
+
+        if os.path.isfile(base + tmp_path[0] + tmp_path[1] + '/' + simulation_common.singles):
             print('Run exists. Skipping...')
             return 'Run exists. Skipping...'
 
     algo = config_dict['routing_algorithm']
-    base = os.getcwd() + f'/{simulation_common.data_root}/' + simulation_common.get_output_base_path(config_dict)
+
 
     data_path = None
     if config_dict['simulation_type'] == "static":
@@ -104,26 +52,10 @@ def run_config(config_dict, output_dir, force=False):
             shutil.rmtree(path)
 
     sim_type = config_dict['simulation_type']
-    print(f'Running: java -cp {simulation_common.classpath} {simulation_common.run_info[sim_type]["class"]} {output_dir}')
-    subprocess.run(['java', '-cp', f'{simulation_common.classpath}', f'{simulation_common.run_info[sim_type]["class"]}', f'{output_dir}'])
-    return f'java -cp {simulation_common.classpath} {simulation_common.run_info[sim_type]["class"]} {output_dir}'
+    # print(f'Running: java -cp {simulation_common.classpath} {simulation_common.run_info[sim_type]["class"]} {output_dir}')
 
-# def run_dynamic_config(transaction_set, algo, attempts, trees, step, force=False):
-#     import os
-#     import subprocess
-#     import simulation_common
-
-#     # skip run if it has already happened
-#     if not force and os.path.isfile(
-#             get_dynamic_data_path(algo, trees, attempts, step) + '/' + simulation_common.singles):
-#         print('Run exists. Skipping...')
-#         return 'Run exists. Skipping...'
-#     else:
-#         print(f'Running: java -cp {simulation_common.classpath} treeembedding.runners.Dynamic {transaction_set} {simulation_common.algo_info[algo][simulation_common.ID]} {step}')
-#         subprocess.run(
-#             ['java', '-cp', f'{simulation_common.classpath}', 'treeembedding.runners.Dynamic', f'{transaction_set}',
-#              f'{simulation_common.algo_info[algo][simulation_common.ID]}', f'{step}'])
-#         return f'java -cp {simulation_common.classpath} treeembedding.runners.Dynamic {transaction_set} {simulation_common.algo_info[algo][simulation_common.ID]} {step}'
+    # this is what get's printed by ipyparallel
+    return subprocess.run(['java', '-cp', f'{simulation_common.classpath}', f'{simulation_common.run_info[sim_type]["class"]}', f'{output_dir}'], capture_output=True)
 
 def setup():
     import sys
