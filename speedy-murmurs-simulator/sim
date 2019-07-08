@@ -12,6 +12,7 @@ stop() {
   ipcluster stop
   echo "ipcluster killed."
 
+  ps -ef | grep ipyparallel | grep -v grep | awk '{print $2}' | xargs kill -9
   ps -ef | grep ipcluster | grep -v grep | awk '{print $2}' | xargs kill -9
   ps -ef | grep attack | awk '{print $2}' | xargs kill -9
   ps -ef | grep java | awk '{print $2}' | xargs kill -9
@@ -43,6 +44,7 @@ start() {
 
 attack() {
   ATTACK_TYPE="$1"
+  mvn clean install
   nohup python ${ATTACK} ${ATTACK_TYPE} &> ${LOG_DIR}/attack.out &
   echo "${LOG_DIR}/attack.out"
   exit 0

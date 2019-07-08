@@ -18,12 +18,9 @@ def run_config(config_dict, output_dir, force=False):
         if config_dict['simulation_type'] == "static":
             tmp_path = simulation_common.get_static_data_path_config(config_dict)
 
-            # tmp_path = simulation_common.get_static_data_path_config(config_dict['routing_algorithm'], config_dict['trees'],
-            #                                                   config_dict['attempts'])
         elif config_dict['simulation_type'] == "dynamic":
             tmp_path = simulation_common.get_dynamic_data_path_config(config_dict)
-            # tmp_path = simulation_common.get_dynamic_data_path_config(config_dict['routing_algorithm'], config_dict['trees'],
-            #                                                    config_dict['attempts'], config_dict['step'])
+
         else:
             print(f"Invalid simulation type: {config_dict['simulation_type']}")
             return f"Invalid simulation type: {config_dict['simulation_type']}"
