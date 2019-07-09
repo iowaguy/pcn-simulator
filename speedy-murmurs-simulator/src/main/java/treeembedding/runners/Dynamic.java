@@ -71,11 +71,12 @@ public class Dynamic {
     if (step == 0) {
       graph = runConfig.getBasePath() + "/" + runConfig.getTopologyPath();
     } else {
-      graph = runDirPath + "READABLE_FILE_" + prefix + "-P" + step + "-93502/0/";
+      // make sure previous step has completed
+      graph = runDirPath + "READABLE_FILE_" + prefix + "-P" + (step - 1) + "-93502/0/";
       FilenameFilter fileNameFilter = (dir, name) -> name.contains("CREDIT_NETWORK") || name.contains("CREDIT_MAX");
       String[] files = (new File(graph)).list(fileNameFilter);
       if (files == null || files.length == 0) {
-        log.error("Missing file");
+        log.error("Missing file: " + graph);
         System.exit(1);
       }
 
@@ -83,7 +84,7 @@ public class Dynamic {
     }
 
 
-    String name = routingAlgorithm.getShortName() + "-P" + (step + 1);
+    String name = routingAlgorithm.getShortName() + "-P" + step;
 
     double epoch = E * 1000;
 

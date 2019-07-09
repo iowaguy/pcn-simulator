@@ -22,12 +22,12 @@ def run_config(config_dict, output_dir, force=False):
             tmp_path = simulation_common.get_dynamic_data_path_config(config_dict)
 
         else:
-            print(f"Invalid simulation type: {config_dict['simulation_type']}")
+            # print(f"Invalid simulation type: {config_dict['simulation_type']}")
             return f"Invalid simulation type: {config_dict['simulation_type']}"
 
 
         if os.path.isfile(base + tmp_path[0] + tmp_path[1] + '/' + simulation_common.singles):
-            print('Run exists. Skipping...')
+            # print('Run exists. Skipping...')
             return 'Run exists. Skipping...'
 
     algo = config_dict['routing_algorithm']
@@ -39,20 +39,26 @@ def run_config(config_dict, output_dir, force=False):
     elif config_dict['simulation_type'] == "dynamic":
         data_path = simulation_common.get_dynamic_data_path_config(config_dict)
     else:
-        print(f"Invalid simulation type: {config_dict['simulation_type']}")
+        # print(f"Invalid simulation type: {config_dict['simulation_type']}")
         return f"Invalid simulation type: {config_dict['simulation_type']}"
 
     # if directory exists without file, then delete the directory
+    path = base + data_path[0] + data_path[1]
+
     if os.path.isdir(base + data_path[0]):
-        path = base + data_path[0] + '/' + data_path[1]
         if not os.path.isfile(path + simulation_common.singles):
             shutil.rmtree(path)
 
     sim_type = config_dict['simulation_type']
-    # print(f'Running: java -cp {simulation_common.classpath} {simulation_common.run_info[sim_type]["class"]} {output_dir}')
+    out = subprocess.run(['java', '-cp', f'{simulation_common.classpath}', f'{simulation_common.run_info[sim_type]["class"]}', f'{output_dir}'], capture_output=True)
+    return str(out) + str(config_dict)
+    # if it fails, delete dir and try one more time
+    if out.returncode == 1:
+        shutil.rmtree(path)
+        out = "Rerun: " + str(subprocess.run(['java', '-cp', f'{simulation_common.classpath}', f'{simulation_common.run_info[sim_type]["class"]}', f'{output_dir}'], capture_output=True))
 
     # this is what get's printed by ipyparallel
-    return subprocess.run(['java', '-cp', f'{simulation_common.classpath}', f'{simulation_common.run_info[sim_type]["class"]}', f'{output_dir}'], capture_output=True)
+    return str(out) + str(config_dict)
 
 def setup():
     import sys

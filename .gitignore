@@ -17,3 +17,4 @@ speedy-murmurs-simulator/.ipynb_checkpoints/*
 speedy-murmurs-simulator/target/*
 **/__pycache__/
 *~
+speedy-murmurs-simulator/logs/*
