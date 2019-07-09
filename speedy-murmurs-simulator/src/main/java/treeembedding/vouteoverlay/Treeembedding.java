@@ -68,7 +68,7 @@ public class Treeembedding extends Transformation {
     for (int i = 0; i < trees; i++) {
       SpanningTree st = (SpanningTree) g.getProperty("SPANNINGTREE_" + (i));
 
-      int[][] coordinates = new int[g.getNodeCount()][];
+      long[][] coordinates = new long[g.getNodeCount()][];
 
       int rootIndex = st.getSrc();
       // root has an empty coordinate vector
@@ -80,7 +80,7 @@ public class Treeembedding extends Transformation {
       // while currentNode has some child node which has not been visited
       while (!nodequeue.isEmpty()) {
         int parent = nodequeue.poll();
-        int[] parentC = coordinates[parent];
+        long[] parentC = coordinates[parent];
         int[] outgoing = st.getChildren(parent);
         // along the spanning tree assign the children indices
         // index of the current child
@@ -102,20 +102,20 @@ public class Treeembedding extends Transformation {
     return g;
   }
 
-  public int[] getRootCoord(Random rand) {
-    return new int[0];
+  public long[] getRootCoord(Random rand) {
+    return new long[0];
   }
 
-  public int[] getChildCoord(Random rand, int[] parent, int index) {
-    int[] co = new int[parent.length + 1];
+  public long[] getChildCoord(Random rand, long[] parent, int index) {
+    long[] co = new long[parent.length + 1];
     System.arraycopy(parent, 0, co, 0, parent.length);
     co[co.length - 1] = rand.nextInt();
     return co;
   }
 
-  public void padding(int[][] coordinates, Random rand) {
+  public void padding(long[][] coordinates, Random rand) {
     for (int i = 0; i < coordinates.length; i++) {
-      int[] newC = new int[this.padding];
+      long[] newC = new long[this.padding];
       System.arraycopy(coordinates[i], 0, newC, 0, coordinates[i].length);
       for (int j = coordinates[i].length; j < newC.length; j++) {
         newC[j] = rand.nextInt();

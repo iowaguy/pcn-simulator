@@ -22,7 +22,7 @@ public abstract class TreerouteNH extends Treeroute {
   }
 
   @Override
-  protected int nextHop(int cur, Node[] nodes, int[] destID, int dest) {
+  protected int nextHop(int cur, Node[] nodes, long[] destID, int dest) {
     int[] out = nodes[cur].getIncomingEdges();
     double dbest = this.dist(cur, cur, dest);
     Vector<Integer> closest = new Vector<Integer>();
@@ -46,7 +46,7 @@ public abstract class TreerouteNH extends Treeroute {
   }
 
   @Override
-  protected int nextHop(int cur, Node[] nodes, int[] destID, int dest,
+  protected int nextHop(int cur, Node[] nodes, long[] destID, int dest,
                         boolean[] exclude, int pre) {
     int[] out = nodes[cur].getIncomingEdges();
     double dbest = this.dist(cur, cur, dest);

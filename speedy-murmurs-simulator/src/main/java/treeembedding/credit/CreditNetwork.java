@@ -693,8 +693,8 @@ public class CreditNetwork extends Metric {
                   Direct.EITHER, ew).length;
           int pa = bestN.get(rand.nextInt(bestN.size()));
           sp.addParentChild(pa, node);
-          int[] pa_coord = coords.getCoord(pa);
-          int[] child_coord = new int[pa_coord.length + 1];
+          long[] pa_coord = coords.getCoord(pa);
+          long[] child_coord = new long[pa_coord.length + 1];
           for (int i = 0; i < pa_coord.length; i++) {
             child_coord[i] = pa_coord[i];
           }

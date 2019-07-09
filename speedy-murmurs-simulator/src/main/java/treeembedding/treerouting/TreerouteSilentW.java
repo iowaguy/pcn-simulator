@@ -19,7 +19,7 @@ public class TreerouteSilentW extends Treeroute {
   }
 
   @Override
-  protected int nextHop(int cur, Node[] nodes, int[] dest, int destN) {
+  protected int nextHop(int cur, Node[] nodes, long[] dest, int destN) {
     int index = -1;
     if (up) {
       index = sp.getParent(cur);
@@ -42,7 +42,7 @@ public class TreerouteSilentW extends Treeroute {
     return index;
   }
 
-  private int getCPL(int[] a, int[] b) {
+  private int getCPL(long[] a, long[] b) {
     int cpl = 0;
     while (cpl < a.length && cpl < b.length && a[cpl] == b[cpl]) {
       cpl++;
@@ -51,7 +51,7 @@ public class TreerouteSilentW extends Treeroute {
   }
 
   @Override
-  protected int nextHop(int cur, Node[] nodes, int[] dest, int destN,
+  protected int nextHop(int cur, Node[] nodes, long[] dest, int destN,
                         boolean[] exclude, int pre) {
     int index = -1;
     if (up) {

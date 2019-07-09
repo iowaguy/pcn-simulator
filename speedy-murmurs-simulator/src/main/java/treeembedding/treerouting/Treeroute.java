@@ -26,7 +26,7 @@ public abstract class Treeroute extends Metric {
   double[] traffic;
   private Distribution hopDistribution;
   double avHops = 0;
-  int[][] coords;
+  long[][] coords;
   Random rand;
   SpanningTree sp;
   int trees;
@@ -117,7 +117,7 @@ public abstract class Treeroute extends Metric {
     coords = ((TreeCoordinates) g.getProperty("TREE_COORDINATES_" + r)).coords;
     sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + r);
     int root = sp.getSrc();
-    int[] destC = this.coords[dest];
+    long[] destC = this.coords[dest];
     Vector<Integer> route = new Vector<Integer>();
     route.add(src);
     initRoute();
@@ -141,7 +141,7 @@ public abstract class Treeroute extends Metric {
     coords = ((TreeCoordinates) g.getProperty("TREE_COORDINATES_" + r)).coords;
     sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + r);
     int root = sp.getSrc();
-    int[] destC = this.coords[dest];
+    long[] destC = this.coords[dest];
     Vector<Integer> route = new Vector<>();
     route.add(src);
     initRoute();
@@ -178,7 +178,7 @@ public abstract class Treeroute extends Metric {
     coords = ((TreeCoordinates) g.getProperty("TREE_COORDINATES_" + r)).coords;
     sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + r);
     int root = sp.getSrc();
-    int[] destC = this.coords[dest];
+    long[] destC = this.coords[dest];
     Vector<Integer> route = new Vector<Integer>();
     route.add(src);
     int pre = -1;
@@ -231,7 +231,7 @@ public abstract class Treeroute extends Metric {
     coords = ((TreeCoordinates) g.getProperty("TREE_COORDINATES_" + r)).coords;
     sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + r);
     int root = sp.getSrc();
-    int[] destC = this.coords[dest];
+    long[] destC = this.coords[dest];
     Vector<Integer> route = new Vector<Integer>();
     route.add(src);
     int pre = -1;
@@ -337,13 +337,13 @@ public abstract class Treeroute extends Metric {
     }
   }
 
-  protected abstract int nextHop(int cur, Node[] nodes, int[] destID, int dest);
+  protected abstract int nextHop(int cur, Node[] nodes, long[] destID, int dest);
 
-  protected abstract int nextHop(int cur, Node[] nodes, int[] destID, int dest, boolean[] exclude, int pre);
+  protected abstract int nextHop(int cur, Node[] nodes, long[] destID, int dest, boolean[] exclude, int pre);
 
   protected abstract void initRoute();
 
-  protected LinkedList<Integer> nextHops(int cur, Node[] nodes, int[] destID, int dest, boolean[] exclude, int pre) {
+  protected LinkedList<Integer> nextHops(int cur, Node[] nodes, long[] destID, int dest, boolean[] exclude, int pre) {
     LinkedList<Integer> list = new LinkedList<Integer>();
     int add = this.nextHop(cur, nodes, destID, dest, exclude, pre);
     while (add != -1) {
@@ -357,7 +357,7 @@ public abstract class Treeroute extends Metric {
     return list;
   }
 
-  protected LinkedList<Integer> nextHopsWeight(CreditLinks edgeWeights, int cur, Node[] nodes, int[] destID, int dest, boolean[] exclude, int pre, double weight) {
+  protected LinkedList<Integer> nextHopsWeight(CreditLinks edgeWeights, int cur, Node[] nodes, long[] destID, int dest, boolean[] exclude, int pre, double weight) {
     LinkedList<Integer> list = new LinkedList<>();
     LinkedList<Integer> listall = new LinkedList<>();
     int add = this.nextHop(cur, nodes, destID, dest, exclude, pre);
@@ -375,7 +375,7 @@ public abstract class Treeroute extends Metric {
     return list;
   }
 
-  protected int nextHopWeight(CreditLinks edgeWeights, int cur, Node[] nodes, int[] destID, int dest, boolean[] exclude, int pre, double weight) {
+  protected int nextHopWeight(CreditLinks edgeWeights, int cur, Node[] nodes, long[] destID, int dest, boolean[] exclude, int pre, double weight) {
     LinkedList<Integer> list = this.nextHopsWeight(edgeWeights, cur, nodes, destID, dest, exclude, pre, weight);
     if (list.isEmpty()) {
       return -1;

@@ -16,8 +16,8 @@ public class TreerouteCPLRAP extends TreerouteNH {
 
   @Override
   protected double dist(int node, int neighbor, int dest) {
-    int[] a = this.coords[neighbor];
-    int[] b = this.coords[dest];
+    long[] a = this.coords[neighbor];
+    long[] b = this.coords[dest];
     int cpl = 0;
     int depth = sp.getDepth(neighbor);
     while (cpl < depth && cpl < b.length && a[cpl] == b[cpl]) {
