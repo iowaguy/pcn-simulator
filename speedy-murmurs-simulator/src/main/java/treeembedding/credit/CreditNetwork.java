@@ -1147,21 +1147,26 @@ public class CreditNetwork extends Metric {
       s3[i] = this.pathsPerTreeNF[i].getDistribution();
       av3[i] = this.pathsPerTreeNF[i].getAverage();
     }
+
     succ &= DataWriter.writeWithIndex(av1, this.key + "_PATH_PERTREE_AV", folder);
     succ &= DataWriter.writeWithIndex(av2, this.key + "_PATH_PERTREE_FOUND_AV", folder);
     succ &= DataWriter.writeWithIndex(av3, this.key + "_PATH_PERTREE_NF_AV", folder);
-    succ &= DataWriter.writeWithoutIndex(s1, this.key + "_PATH_PERTREE", folder);
-    succ &= DataWriter.writeWithoutIndex(s2, this.key + "_PATH_PERTREE_FOUND", folder);
-    for (double[] doubles : s3) {
-      if (doubles == null) {
-        break;
-      }
-      try {
-        succ &= DataWriter.writeWithoutIndex(s3, this.key + "_PATH_PERTREE_NF", folder);
-      } catch (NullPointerException e) {
-        e.printStackTrace();
-      }
-    }
+
+    succ &= safeWriteWithoutIndex(s1, "_PATH_PERTREE", folder);
+    succ &= safeWriteWithoutIndex(s2, "_PATH_PERTREE", folder);
+    succ &= safeWriteWithoutIndex(s3, "_PATH_PERTREE_FOUND", folder);
+    //succ &= DataWriter.writeWithoutIndex(s1, this.key + "_PATH_PERTREE", folder);
+    //succ &= DataWriter.writeWithoutIndex(s2, this.key + "_PATH_PERTREE_FOUND", folder);
+//    for (double[] doubles : s3) {
+//      if (doubles == null) {
+//        break;
+//      }
+//      try {
+//        succ &= DataWriter.writeWithoutIndex(s3, this.key + "_PATH_PERTREE_NF", folder);
+//      } catch (NullPointerException e) {
+//        e.printStackTrace();
+//      }
+//    }
 
     succ &= DataWriter.writeWithIndex(this.passRoot, this.key + "_ROOT_TRAF", folder);
 
@@ -1171,6 +1176,16 @@ public class CreditNetwork extends Metric {
 
 
     return succ;
+  }
+
+  private boolean safeWriteWithoutIndex(double[][] in, String keyString, String folder) {
+    for (double[] doubles: in) {
+      if (doubles == null) {
+        return false;
+      }
+    }
+
+    return DataWriter.writeWithoutIndex(in, this.key + keyString, folder);
   }
 
   @Override
