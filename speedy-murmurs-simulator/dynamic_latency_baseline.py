@@ -23,7 +23,7 @@ def generate_configs():
     config_dict_list_sm = []
     config_dict_list_sw = []
 
-    for step in range(1, 10):
+    for step in range(0, 10):
         for alg in [common.speedymurmurs, common.silentwhispers]:
             for data_set in range(0, 9):
                 tran_set = data_set + 1
