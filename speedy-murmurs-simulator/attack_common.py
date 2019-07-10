@@ -78,8 +78,11 @@ def do_experiment(config_dict):
     return attack_common.run_config(config_dict, output_dir, config_dict['force_overwrite'])
 
 def do_distributed_experiments(ipyclient, config_dict_list):
-    lbv = ipyclient.load_balanced_view()
-    result = lbv.map_sync(do_experiment, config_dict_list)
+    #lbv = ipyclient.load_balanced_view()
+    #result = lbv.map_sync(do_experiment, config_dict_list)
+
+    dview = ipyclient[:]
+    result = dview.map_sync(do_experiment, config_dict_list)
 
     for i, r in enumerate(result):
         print(f"Task ID #{i}; Command: {r}")
