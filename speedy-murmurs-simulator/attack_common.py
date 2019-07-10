@@ -68,6 +68,8 @@ def setup():
 def do_experiment(config_dict):
     import yaml
     import simulation_common
+    import sys
+
     output_dir = simulation_common.create_output_dir(config_dict)
 
     # store a copy of the config in the directory
@@ -78,14 +80,14 @@ def do_experiment(config_dict):
     return attack_common.run_config(config_dict, output_dir, config_dict['force_overwrite'])
 
 def do_distributed_experiments(ipyclient, config_dict_list):
-    #lbv = ipyclient.load_balanced_view()
-    #result = lbv.map_sync(do_experiment, config_dict_list)
+    lbv = ipyclient.load_balanced_view()
+    result = lbv.map_sync(do_experiment, config_dict_list)
 
-    dview = ipyclient[:]
-    result = dview.map_sync(do_experiment, config_dict_list)
+    # dview = ipyclient[:]
+    # result = dview.map_sync(do_experiment, config_dict_list)
 
     for i, r in enumerate(result):
-        print(f"Task ID #{i}; Command: {r}")
+        print(f"Task ID #{i}; Command: {r}", flush=True)
 
 def start(attack_type):
     import time
@@ -109,15 +111,16 @@ def start(attack_type):
     config_dict_list_sw = []
     print(f"attack type: {attack_type}")
     if (attack_type == '1'):
-        config_dict_list_sm, config_dict_list_sw = attack1.generate_configs()
+        config_dict_sets = attack1.generate_configs()
     elif (attack_type == 'baseline'):
-        config_dict_list_sm, config_dict_list_sw = dlb.generate_configs()
+        config_dict_sets = dlb.generate_configs()
     else:
         print(f'Error: Not a valid attack type: {attack_type}')
         sys.exit()
 
-    do_distributed_experiments(ipyclient, config_dict_list_sm)
-    do_distributed_experiments(ipyclient, config_dict_list_sw)
+    for config_list in config_dict_sets:
+        do_distributed_experiments(ipyclient, config_list)
+
     end = time.time()
     elapsed = end - start
     print(f"Done. Time: {elapsed}")

@@ -20,19 +20,17 @@ log_level: warn
 '''
 
 def generate_configs():
-    config_dict_list_sm = []
-    config_dict_list_sw = []
+    config_set = []
 
     for step in range(0, 10):
+        config_dict_list = []
         for alg in [common.speedymurmurs, common.silentwhispers]:
             for data_set in range(0, 9):
                 tran_set = data_set + 1
 
-                if alg == common.speedymurmurs:
-                    config_dict_list_sm.append(common.parse_config(
-                        config.format(data_set=data_set, tran_set=tran_set, alg=alg, step=step)))
-                elif alg == common.silentwhispers:
-                    config_dict_list_sw.append(common.parse_config(
-                        config.format(data_set=data_set, tran_set=tran_set, alg=alg, step=step)))
+                config_dict_list.append(common.parse_config(
+                    config.format(data_set=data_set, tran_set=tran_set, alg=alg, step=step)))
 
-    return (config_dict_list_sm, config_dict_list_sw)
+        config_set.append(config_dict_list)
+
+    return config_set
