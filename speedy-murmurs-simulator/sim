@@ -21,15 +21,15 @@ stop() {
 }
 
 status() {
-  lines=$(ps -ef | grep ipcluster | wc -l)
-  if [ $lines -gt 2 ]; then
+  lines=$(ps -ef | grep ipcluster | grep -v grep | wc -l)
+  if [ $lines -gt 0 ]; then
     echo "ipcluster is running..."
   else
     echo "ipcluster is not running..."
   fi
 
-  lines=$(ps -ef | grep attack | wc -l)
-  if [ $lines -gt 2 ]; then
+  lines=$(ps -ef | grep attack | grep -v grep | wc -l)
+  if [ $lines -gt 0 ]; then
     echo "attack is running..."
   fi
 
@@ -38,8 +38,8 @@ status() {
 
 start() {
   ENGINES="$1"
-  nohup ipcluster start -n ${ENGINES} &> ${LOG_DIR}/ipcluster.out &
-  exec tail -f ${LOG_DIR}/ipcluster.out
+  ipcluster start --daemonize=True -n "${ENGINES}"
+  exec tail -f ~/.ipython/profile_default/log/ipcluster-*.log
 }
 
 attack() {
