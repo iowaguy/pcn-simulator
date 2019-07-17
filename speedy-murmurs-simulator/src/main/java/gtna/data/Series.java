@@ -244,7 +244,7 @@ public class Series {
     System.out.println("\n" + run + ":");
     ArrayList<Single> runtimes = new ArrayList<Single>();
     ArrayList<Single> etc = new ArrayList<Single>();
-    File folder = new File(s.getSeriesFolderRun(run));
+    File folder = new File(s.getSinglesFilename(s.getMetrics()[run]));
     if (folder.exists() && Config.getBoolean("SKIP_EXISTING_DATA_FOLDERS")) {
       System.out.println("skipping");
       if (s.getNetwork() instanceof ReadableFolder) {
