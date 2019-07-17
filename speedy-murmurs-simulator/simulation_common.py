@@ -50,8 +50,6 @@ def get_output_base_path(config_dict):
     algo = config_dict["routing_algorithm"]
 
     dir = f'{config_dict["simulation_type"]}-{config_dict["data_set_name"]}-{algo}-{config_dict["trees"]}-{config_dict["attempts"]}-{config_dict["iterations"]}'
-    # if config_dict["simulation_type"] == "dyanamic":
-    #     dir += f'-step{config_dict["step"]}'
 
     if config_dict["concurrent_transactions"]:
         dir += f'-concurrent-{config_dict["concurrent_transactions_count"]}'
@@ -64,7 +62,7 @@ def get_output_base_path(config_dict):
 
 def get_dynamic_data_path_config(config_dict):
     algo = config_dict["routing_algorithm"]
-    count = config_dict['step'] + 1
+    count = config_dict['step'] # + 1
     dir = f'/READABLE_FILE_{algo_info[algo]["short_name"]}-P{count}-{run_info["dynamic"]["node_count"]}'
     dir2 = f'/0/CREDIT_NETWORK-{algo_info[algo]["short_name"]}-P{count}-{run_info["dynamic"]["epoch"]}-TREE_ROUTE_{algo_info[algo]["run_token"]}-{config_dict["trees"]}-331.10490994417796-RANDOM_PARTITIONER-{config_dict["attempts"]}/'
 

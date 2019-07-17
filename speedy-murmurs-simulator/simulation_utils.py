@@ -1,11 +1,20 @@
 #!/usr/local/bin/python3
 import simulation_common as common
+import os
+import numpy
 
 ## General utility functions and variables
 
 def running_mean(x, N):
     cumsum = numpy.cumsum(numpy.insert(x, 0, 0))
     return (cumsum[N:] - cumsum[:-N]) / float(N)
+
+def average_singles(singles, key):
+    vals = []
+    for s in singles:
+        vals.append(float(s[key]))
+
+    return numpy.mean(vals)
 
 
 def extract_kv_pairs_from_singles(singles_path):
@@ -16,6 +25,18 @@ def extract_kv_pairs_from_singles(singles_path):
             ret[k] = v
     return ret
 
+def parse_dynamic_singles(config_dict_list):
+    l = []
+    for config_dict in config_dict_list:
+        l.append(parse_dynamic_single(config_dict))
+
+    return l
+
+def parse_dynamic_single(config_dict):
+    dynamic_data_path = common.get_dynamic_data_path_config(config_dict)
+    data_path = os.getcwd() + f'/{common.data_root}/' + common.get_output_base_path(config_dict) + dynamic_data_path[0] + dynamic_data_path[1] + common.singles
+    singles_pairs = extract_kv_pairs_from_singles(data_path)
+    return singles_pairs
 
 def extract_from_singles(algo, attempts, trees, key):
     x_vs_key = []
@@ -34,8 +55,8 @@ def extract_from_singles_config_average(config_dict_list, key, sorting_key1=None
     for bucket in buckets:
         vals = []
         for config_dict in buckets[bucket]:
-            static_data_path = get_static_data_path_config(config_dict)
-            data_path = os.getcwd() + f'/{simulation_common.data_root}/' + static_data_path[0] + static_data_path[1] + common.singles
+            static_data_path = common.get_static_data_path_config(config_dict)
+            data_path = os.getcwd() + f'/{common.data_root}/' + common.get_output_base_path(config_dict) + static_data_path[0] + static_data_path[1] + common.singles
             singles_pairs = extract_kv_pairs_from_singles(data_path)
             vals.append(float(singles_pairs[key]))
         x_vs_key.append(numpy.mean(vals))
@@ -52,16 +73,17 @@ def extract_from_singles_config_stddev(config_dict_list, key, sorting_key1=None,
         vals = []
         for config_dict in buckets[bucket]:
             static_data_path = get_static_data_path_config(config_dict)
-            data_path = os.getcwd() + f'/{simulation_common.data_root}/' + static_data_path[0] + static_data_path[1] + common.singles
+            data_path = os.getcwd() + f'/{common.data_root}/' + static_data_path[0] + static_data_path[1] + common.singles
             singles_pairs = extract_kv_pairs_from_singles(data_path)
             vals.append(float(singles_pairs[key]))
         x_vs_key.append(numpy.std(vals))
 
     return x_vs_key
 
-# this will also calculate averages if there are multiple runs
-def extract_from_singles_config(config_dict_list, key, sorting_key1=None, sorting_key2=None):
-    buckets = {}
+# sort configs into buckets
+def sort_singles_configs(config_dict_list, buckets=None, sorting_key1=None, sorting_key2=None):
+    if not buckets:
+        buckets = {}
 
     # sort configs into buckets, where each bucket is the same except for the transaction set
     # the key for the buckets is the property identified by sorting keys 1 and 2
@@ -79,12 +101,6 @@ def extract_from_singles_config(config_dict_list, key, sorting_key1=None, sortin
             buckets[prop] = []
 
         buckets[prop].append(config_dict)
-        # else:
-        #     # if there is no sorting key, then add to list directly
-        #     static_data_path = get_static_data_path_config(config_dict)
-        #     data_path = os.getcwd() + f'/{simulation_common.data_root}/' + static_data_path[0] + static_data_path[1] + common.singles
-        #     singles_pairs = extract_kv_pairs_from_singles(data_path)
-        #     x_vs_key.append(float(singles_pairs[key]))
     return buckets
 
 
