@@ -862,6 +862,15 @@ public class CreditNetwork extends Metric {
       throw new TransactionFailedException("Transaction values cannot be null");
     }
 
+    // receiver delay attack logic
+    if (attack != null && attack.getType() == AttackType.RECEIVER_DELAY) {
+      try {
+        Thread.sleep(attack.getReceiverDelayMs());
+      } catch (InterruptedException e) {
+        // do nothing
+      }
+    }
+
     for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
       if (vals[treeIndex] != 0) {
         int currentNodeIndex = paths[treeIndex][0];
@@ -1155,18 +1164,6 @@ public class CreditNetwork extends Metric {
     succ &= safeWriteWithoutIndex(s1, "_PATH_PERTREE", folder);
     succ &= safeWriteWithoutIndex(s2, "_PATH_PERTREE", folder);
     succ &= safeWriteWithoutIndex(s3, "_PATH_PERTREE_FOUND", folder);
-    //succ &= DataWriter.writeWithoutIndex(s1, this.key + "_PATH_PERTREE", folder);
-    //succ &= DataWriter.writeWithoutIndex(s2, this.key + "_PATH_PERTREE_FOUND", folder);
-//    for (double[] doubles : s3) {
-//      if (doubles == null) {
-//        break;
-//      }
-//      try {
-//        succ &= DataWriter.writeWithoutIndex(s3, this.key + "_PATH_PERTREE_NF", folder);
-//      } catch (NullPointerException e) {
-//        e.printStackTrace();
-//      }
-//    }
 
     succ &= DataWriter.writeWithIndex(this.passRoot, this.key + "_ROOT_TRAF", folder);
 

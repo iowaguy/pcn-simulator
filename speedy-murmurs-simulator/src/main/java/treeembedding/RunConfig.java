@@ -61,6 +61,10 @@ public class RunConfig {
   @JsonProperty("log_level")
   private String logLevel;
 
+  public void setLogLevel(String logLevel) {
+    this.logLevel = logLevel;
+  }
+
   public String getLogLevel() {
     if (logLevel == null) {
       return "INFO";

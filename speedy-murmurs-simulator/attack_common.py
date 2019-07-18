@@ -3,6 +3,7 @@ import ipyparallel
 import simulation_common
 import attack_1 as attack1
 import dynamic_latency_baseline as dlb
+import receiver_delay as rd
 
 def run_config(config_dict, output_dir, force=False):
     import os
@@ -34,7 +35,6 @@ def run_config(config_dict, output_dir, force=False):
 
     sim_type = config_dict['simulation_type']
     out = subprocess.run(['java', '-cp', f'{simulation_common.classpath}', f'{simulation_common.run_info[sim_type]["class"]}', f'{output_dir}'], capture_output=True)
-    # return str(out) + str(config_dict)
 
     # if it fails, delete dir
     if out.returncode == 1:
@@ -67,9 +67,6 @@ def do_distributed_experiments(ipyclient, config_dict_list):
     lbv = ipyclient.load_balanced_view()
     result = lbv.map_sync(do_experiment, config_dict_list)
 
-    # dview = ipyclient[:]
-    # result = dview.map_sync(do_experiment, config_dict_list)
-
     for i, r in enumerate(result):
         print(f"Task ID #{i}; Command: {r}", flush=True)
 
@@ -91,13 +88,13 @@ def start(attack_type):
         from networkx import __version__ as networkxversion
     print('networkx: ' + networkxversion)
 
-    config_dict_list_sm = []
-    config_dict_list_sw = []
     print(f"attack type: {attack_type}")
     if (attack_type == '1'):
         config_dict_sets = attack1.generate_configs()
     elif (attack_type == 'baseline'):
         config_dict_sets = dlb.generate_configs()
+    elif (attack_type == 'receiver-delay'):
+        config_dict_sets = rd.generate_configs()
     else:
         print(f'Error: Not a valid attack type: {attack_type}')
         sys.exit()

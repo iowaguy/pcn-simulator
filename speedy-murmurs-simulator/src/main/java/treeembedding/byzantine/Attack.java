@@ -12,6 +12,17 @@ public class Attack {
   @JsonProperty("attack_type")
   private AttackType type;
 
+  @JsonProperty("receiver_delay_ms")
+  private int receiverDelayMs;
+
+  public int getReceiverDelayMs() {
+    return receiverDelayMs;
+  }
+
+  public void setReceiverDelayMs(int receiverDelayMs) {
+    this.receiverDelayMs = receiverDelayMs;
+  }
+
   public int getNumAttackers() {
     return numAttackers;
   }
