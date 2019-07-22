@@ -312,7 +312,7 @@ public class CreditNetwork extends Metric {
         results = this.routeAdhoc(currentTransaction, g, nodes, exclude, edgeweights);
       }
     } catch (TransactionFailedException e) {
-      e.printStackTrace();
+      log.error(e.getMessage());
     }
 
     currentTransaction.addPath(results.getSumPathLength());
@@ -430,7 +430,6 @@ public class CreditNetwork extends Metric {
         res.get();
       } catch (InterruptedException | ExecutionException e) {
         log.error(e.getMessage());
-        e.printStackTrace();
       }
     }
   }
