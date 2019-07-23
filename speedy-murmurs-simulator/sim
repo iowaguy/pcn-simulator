@@ -45,7 +45,7 @@ start() {
 attack() {
   ATTACK_TYPE="$1"
   # mvn clean install
-  nohup python ${ATTACK} ${ATTACK_TYPE} &> ${LOG_DIR}/attack.out &
+  nohup python ${ATTACK} ${ATTACK_TYPE} &> ${LOG_DIR}/attack-`hostname`-`date +%m-%d-%y`.out &
   echo "${LOG_DIR}/attack.out"
   exit 0
 }
