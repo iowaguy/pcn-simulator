@@ -248,7 +248,7 @@ public class CreditNetwork extends Metric {
       cPerPath.get(i).add(1);
     }
 
-    longMetrics = new ConcurrentHashMap<>();
+    longMetrics = new ConcurrentHashMap<>(17);
     longMetrics.put(MESSAGES_ALL, new ArrayList<>());
     longMetrics.put(PATHS_ALL, new ArrayList<>());
     longMetrics.put(RECEIVER_LANDMARK_MESSAGES, new ArrayList<>());
@@ -325,7 +325,7 @@ public class CreditNetwork extends Metric {
       if (currentTransaction.requeue <= this.maxTries) {
         toRetry.add(currentTransaction);
       } else {
-        incrementCount("mesAll", currentTransaction.mes);
+        incrementCount(MESSAGES_ALL, currentTransaction.mes);
         incrementCount("pathAll", currentTransaction.path);
       }
     }
@@ -349,7 +349,7 @@ public class CreditNetwork extends Metric {
     incrementCount("path", results.getSumPathLength());
     incrementCount("reLand", results.getSumReceiverLandmarks());
     incrementCount("landSen", results.getSumSourceDepths());
-    incrementCount("mes", results.getRes4());
+    incrementCount(MESSAGES, results.getRes4());
     incrementCount("del", results.getMaxPathLength());
     if (results.isSuccess()) {
       incrementCount(ATTEMPTS, currentTransaction.requeue);
@@ -357,7 +357,7 @@ public class CreditNetwork extends Metric {
       if (currentTransaction.requeue == 0) {
         this.success_first++;
       }
-      incrementCount("mesAll", currentTransaction.mes);
+      incrementCount(MESSAGES_ALL, currentTransaction.mes);
       incrementCount("pathAll", currentTransaction.path);
       incrementCount("pathSucc", results.getSumPathLength());
       incrementCount("mesSucc", results.getRes4());
@@ -1265,7 +1265,7 @@ public class CreditNetwork extends Metric {
     if (index < values.size()) {
       values.set(index, values.get(index) + 1);
     } else {
-      for (int i = values.size(); i <= index; i++) {
+      for (int i = values.size(); i < index; i++) {
         values.add(0L);
       }
       values.add(1L);
