@@ -2,8 +2,8 @@ import simulation_common as common
 
 config = '''
 attempts: 1
-base: ../tiny-data/finalSets/dynamic
-data_set_name: tiny-{data_set}
+base: ../abbreviated-data/finalSets/dynamic
+data_set_name: abbreviated-{data_set}
 force_overwrite: false
 iterations: 1
 routing_algorithm: "{alg}"
