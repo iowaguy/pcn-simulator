@@ -862,7 +862,7 @@ public class CreditNetwork extends Metric {
     }
 
     // receiver delay attack logic
-    if (attack != null && attack.getType() == AttackType.RECEIVER_DELAY) {
+    if (attack != null && attack.getType() == AttackType.GRIEFING) {
       try {
         Thread.sleep(attack.getReceiverDelayMs());
       } catch (InterruptedException e) {

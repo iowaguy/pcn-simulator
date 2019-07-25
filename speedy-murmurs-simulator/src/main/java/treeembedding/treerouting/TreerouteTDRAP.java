@@ -19,12 +19,11 @@ public class TreerouteTDRAP extends TreerouteNH {
     long[] a = this.coords[neighbor];
     long[] b = this.coords[dest];
     int cpl = 0;
-    int depth = sp.getDepth(neighbor);
-    while (cpl < depth && cpl < b.length && a[cpl] == b[cpl]) {
+    while (cpl < b.length && cpl < a.length && a[cpl] == b[cpl]) {
       cpl++;
     }
-    //System.out.println(node + " " + neighbor + " " + (depth+b.length-2*cpl));
-    return depth + b.length - 2 * cpl;
+
+    return a.length + b.length - 2 * cpl;
   }
 
 
