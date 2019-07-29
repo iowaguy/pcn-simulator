@@ -78,9 +78,9 @@ public class MultipleSpanningTree extends Transformation {
       for (int i = 0; i < nodes.length; i++) {
         int l;
         if (this.oneDSel == Direct.TWOPHASE) {
-          l = potParents(graph, nodes[i], Direct.NONE, edgeweights).length;
+          l = potentialParents(graph, nodes[i], Direct.NONE, edgeweights).length;
         } else {
-          l = potParents(graph, nodes[i], this.oneDSel, edgeweights).length;
+          l = potentialParents(graph, nodes[i], this.oneDSel, edgeweights).length;
         }
         parCount[i] = new int[l];
       }
@@ -89,11 +89,11 @@ public class MultipleSpanningTree extends Transformation {
         parentChildMap.add(map);
         map.put(roots[i], new ParentChild(-1,
                 roots[i], 0));
-        int[] out = potChildren(graph, nodes[roots[i]], this.oneDSel, edgeweights);
+        int[] out = potentialChildren(graph, nodes[roots[i]], this.oneDSel, edgeweights);
         if (out.length == 0) {
-          out = potChildren(graph, nodes[roots[i]], Direct.EITHER, edgeweights);
+          out = potentialChildren(graph, nodes[roots[i]], Direct.EITHER, edgeweights);
           if (out.length == 0) {
-            out = potChildren(graph, nodes[roots[i]], Direct.NONE, edgeweights);
+            out = potentialChildren(graph, nodes[roots[i]], Direct.NONE, edgeweights);
           }
         }
         for (int j = 0; j < out.length; j++) {
@@ -114,7 +114,7 @@ public class MultipleSpanningTree extends Transformation {
           int index = entry.getKey();
           Vector<int[]> vec = entry.getValue();
           int min = this.trees;
-          int[] out = this.potParents(graph, nodes[index], Direct.NONE, edgeweights);
+          int[] out = potentialParents(graph, nodes[index], Direct.NONE, edgeweights);
           String pot = "";
           HashMap<Integer, Integer> mapIndex = new HashMap<Integer, Integer>(out.length);
           for (int j = 0; j < out.length; j++) {
@@ -187,7 +187,7 @@ public class MultipleSpanningTree extends Transformation {
           HashMap<Integer, ParentChild> map = parentChildMap.get(parent[1]);
           map.put(index, new ParentChild(parent[0],
                   index, parent[2]));
-          int[] out = potChildren(graph, nodes[index], this.oneDSel, edgeweights);
+          int[] out = potentialChildren(graph, nodes[index], this.oneDSel, edgeweights);
           for (int j = 0; j < out.length; j++) {
             if (map.containsKey(out[j])) continue;
             int[] added = next.get(out[j]);
@@ -210,7 +210,7 @@ public class MultipleSpanningTree extends Transformation {
           this.oneDSel = Direct.EITHER;
           for (Node n : nodes) {
             int index = n.getIndex();
-            int[] out = potChildren(graph, n, Direct.EITHER, edgeweights);
+            int[] out = potentialChildren(graph, n, Direct.EITHER, edgeweights);
             for (int i = 0; i < this.trees; i++) {
               HashMap<Integer, ParentChild> map = parentChildMap.get(i);
               ParentChild parent = map.get(index);
@@ -235,7 +235,7 @@ public class MultipleSpanningTree extends Transformation {
           this.oneDSel = Direct.NONE;
           for (Node n : nodes) {
             int index = n.getIndex();
-            int[] out = potChildren(graph, n, Direct.NONE, edgeweights);
+            int[] out = potentialChildren(graph, n, Direct.NONE, edgeweights);
             for (int i = 0; i < this.trees; i++) {
               HashMap<Integer, ParentChild> map = parentChildMap.get(i);
               ParentChild parent = map.get(index);
@@ -289,42 +289,36 @@ public class MultipleSpanningTree extends Transformation {
 
   }
 
-  public static int[] potParents(Graph g, Node n, Direct dir, CreditLinks ew) {
+  public static int[] potentialParents(Graph g, Node n, Direct dir, CreditLinks ew) {
     switch (dir) {
       case UP:
-        return potChildren(g, n, Direct.DOWN, ew);
+        return potentialChildren(g, n, Direct.DOWN, ew);
       case DOWN:
-        return potChildren(g, n, Direct.UP, ew);
+        return potentialChildren(g, n, Direct.UP, ew);
       case BOTH:
       case TWOPHASE:
-        return potChildren(g, n, Direct.BOTH, ew);
+        return potentialChildren(g, n, Direct.BOTH, ew);
       case EITHER:
-        return potChildren(g, n, Direct.EITHER, ew);
+        return potentialChildren(g, n, Direct.EITHER, ew);
       case NONE:
-        return potChildren(g, n, Direct.NONE, ew);
+        return potentialChildren(g, n, Direct.NONE, ew);
     }
 
-    return null;
+    return new int[0];
   }
 
-  public static int[] potChildren(Graph g, Node n, Direct dir, CreditLinks ew) {
+  private static int[] potentialChildren(Graph g, Node n, Direct dir, CreditLinks ew) {
     int[] in = n.getOutgoingEdges();
     int[] out = n.getOutgoingEdges();
     if (ew != null && !dir.equals(Direct.NONE)) {
-      Vector<Integer> creditIn = new Vector<Integer>();
-      Vector<Integer> creditOut = new Vector<Integer>();
+      Vector<Integer> creditIn = new Vector<>();
+      Vector<Integer> creditOut = new Vector<>();
       for (int j = 0; j < in.length; j++) {
         if (ew.getMaxTransactionAmount(in[j], n.getIndex()) > 0) {
           creditIn.add(in[j]);
-//						if(in[j] == 19051 || n.getIndex() == 19051){
-//							System.out.println("Added In " + in[j] + " for " + n.getIndex());
-//						}
         }
         if (ew.getMaxTransactionAmount(n.getIndex(), out[j]) > 0) {
           creditOut.add(out[j]);
-//						if(out[j] == 19051 || n.getIndex() == 19051){
-//							System.out.println("Added Out " + out[j] + " for " + n.getIndex());
-//						}
         }
       }
       in = new int[creditIn.size()];

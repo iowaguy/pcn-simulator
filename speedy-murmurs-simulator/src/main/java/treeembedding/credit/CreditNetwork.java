@@ -538,7 +538,7 @@ public class CreditNetwork extends Metric {
               }
               TreeCoordinates coords = (TreeCoordinates) g.getProperty("TREE_COORDINATES_" + j);
               stabilizationMessages = stabilizationMessages + this.repairTree(nodes, sp, coords,
-                      cut, (CreditLinks) g.getProperty("CREDIT_LINKS"));
+                      cut, edgeweights);
             }
           }
         }
@@ -631,78 +631,89 @@ public class CreditNetwork extends Metric {
   /**
    * reconnect disconnected branch with root subroot
    */
-  private synchronized int repairTree(Node[] nodes, SpanningTree sp, TreeCoordinates coords, int subroot, CreditLinks ew) {
+  private synchronized int repairTree(Node[] nodes, SpanningTree spanningTree, TreeCoordinates coords, int subroot, CreditLinks edgeweights) {
     if (!update) {
       int mes = 0;
-      Queue<Integer> q1 = new LinkedList<Integer>();
-      Queue<Integer> q2 = new LinkedList<Integer>();
+      Queue<Integer> q1 = new LinkedList<>();
       q1.add(subroot);
       while (!q1.isEmpty()) {
         int node = q1.poll();
-        int[] kids = sp.getChildren(node);
+        int[] kids = spanningTree.getChildren(node);
         for (int kid : kids) {
           mes++;
           q1.add(kid);
         }
-        mes = mes + MultipleSpanningTree.potParents(graph, nodes[node],
-                Direct.EITHER, ew).length;
+        mes = mes + MultipleSpanningTree.potentialParents(graph, nodes[node],
+                Direct.EITHER, edgeweights).length;
       }
       return mes;
     }
-    //remove old tree info of all descendants of subroot
+    // remove each node of subtree from spanning tree
     int mes = 0;
-    Queue<Integer> q1 = new LinkedList<Integer>();
-    Queue<Integer> q2 = new LinkedList<Integer>();
-    q1.add(subroot);
-    while (!q1.isEmpty()) {
-      int node = q1.poll();
-      int[] kids = sp.getChildren(node);
-      for (int i = 0; i < kids.length; i++) {
+    Queue<Integer> nodesToRemoveFromSpanningTree = new LinkedList<>();
+    Queue<Integer> nodesToAddBackToSpanningTree = new LinkedList<>();
+    nodesToRemoveFromSpanningTree.add(subroot);
+    while (!nodesToRemoveFromSpanningTree.isEmpty()) {
+      int removeThisNode = nodesToRemoveFromSpanningTree.poll();
+      int[] childrenToRemove = spanningTree.getChildren(removeThisNode);
+      for (int childToRemove : childrenToRemove) {
         mes++;
-        q1.add(kids[i]);
+        nodesToRemoveFromSpanningTree.add(childToRemove);
       }
-      sp.removeNode(node);
-      q2.add(node);
+      spanningTree.removeNode(removeThisNode);
+      nodesToAddBackToSpanningTree.add(removeThisNode);
     }
 
-
     Random rand = new Random();
-    MultipleSpanningTree.Direct[] dir = {Direct.BOTH, Direct.EITHER, Direct.NONE};
-    for (int k = 0; k < dir.length; k++) {
-      int count = q2.size();
-      while (count > 0) {
-        int node = q2.poll();
-        Vector<Integer> bestN = new Vector<Integer>();
-        int mind = Integer.MAX_VALUE;
-        int[] out = MultipleSpanningTree.potParents(graph, nodes[node],
-                dir[k], ew);
-        for (int i : out) {
-          if (sp.getParent(i) != -2) {
-            if (sp.getDepth(i) < mind) {
-              mind = sp.getDepth(i);
-              bestN = new Vector<Integer>();
+
+    // first find parents with which the new node has a bidrectional link, if those don't exist,
+    // choose parents with which the new node has a unidirectional link
+    MultipleSpanningTree.Direct[] directions = {Direct.BOTH, Direct.EITHER};
+    Queue<Integer> nodesToRetry = new LinkedList<>();
+    for (Direct direction : directions) {
+      while (!nodesToRetry.isEmpty()) {
+        int retryMe = nodesToRetry.poll();
+        nodesToAddBackToSpanningTree.add(retryMe);
+      }
+
+      while (!nodesToAddBackToSpanningTree.isEmpty()) {
+        int addMeToSpanningTree = nodesToAddBackToSpanningTree.poll();
+        Vector<Integer> bestPotentialParents = new Vector<>();
+        int minDepth = Integer.MAX_VALUE;
+
+        // narrow down list of best potential parents
+        int[] potentialParents = MultipleSpanningTree.potentialParents(graph, nodes[addMeToSpanningTree],
+                direction, edgeweights);
+        for (int potentialParent : potentialParents) {
+          if (spanningTree.getParent(potentialParent) != -2) {
+            int curDepth = spanningTree.getDepth(potentialParent);
+            if (curDepth < minDepth) {
+              minDepth = curDepth;
+              bestPotentialParents = new Vector<>();
             }
-            if (sp.getDepth(i) == mind) {
-              bestN.add(i);
+            if (curDepth == minDepth) {
+              bestPotentialParents.add(potentialParent);
             }
           }
         }
-        if (bestN.size() > 0) {
-          mes = mes + MultipleSpanningTree.potParents(graph, nodes[node],
-                  Direct.EITHER, ew).length;
-          int pa = bestN.get(rand.nextInt(bestN.size()));
-          sp.addParentChild(pa, node);
-          long[] pa_coord = coords.getCoord(pa);
-          long[] child_coord = new long[pa_coord.length + 1];
-          for (int i = 0; i < pa_coord.length; i++) {
-            child_coord[i] = pa_coord[i];
-          }
-          child_coord[pa_coord.length] = rand.nextInt();
-          coords.setCoord(node, child_coord);
-          count = q2.size();
+
+
+        if (!bestPotentialParents.isEmpty()) {
+          mes = mes + MultipleSpanningTree.potentialParents(graph, nodes[addMeToSpanningTree],
+                  Direct.EITHER, edgeweights).length;
+
+          // choose a random parent from among the list of best possibilities
+          int chosenParent = bestPotentialParents.get(rand.nextInt(bestPotentialParents.size()));
+
+          // add child to parent in the spanning tree
+          spanningTree.addParentChild(chosenParent, addMeToSpanningTree);
+          long[] parentCoords = coords.getCoord(chosenParent);
+          long[] childCoords = new long[parentCoords.length + 1];
+          System.arraycopy(parentCoords, 0, childCoords, 0, parentCoords.length);
+          childCoords[parentCoords.length] = rand.nextInt();
+          coords.setCoord(addMeToSpanningTree, childCoords);
         } else {
-          q2.add(node);
-          count--;
+          nodesToRetry.add(addMeToSpanningTree);
         }
       }
     }
@@ -737,11 +748,11 @@ public class CreditNetwork extends Metric {
           boolean zpDst = isZeroPath(sp, dst, edgeweights);
           if (zpSrc) {
             TreeCoordinates coords = (TreeCoordinates) g.getProperty("TREE_COORDINATES_" + j);
-            st = st + repairTree(nodes, sp, coords, src, (CreditLinks) g.getProperty("CREDIT_LINKS"));
+            st = st + repairTree(nodes, sp, coords, src, edgeweights);
           }
           if (zpDst) {
             TreeCoordinates coords = (TreeCoordinates) g.getProperty("TREE_COORDINATES_" + j);
-            st = st + repairTree(nodes, sp, coords, dst, (CreditLinks) g.getProperty("CREDIT_LINKS"));
+            st = st + repairTree(nodes, sp, coords, dst, edgeweights);
           }
         }
       }
@@ -761,7 +772,7 @@ public class CreditNetwork extends Metric {
               log.debug("Repair tree " + j + " at expired edge (" + src + "," + dst + ")");
             }
             TreeCoordinates coords = (TreeCoordinates) g.getProperty("TREE_COORDINATES_" + j);
-            st = st + repairTree(nodes, sp, coords, cut, (CreditLinks) g.getProperty("CREDIT_LINKS"));
+            st = st + repairTree(nodes, sp, coords, cut, edgeweights);
           }
 
         }

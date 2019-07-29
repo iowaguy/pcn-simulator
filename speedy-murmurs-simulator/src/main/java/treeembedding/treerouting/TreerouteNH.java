@@ -3,64 +3,49 @@ package treeembedding.treerouting;
 import java.util.Vector;
 
 import gtna.graph.Node;
+import treeembedding.credit.CreditLinks;
 
 public abstract class TreerouteNH extends Treeroute {
 
-  public TreerouteNH(String key, int trials, int trees, int t) {
+  TreerouteNH(String key, int trials, int trees, int t) {
     super(key);
     this.trials = trials;
     this.trees = trees;
     this.t = t;
   }
 
-  public TreerouteNH(String key, int trials) {
+  TreerouteNH(String key, int trials) {
     this(key, trials, 1, 1);
   }
 
-  public TreerouteNH(String key) {
+  TreerouteNH(String key) {
     super(key);
   }
 
   @Override
   protected int nextHop(int cur, Node[] nodes, long[] destID, int dest) {
-    int[] out = nodes[cur].getIncomingEdges();
-    double dbest = this.dist(cur, cur, dest);
-    Vector<Integer> closest = new Vector<Integer>();
-    for (int i = 0; i < out.length; i++) {
-      double dcur = this.dist(cur, out[i], dest);
-      if (dcur <= dbest) {
-        if (dcur < dbest) {
-          dbest = dcur;
-          closest = new Vector<Integer>();
-        }
-        closest.add(out[i]);
-      }
-    }
-    int index;
-    if (closest.size() == 0) {
-      index = -1;
-    } else {
-      index = closest.get(rand.nextInt(closest.size()));
-    }
-    return index;
+    return nextHop(cur, nodes, destID, dest, null, 0, 0.0, null);
   }
 
   @Override
   protected int nextHop(int cur, Node[] nodes, long[] destID, int dest,
-                        boolean[] exclude, int pre) {
-    int[] out = nodes[cur].getIncomingEdges();
+                        boolean[] exclude, int pre, double weight, CreditLinks edgeweights) {
+    int[] outgoingEdges = nodes[cur].getIncomingEdges();
     double dbest = this.dist(cur, cur, dest);
-    Vector<Integer> closest = new Vector<Integer>();
-    for (int i = 0; i < out.length; i++) {
-      if (!exclude[out[i]] && pre != out[i]) {
-        double dcur = this.dist(cur, out[i], dest);
+    Vector<Integer> closest = new Vector<>();
+    for (int neighbor : outgoingEdges) {
+      if (exclude == null || (!exclude[neighbor] && pre != neighbor)) {
+        double dcur = this.dist(cur, neighbor, dest);
         if (dcur <= dbest) {
           if (closest.size() == 0 && dcur == dbest) continue;
+          if (edgeweights.getMaxTransactionAmount(cur, neighbor) < weight - MIN_TRANSACTION)
+            continue;
+
           if (dcur < dbest) {
             dbest = dcur;
-            closest = new Vector<Integer>();
+            closest = new Vector<>();
           }
-          closest.add(out[i]);
+          closest.add(neighbor);
         }
       }
     }

@@ -1,6 +1,7 @@
 package treeembedding.treerouting;
 
 import gtna.graph.Node;
+import treeembedding.credit.CreditLinks;
 
 public class TreerouteOnly extends Treeroute {
 
@@ -45,7 +46,7 @@ public class TreerouteOnly extends Treeroute {
 
   @Override
   protected int nextHop(int cur, Node[] nodes, long[] dest, int destN,
-                        boolean[] exclude, int pre) {
+                        boolean[] exclude, int pre, double weight, CreditLinks edgeweights) {
     int dbest = this.getCPL(dest, this.coords[cur]);
     int index = -1;
     int[] out = sp.getChildren(cur);

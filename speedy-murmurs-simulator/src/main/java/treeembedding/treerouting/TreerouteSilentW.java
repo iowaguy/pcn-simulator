@@ -1,6 +1,7 @@
 package treeembedding.treerouting;
 
 import gtna.graph.Node;
+import treeembedding.credit.CreditLinks;
 
 public class TreerouteSilentW extends Treeroute {
   // if the traversal is going up the tree (which it must do before coming back down)
@@ -52,7 +53,7 @@ public class TreerouteSilentW extends Treeroute {
 
   @Override
   protected int nextHop(int cur, Node[] nodes, long[] dest, int destN,
-                        boolean[] exclude, int pre) {
+                        boolean[] exclude, int pre, double weight, CreditLinks edgeweights) {
     int index = -1;
     if (up) {
       index = sp.getParent(cur);
