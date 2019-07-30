@@ -145,17 +145,17 @@ public abstract class Treeroute extends Metric {
     Vector<Integer> route = new Vector<>();
     route.add(src);
     initRoute();
-    int pre = -1;
+    int previousHop = -1;
     boolean done = false;
     while (!done) {
       int next;
       if (edgeweights == null) {
-        next = this.nextHop(src, nodes, destC, dest, exclude, pre, weight, edgeweights);
+        next = this.nextHop(src, nodes, destC, dest, exclude, previousHop, weight, edgeweights);
       } else {
-        next = this.nextHopWeight(edgeweights, src, nodes, destC, dest, exclude, pre, weight);
+        next = this.nextHopWeight(edgeweights, src, nodes, destC, dest, exclude, previousHop, weight);
       }
       route.add(next);
-      pre = src;
+      previousHop = src;
       src = next;
       if (root == src) {
         this.fraction_root++;
@@ -358,17 +358,17 @@ public abstract class Treeroute extends Metric {
   }
 
   // method is synchronized to prevent concurrent modification of exclude array
-  private synchronized LinkedList<Integer> nextHopsWeight(CreditLinks edgeWeights, int cur, Node[] nodes, long[] destID, int dest, boolean[] exclude, int pre, double weight) {
+  private synchronized LinkedList<Integer> nextHopsWeight(CreditLinks edgeWeights, int cur, Node[] nodes, long[] destID, int dest, boolean[] exclude, int previousHop, double weight) {
     LinkedList<Integer> confirmedNextHops = new LinkedList<>();
     LinkedList<Integer> inspectedNextHops = new LinkedList<>();
-    int add = this.nextHop(cur, nodes, destID, dest, exclude, pre, weight, edgeWeights);
+    int add = this.nextHop(cur, nodes, destID, dest, exclude, previousHop, weight, edgeWeights);
     while (add != -1) {
       if (edgeWeights.getMaxTransactionAmount(cur, add) >= weight - MIN_TRANSACTION) {
         confirmedNextHops.add(add);
       }
       inspectedNextHops.add(add);
       exclude[add] = true;
-      add = this.nextHop(cur, nodes, destID, dest, exclude, pre, weight, edgeWeights);
+      add = this.nextHop(cur, nodes, destID, dest, exclude, previousHop, weight, edgeWeights);
     }
     for (Integer checkedNextHop : inspectedNextHops) {
       exclude[checkedNextHop] = false;
@@ -376,8 +376,8 @@ public abstract class Treeroute extends Metric {
     return confirmedNextHops;
   }
 
-  private int nextHopWeight(CreditLinks edgeWeights, int cur, Node[] nodes, long[] destID, int dest, boolean[] exclude, int pre, double weight) {
-    LinkedList<Integer> list = this.nextHopsWeight(edgeWeights, cur, nodes, destID, dest, exclude, pre, weight);
+  private int nextHopWeight(CreditLinks edgeWeights, int cur, Node[] nodes, long[] destID, int dest, boolean[] exclude, int previousHop, double weight) {
+    LinkedList<Integer> list = this.nextHopsWeight(edgeWeights, cur, nodes, destID, dest, exclude, previousHop, weight);
     if (list.isEmpty()) {
       return -1;
     } else {

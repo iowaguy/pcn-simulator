@@ -29,12 +29,12 @@ public abstract class TreerouteNH extends Treeroute {
 
   @Override
   protected int nextHop(int cur, Node[] nodes, long[] destID, int dest,
-                        boolean[] exclude, int pre, double weight, CreditLinks edgeweights) {
+                        boolean[] exclude, int previousHop, double weight, CreditLinks edgeweights) {
     int[] outgoingEdges = nodes[cur].getIncomingEdges();
     double dbest = this.dist(cur, cur, dest);
     Vector<Integer> closest = new Vector<>();
     for (int neighbor : outgoingEdges) {
-      if (exclude == null || (!exclude[neighbor] && pre != neighbor)) {
+      if (exclude == null || (!exclude[neighbor] && previousHop != neighbor)) {
         double dcur = this.dist(cur, neighbor, dest);
         if (dcur <= dbest) {
           if (closest.size() == 0 && dcur == dbest) continue;
