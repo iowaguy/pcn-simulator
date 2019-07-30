@@ -825,7 +825,7 @@ public class CreditNetwork extends Metric {
 				}
 				paths[j] = this.ra.getRoute(s, d, j, g, nodes, exclude, edgeweights, vals[j]);
 
-        if (attack.getType() == AttackType.DROP_ALL) {
+        if (attack != null && attack.getType() == AttackType.DROP_ALL) {
           // if byzantine node is on path, do byzantine action
 					for (int i = 1; i < paths[j].length; i++) {
 						if (this.byzantineNodes.contains(paths[j][i])) {
