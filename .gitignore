@@ -18,4 +18,4 @@ speedy-murmurs-simulator/target/*
 **/__pycache__/
 *~
 speedy-murmurs-simulator/logs/*
-*/nohup.out
+*/nohup*.out

@@ -1,3 +1,5 @@
+#!/usr/local/bin/python3
+
 import sys
 import ipyparallel
 import simulation_common
@@ -39,7 +41,6 @@ def run_config(config_dict, output_dir, force=False):
     # if it fails, delete dir
     if out.returncode == 1:
         shutil.rmtree(base + data_path[0], ignore_errors=True)
-        # out = "Rerun: " + str(subprocess.run(['java', '-cp', f'{simulation_common.classpath}', f'{simulation_common.run_info[sim_type]["class"]}', f'{output_dir}'], capture_output=True))
 
     # this is what get's printed by ipyparallel
     return str(out) + str(config_dict)
@@ -61,7 +62,7 @@ def do_experiment(config_dict):
     with open(config_file_path, "w") as f:
         f.write(yaml.dump(config_dict))
 
-    return attack_common.run_config(config_dict, output_dir, config_dict['force_overwrite'])
+    return run_config(config_dict, output_dir, config_dict['force_overwrite'])
 
 def do_distributed_experiments(ipyclient, config_dict_list):
     lbv = ipyclient.load_balanced_view()
@@ -70,7 +71,7 @@ def do_distributed_experiments(ipyclient, config_dict_list):
     for i, r in enumerate(result):
         print(f"Task ID #{i}; Command: {r}", flush=True)
 
-def start(attack_type):
+def start(configs):
     import time
     import ipyparallel
 
@@ -86,25 +87,10 @@ def start(attack_type):
         import ipyparallel
         import attack_common
         from networkx import __version__ as networkxversion
-    print('networkx: ' + networkxversion)
 
-    print(f"attack type: {attack_type}")
-    if (attack_type == '1'):
-        config_dict_sets = attack1.generate_configs()
-    elif (attack_type == 'baseline'):
-        config_dict_sets = dlb.generate_configs()
-    elif (attack_type == 'receiver-delay'):
-        config_dict_sets = rd.generate_configs()
-    else:
-        print(f'Error: Not a valid attack type: {attack_type}')
-        sys.exit()
-
-    for config_list in config_dict_sets:
+    for config_list in configs:
         do_distributed_experiments(ipyclient, config_list)
 
     end = time.time()
     elapsed = end - start
     print(f"Done. Time: {elapsed}")
-
-if __name__ == '__main__':
-    start(sys.argv[1])
