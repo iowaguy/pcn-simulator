@@ -25,12 +25,26 @@ def extract_kv_pairs_from_singles(singles_path):
             ret[k] = v
     return ret
 
+def parse_static_singles(config_dict_list):
+    l = []
+    for config_dict in config_dict_list:
+        l.append(parse_static_single(config_dict))
+
+    return l
+
 def parse_dynamic_singles(config_dict_list):
     l = []
     for config_dict in config_dict_list:
         l.append(parse_dynamic_single(config_dict))
 
     return l
+
+def parse_static_single(config_dict):
+    static_data_path = common.get_static_data_path_config(config_dict)
+    data_path = os.getcwd() + f'/{common.data_root}/' + common.get_output_base_path(config_dict) + static_data_path[0] + static_data_path[1] + common.singles
+    singles_pairs = extract_kv_pairs_from_singles(data_path)
+    return singles_pairs
+
 
 def parse_dynamic_single(config_dict):
     dynamic_data_path = common.get_dynamic_data_path_config(config_dict)
