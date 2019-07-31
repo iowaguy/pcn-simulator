@@ -59,7 +59,7 @@ class CreditNetworkTest {
     int[] roots = {2, 3};
     Partitioner part = new RandomPartitioner();
 
-    CreditNetwork creditNetwork = new CreditNetwork(trans, name, epoch, routingAlgorithm, req, part, roots, max, newlinks, null, null, runConfig);
+    CreditNetwork creditNetwork = new CreditNetwork(trans, name, epoch, routingAlgorithm, req, part, roots, max, newlinks, runConfig);
 
     Network net = new ReadableFile(name, name, graph, null);
     Series.generate(net, new Metric[]{creditNetwork}, 0, 0);

@@ -17,10 +17,6 @@ import gtna.networks.util.ReadableFile;
 import gtna.util.Config;
 import treeembedding.RoutingAlgorithm;
 import treeembedding.RunConfig;
-import treeembedding.byzantine.Attack;
-import treeembedding.byzantine.AttackerSelection;
-import treeembedding.byzantine.ByzantineNodeSelection;
-import treeembedding.byzantine.RandomByzantineNodeSelection;
 import treeembedding.credit.CreditMaxFlow;
 import treeembedding.credit.CreditNetwork;
 import treeembedding.credit.partioner.Partitioner;
@@ -88,11 +84,7 @@ public class Dynamic {
 
     double epoch = E * 1000;
 
-    Attack attackProperties = runConfig.getAttackProperties();
-    ByzantineNodeSelection byz = null;
-    if (attackProperties != null && attackProperties.getSelection() == AttackerSelection.RANDOM) {
-      byz = new RandomByzantineNodeSelection(attackProperties.getNumAttackers());
-    }
+
 
     Metric m = null;
     if (routingAlgorithm == RoutingAlgorithm.SILENTWHISPERS ||
@@ -102,7 +94,7 @@ public class Dynamic {
       int[] roots = {64, 36, 43};
       Partitioner part = new RandomPartitioner();
 
-      m = new CreditNetwork(trans, name, epoch, routingAlgorithm, req, part, roots, max, newlinks, byz, attackProperties, runConfig);
+      m = new CreditNetwork(trans, name, epoch, routingAlgorithm, req, part, roots, max, newlinks, runConfig);
     } else if (routingAlgorithm == RoutingAlgorithm.MAXFLOW) {
       m = new CreditMaxFlow(trans, name,
               0, 0, newlinks, epoch);

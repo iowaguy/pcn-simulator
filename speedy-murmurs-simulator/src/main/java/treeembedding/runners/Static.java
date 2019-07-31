@@ -13,10 +13,7 @@ import gtna.networks.util.ReadableFile;
 import gtna.util.Config;
 import treeembedding.RoutingAlgorithm;
 import treeembedding.RunConfig;
-import treeembedding.byzantine.Attack;
-import treeembedding.byzantine.AttackerSelection;
-import treeembedding.byzantine.ByzantineNodeSelection;
-import treeembedding.byzantine.RandomByzantineNodeSelection;
+import treeembedding.SimulationTypes;
 import treeembedding.credit.CreditMaxFlow;
 import treeembedding.credit.CreditNetwork;
 import treeembedding.credit.partioner.Partitioner;
@@ -60,14 +57,13 @@ public class Static {
 
     // configuration in terms of routing algorithm 0-10, see below
     RoutingAlgorithm routingAlgorithm = runConfig.getRoutingAlgorithm();
-    //int config = runConfig.getRoutingAlgorithm().getId();
 
     // file of transactions + graph
     String transList = runConfig.getBasePath() + "/" + runConfig.getTransactionPath();
-    String graph = runConfig.getBasePath() + "/" + runConfig.getTopologyPath(); //path + "finalSets/static/ripple-lcc.graph";
+    String graph = runConfig.getBasePath() + "/" + runConfig.getTopologyPath();
 
     // name of experiment;
-    String name = "STATIC";
+    String name = SimulationTypes.STATIC.toString();
 
     // epoch, set to 1000
     double epoch = 1000;
@@ -93,8 +89,6 @@ public class Static {
       // number of embeddings
       int trees = runConfig.getTrees();
 
-      Attack attackProperties = runConfig.getAttackProperties();
-
       // partition transaction value randomly
       Partitioner part = new RandomPartitioner();
 
@@ -102,20 +96,14 @@ public class Static {
       String degFile = path + "/degOrder-bi.txt";
       int[] roots = Misc.selectRoots(degFile, false, trees, iterations);
 
-      ByzantineNodeSelection byz = null;
-      if (attackProperties != null && attackProperties.getSelection() == AttackerSelection.RANDOM) {
-        byz = new RandomByzantineNodeSelection(attackProperties.getNumAttackers());
-      }
-
-      CreditNetwork creditNetwork = new CreditNetwork(transList, name, epoch, routingAlgorithm, tl, part, roots, tries, up, byz, attackProperties, runConfig);
+      CreditNetwork creditNetwork = new CreditNetwork(transList, name, epoch, routingAlgorithm, tl, part, roots, tries, up, runConfig);
 
       String[] com = {"SW-PER-MUL", "SW-PER", "SW-DYN-MUL", "SW-DYN",
               "V-PER-MUL", "V-PER", "V-DYN-MUL", "V-DYN", "TREE-ONLY1",
               "TREE-ONLY1"};
 
       int config = routingAlgorithm.getId();
-      Network network = new ReadableFile(com[config], com[config], graph,
-              null);
+      Network network = new ReadableFile(com[config], com[config], graph, null);
       Series.generate(network, new Metric[]{creditNetwork}, 0, iterations - 1);
     }
 

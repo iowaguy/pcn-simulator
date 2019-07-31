@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import gtna.data.Single;
 import gtna.graph.Edge;
@@ -51,8 +52,10 @@ import treeembedding.RoutingAlgorithm;
 import treeembedding.RunConfig;
 import treeembedding.byzantine.Attack;
 import treeembedding.byzantine.AttackType;
+import treeembedding.byzantine.AttackerSelection;
 import treeembedding.byzantine.ByzantineNodeSelection;
 import treeembedding.byzantine.NoByzantineNodeSelection;
+import treeembedding.byzantine.RandomByzantineNodeSelection;
 import treeembedding.credit.exceptions.InsufficientFundsException;
 import treeembedding.credit.exceptions.TransactionFailedException;
 import treeembedding.credit.partioner.Partitioner;
@@ -185,7 +188,7 @@ public class CreditNetwork extends Metric {
 
   public CreditNetwork(String file, String name, double epoch, RoutingAlgorithm algo,
                        double requeueInt, Partitioner part, int[] roots, int max,
-                       String links, boolean up, ByzantineNodeSelection byzSelection, Attack attack,
+                       String links, boolean up,
                        RunConfig runConfig) {
     super("CREDIT_NETWORK", new Parameter[]{new StringParameter("NAME", name), new DoubleParameter("EPOCH", epoch),
             new StringParameter("RA", algo.getTreeroute().getKey()), new BooleanParameter("DYN_REPAIR", algo.doesDynamicRepair()),
@@ -210,13 +213,15 @@ public class CreditNetwork extends Metric {
     }
     this.update = up;
 
-    if (byzSelection == null) {
-      this.byzSelection = new NoByzantineNodeSelection();
-    } else {
-      this.byzSelection = byzSelection;
+    this.attack = runConfig.getAttackProperties();
+    if (attack != null && attack.getSelection() == AttackerSelection.RANDOM) {
+      byzSelection = new RandomByzantineNodeSelection(attack.getNumAttackers());
     }
 
-    this.attack = attack;
+    if (byzSelection == null) {
+      this.byzSelection = new NoByzantineNodeSelection();
+    }
+
     this.zeroEdges = new ConcurrentLinkedQueue<>();
 
     LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
@@ -275,25 +280,21 @@ public class CreditNetwork extends Metric {
   }
 
   public CreditNetwork(String file, String name, double epoch, RoutingAlgorithm algo,
-                       double requeueInt, Partitioner part, int[] roots, int max,
-                       String links, ByzantineNodeSelection byz, Attack attack,
+                       double requeueInt, Partitioner part, int[] roots, int max, String links,
                        RunConfig runConfig) {
-    this(file, name, epoch, algo, requeueInt, part, roots, max, links, true, byz,
-            attack, runConfig);
+    this(file, name, epoch, algo, requeueInt, part, roots, max, links, true, runConfig);
   }
 
   public CreditNetwork(String file, String name, double epoch, RoutingAlgorithm algo,
                        double requeueInt, Partitioner part, int[] roots, int max,
                        RunConfig runConfig) {
-    this(file, name, epoch, algo, requeueInt, part, roots, max, null, true,
-            null, null, runConfig);
+    this(file, name, epoch, algo, requeueInt, part, roots, max, null, true, runConfig);
   }
 
   public CreditNetwork(String file, String name, double epoch, RoutingAlgorithm algo,
-                       double requeueInt, Partitioner part, int[] roots, int max,
-                       boolean up, ByzantineNodeSelection byzSelection, Attack attack, RunConfig runConfig) {
-    this(file, name, epoch, algo, requeueInt, part, roots, max, null, up, byzSelection,
-            attack, runConfig);
+                       double requeueInt, Partitioner part, int[] roots, int max, boolean up,
+                       RunConfig runConfig) {
+    this(file, name, epoch, algo, requeueInt, part, roots, max, null, up, runConfig);
   }
 
   private Future<TransactionResults> transactionResultsFuture(Transaction cur, Graph g, Node[] nodes,
@@ -429,7 +430,7 @@ public class CreditNetwork extends Metric {
       try {
         res.get();
       } catch (InterruptedException | ExecutionException e) {
-        log.error(e.getMessage());
+        log.error("Failed to block until async transactions complete: " + e.getMessage());
       }
     }
   }
@@ -514,7 +515,9 @@ public class CreditNetwork extends Metric {
 
       // collect result futures
       Future<TransactionResults> futureResults = transactionResultsFuture(currentTransaction, g, nodes, exclude, edgeweights);
-      pendingTransactions.add(futureResults);
+      if (futureResults != null) {
+        pendingTransactions.add(futureResults);
+      }
 
       //4 post-processing: remove edges set to 0, update spanning tree if dynRapir
       lastEpoch = currentEpoch;
@@ -546,7 +549,16 @@ public class CreditNetwork extends Metric {
     }
     this.executor.shutdown();
     // don't want metrics to be computed before all transactions are done
-    blockUntilAsyncTransactionsComplete(pendingTransactions);
+    try {
+      if (!this.executor.awaitTermination(5, TimeUnit.HOURS)) {
+        log.error("Maximum time elapsed waiting for transactions to complete.");
+        this.executor.shutdownNow();
+      }
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    //blockUntilAsyncTransactionsComplete(pendingTransactions);
     this.creditLinks = edgeweights;
 
     if (this.dynRepair) {
@@ -872,20 +884,23 @@ public class CreditNetwork extends Metric {
       throw new TransactionFailedException("Transaction values cannot be null");
     }
 
-    // receiver delay attack logic
-    if (attack != null && attack.getType() == AttackType.GRIEFING) {
-      try {
-        Thread.sleep(attack.getReceiverDelayMs());
-      } catch (InterruptedException e) {
-        // do nothing
-      }
-    }
-
     for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
       if (vals[treeIndex] != 0) {
         int currentNodeIndex = paths[treeIndex][0];
         for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
           simulateNetworkLatency();
+
+          // receiver delay attack logic
+          if (attack != null && attack.getType() == AttackType.GRIEFING) {
+            if (this.byzantineNodes.contains(paths[treeIndex][nodeIndex])) {
+              try {
+                Thread.sleep(attack.getReceiverDelayMs());
+              } catch (InterruptedException e) {
+                // do nothing
+              }
+            }
+          }
+
           int nextNodeIndex = paths[treeIndex][nodeIndex];
           Edge edge = CreditLinks.makeEdge(currentNodeIndex, nextNodeIndex);
           if (!modifiedEdges.containsKey(edge)) {
