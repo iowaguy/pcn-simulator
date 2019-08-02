@@ -61,6 +61,9 @@ public class RunConfig {
   @JsonProperty("log_level")
   private String logLevel;
 
+  @JsonProperty("experiment_name")
+  private String experimentName;
+
   public void setLogLevel(String logLevel) {
     this.logLevel = logLevel;
   }
