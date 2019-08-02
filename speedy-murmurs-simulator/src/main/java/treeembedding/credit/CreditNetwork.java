@@ -157,7 +157,6 @@ public class CreditNetwork extends Metric {
   private double success; // fraction of transactions successful at all
   private double[] succs;
 
-  private ByzantineNodeSelection byzSelection;
   private Set<Integer> byzantineNodes;
   private Attack attack;
   private boolean areTransactionsConcurrent;
@@ -214,13 +213,6 @@ public class CreditNetwork extends Metric {
     this.update = up;
 
     this.attack = runConfig.getAttackProperties();
-    if (attack != null && attack.getSelection() == AttackerSelection.RANDOM) {
-      byzSelection = new RandomByzantineNodeSelection(attack.getNumAttackers());
-    }
-
-    if (byzSelection == null) {
-      this.byzSelection = new NoByzantineNodeSelection();
-    }
 
     this.zeroEdges = new ConcurrentLinkedQueue<>();
 
@@ -459,7 +451,7 @@ public class CreditNetwork extends Metric {
     boolean[] exclude = new boolean[nodes.length];
 
     // generate byzantine nodes
-    this.byzantineNodes = this.byzSelection.conscript(nodes);
+    this.byzantineNodes = this.attack.generateAttackers(nodes);
 
     int lastEpoch = 0;
     int stabilizationMessages = 0;
@@ -884,22 +876,25 @@ public class CreditNetwork extends Metric {
       throw new TransactionFailedException("Transaction values cannot be null");
     }
 
+    // payment griefing attack logic
+    for (int[] path : paths) {
+      if (attack != null && attack.getType() == AttackType.GRIEFING) {
+        if (this.byzantineNodes.contains(path[path.length - 1])) {
+          try {
+            Thread.sleep(attack.getReceiverDelayMs());
+            throw new TransactionFailedException("This payment was griefed");
+          } catch (InterruptedException e) {
+            throw new TransactionFailedException("This payment was griefed");
+          }
+        }
+      }
+    }
+
     for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
       if (vals[treeIndex] != 0) {
         int currentNodeIndex = paths[treeIndex][0];
         for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
           simulateNetworkLatency();
-
-          // receiver delay attack logic
-          if (attack != null && attack.getType() == AttackType.GRIEFING) {
-            if (this.byzantineNodes.contains(paths[treeIndex][nodeIndex])) {
-              try {
-                Thread.sleep(attack.getReceiverDelayMs());
-              } catch (InterruptedException e) {
-                // do nothing
-              }
-            }
-          }
 
           int nextNodeIndex = paths[treeIndex][nodeIndex];
           Edge edge = CreditLinks.makeEdge(currentNodeIndex, nextNodeIndex);
@@ -1080,7 +1075,6 @@ public class CreditNetwork extends Metric {
     Map<Edge, LinkWeight> modifiedEdges = new HashMap<>();
     boolean successful = stepThroughTransaction(vals, paths, edgeweights, modifiedEdges);
     if (successful) {
-      // TODO simulate attack
       finalizeTransaction(vals, paths, edgeweights, modifiedEdges);
     }
 

@@ -9,13 +9,6 @@ import gtna.graph.Node;
 public class RandomByzantineNodeSelection extends ByzantineNodeSelection {
 
   /**
-   * @param numByzantineNodes the number of byzantine nodes to conscript
-   */
-  public RandomByzantineNodeSelection(int numByzantineNodes) {
-    this.numByzantineNodes = numByzantineNodes;
-  }
-
-  /**
    * Select byzantine nodes randomly
    *
    * @param allNodes an array of all the nodes in the graph

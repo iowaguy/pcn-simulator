@@ -3,6 +3,9 @@ package treeembedding;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import treeembedding.byzantine.Attack;
+import treeembedding.byzantine.AttackType;
+import treeembedding.byzantine.AttackerSelection;
+import treeembedding.byzantine.NoByzantineNodeSelection;
 
 public class RunConfig {
   @JsonProperty("data_set_name")
@@ -205,7 +208,15 @@ public class RunConfig {
   }
 
   public Attack getAttackProperties() {
-    return attackProperties;
+    if (attackProperties != null) {
+      return attackProperties;
+    } else {
+      Attack a = new Attack();
+      a.setSelection(AttackerSelection.NONE);
+      a.setType(AttackType.NONE);
+      a.setNumAttackers(0);
+      return a;
+    }
   }
 
   public void setAttackProperties(Attack attackProperties) {

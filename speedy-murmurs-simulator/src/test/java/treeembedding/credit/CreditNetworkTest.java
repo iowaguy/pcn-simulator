@@ -3,6 +3,9 @@ package treeembedding.credit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import gtna.data.Series;
 import gtna.metrics.Metric;
 import gtna.networks.Network;
@@ -11,6 +14,9 @@ import gtna.util.Config;
 import treeembedding.RoutingAlgorithm;
 import treeembedding.RunConfig;
 import treeembedding.SimulationTypes;
+import treeembedding.byzantine.Attack;
+import treeembedding.byzantine.AttackType;
+import treeembedding.byzantine.AttackerSelection;
 import treeembedding.credit.partioner.Partitioner;
 import treeembedding.credit.partioner.RandomPartitioner;
 
@@ -36,16 +42,24 @@ class CreditNetworkTest {
     runConfig.setConcurrentTransactionsCount(50);
     runConfig.setNetworkLatencyMs(171);
     runConfig.setRunDirPath(TEST_DATA_BASE + "/output-data");
-    runConfig.setLogLevel("ERROR");
+    runConfig.setLogLevel("DEBUG");
     Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", Boolean.toString(false));
   }
 
   CreditLinks singlePathLinkUpdate(RoutingAlgorithm ra, String testDir) {
+    return singlePathLinkUpdate(ra, testDir, null);
+  }
+
+  CreditLinks singlePathLinkUpdate(RoutingAlgorithm ra, String testDir, Attack attack) {
     runConfig.setBasePath(TEST_DATA_BASE + testDir);
     runConfig.setRoutingAlgorithm(ra);
     runConfig.setTopologyPath("topology.graph");
     runConfig.setTransactionPath("transactions.txt");
     runConfig.setNewLinksPath("newlinks.txt");
+
+    if (attack != null) {
+      runConfig.setAttackProperties(attack);
+    }
 
     RoutingAlgorithm routingAlgorithm = runConfig.getRoutingAlgorithm();
     String trans = runConfig.getBasePath() + "/" + runConfig.getTransactionPath();
@@ -174,12 +188,80 @@ class CreditNetworkTest {
     assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
   }
 
+  /**
+   * Single transaction should fail
+   */
+  @Test
+  void singleTransactionWithGriefingSpeedyMurmurs() {
+    String testDir = "/single-transaction-test";
+    Attack attack = new Attack();
+    attack.setNumAttackers(1);
+    attack.setReceiverDelayMs(2000);
+    attack.setType(AttackType.GRIEFING);
+    attack.setSelection(AttackerSelection.SELECTED);
+    Set<Integer> selectedByzantineNodes = new HashSet<>();
+    selectedByzantineNodes.add(5);
+    attack.setSelectedByzantineNodes(selectedByzantineNodes);
 
+    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir, attack);
+    assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+  }
+
+  /**
+   * Both transactions should fail because one transaction will hold the funds so there is not
+   * enough liquidity for the other to complete, then the first transaction will fail because the
+   * attacker will not approve it.
+   */
+  @Test
+  void concurrentTransactionsWithGriefingSpeedyMurmurs() {
+    String testDir = "/partially-disjoint-concurrent-transactions-test";
+    Attack attack = new Attack();
+    attack.setNumAttackers(1);
+    attack.setReceiverDelayMs(2000);
+    attack.setType(AttackType.GRIEFING);
+    attack.setSelection(AttackerSelection.SELECTED);
+    Set<Integer> selectedByzantineNodes = new HashSet<>();
+    selectedByzantineNodes.add(5);
+    attack.setSelectedByzantineNodes(selectedByzantineNodes);
+
+    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir, attack);
+    assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
+  }
+
+  /**
+   * The non-griefed payment should still succeed
+   */
+  @Test
+  void concurrentTransactionsWithGriefingSilentWhispers() {
+    String testDir = "/partially-disjoint-concurrent-transactions-test";
+    Attack attack = new Attack();
+    attack.setNumAttackers(1);
+    attack.setReceiverDelayMs(2000);
+    attack.setType(AttackType.GRIEFING);
+    attack.setSelection(AttackerSelection.SELECTED);
+    Set<Integer> selectedByzantineNodes = new HashSet<>();
+    selectedByzantineNodes.add(5);
+    attack.setSelectedByzantineNodes(selectedByzantineNodes);
+
+    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir, attack);
+    assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(80.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(100.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(80.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+    assertEquals(80.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
+  }
 
   /*
   The goal with these is to test out a transaction that goes along two (at least partially) disjoint
   paths. Couldn't get it to work, because I couldn't find a way to force the tree creation to use
-  disjoint paths.
+  disjoint paths deterministically.
 */
   /*@Test
   void multiPathLinkUpdateSilentWhispers() {
