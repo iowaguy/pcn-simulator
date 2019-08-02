@@ -16,6 +16,7 @@ concurrent_transactions: true
 concurrent_transactions_count: 20
 network_latency_ms: 30
 log_level: warn
+experiment_name: vary_griefing_delay
 attack_properties:
   attack_type: griefing
   attacker_selection: random

@@ -49,7 +49,8 @@ run_info = {
 def get_output_base_path(config_dict):
     algo = config_dict["routing_algorithm"]
 
-    dir = f'{config_dict["simulation_type"]}-{config_dict["data_set_name"]}-{algo}-{config_dict["trees"]}-{config_dict["attempts"]}-{config_dict["iterations"]}-lat{config_dict["network_latency_ms"]}ms'
+    data_set_size = config_dict["data_set_name"].split("-")[0]
+    dir = f'{config_dict["simulation_type"]}-{data_set_size}-{config_dict["experiment_name"]}/{config_dict["simulation_type"]}-{config_dict["data_set_name"]}-{algo}-{config_dict["trees"]}-{config_dict["attempts"]}-{config_dict["iterations"]}-lat{config_dict["network_latency_ms"]}ms'
 
     if config_dict["concurrent_transactions"]:
         dir += f'-concurrent-{config_dict["concurrent_transactions_count"]}'
