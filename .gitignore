@@ -13,3 +13,7 @@ speedy-murmurs-simulator/plots/
 speedy-murmurs-simulator/plot/
 speedy-murmurs-simulator/temp/
 speedy-murmurs-simulator/.ipynb_checkpoints/*
+**/__pycache__/*
+**/logs/*
+**/nohup.*
+**/target/*
