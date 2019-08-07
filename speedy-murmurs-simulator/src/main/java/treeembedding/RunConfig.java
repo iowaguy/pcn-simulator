@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import treeembedding.byzantine.Attack;
 import treeembedding.byzantine.AttackType;
 import treeembedding.byzantine.AttackerSelection;
-import treeembedding.byzantine.NoByzantineNodeSelection;
 
 public class RunConfig {
   @JsonProperty("data_set_name")
@@ -67,8 +66,15 @@ public class RunConfig {
   @JsonProperty("experiment_name")
   private String experimentName;
 
-  public void setLogLevel(String logLevel) {
-    this.logLevel = logLevel;
+  // useful for controlling the order of transactions in tests
+  private int transactionDelayMs;
+
+  public int getTransactionDelayMs() {
+    return transactionDelayMs;
+  }
+
+  public void setTransactionDelayMs(int transactionDelayMs) {
+    this.transactionDelayMs = transactionDelayMs;
   }
 
   public String getLogLevel() {
@@ -77,6 +83,10 @@ public class RunConfig {
     } else {
       return logLevel;
     }
+  }
+
+  public void setLogLevel(String logLevel) {
+    this.logLevel = logLevel;
   }
 
   public void setConcurrentTransactions(boolean concurrentTransactions) {

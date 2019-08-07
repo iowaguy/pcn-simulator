@@ -19,6 +19,7 @@ public class CreditLinks extends GraphProperty {
   // this order: minimum possible weight, current weight, maximum possible weight
   private Map<Edge, LinkWeight> weights;
 
+  private boolean isFundLockingEnabled;
 
   public CreditLinks() {
     this.weights = new ConcurrentHashMap<>();
@@ -26,6 +27,14 @@ public class CreditLinks extends GraphProperty {
 
   static Edge makeEdge(int src, int dst) {
     return src < dst ? new Edge(src, dst) : new Edge(dst, src);
+  }
+
+  void enableFundLocking(boolean fundLocking) {
+    this.isFundLockingEnabled = fundLocking;
+  }
+
+  boolean isZero(int src, int dst) {
+    return getWeights(src, dst).isZero();
   }
 
   LinkWeight getWeights(int src, int dst) {
@@ -51,14 +60,9 @@ public class CreditLinks extends GraphProperty {
   }
 
   public double getMaxTransactionAmount(int src, int dst) {
-    return getMaxTransactionAmount(src, dst, true);
-  }
-
-  double getMaxTransactionAmount(int src, int dst, boolean concurrentTransactions) {
     LinkWeight weights = this.getWeights(makeEdge(src, dst));
-    return weights.getMaxTransactionAmount(src < dst, concurrentTransactions);
+    return weights.getMaxTransactionAmount(src < dst, isFundLockingEnabled);
   }
-
 
   public Set<Entry<Edge, LinkWeight>> getWeights() {
     return this.weights.entrySet();
@@ -72,19 +76,27 @@ public class CreditLinks extends GraphProperty {
     this.weights.put(edge, weight);
   }
 
-  synchronized void prepareUpdateWeight(int src, int dst, double weightChange, boolean concurrentTransactions)
+  synchronized void prepareUpdateWeight(int src, int dst, double weightChange)
           throws InsufficientFundsException {
     LinkWeight weights = getWeights(src, dst);
-    if (weights.areFundsAvailable(weightChange, concurrentTransactions)) {
-      weights.prepareUpdateWeight(weightChange, concurrentTransactions);
+    if (weights.areFundsAvailable(weightChange, isFundLockingEnabled)) {
+      weights.prepareUpdateWeight(weightChange, isFundLockingEnabled);
+      setWeight(makeEdge(src, dst), weights);
     } else {
       throw new InsufficientFundsException();
     }
   }
 
-  synchronized void finalizeUpdateWeight(int src, int dst, double weightChange, boolean concurrentTransactions)
+  synchronized void undoUpdateWeight(int src, int dst, double weightChange) throws TransactionFailedException {
+    LinkWeight weights = getWeights(src, dst);
+    weights.undoUpdateWeight(weightChange);
+  }
+
+  synchronized void finalizeUpdateWeight(int src, int dst, double weightChange)
           throws TransactionFailedException {
-    getWeights(src, dst).finalizeUpdateWeight(weightChange, concurrentTransactions);
+    LinkWeight weights = getWeights(src, dst);
+    weights.finalizeUpdateWeight(weightChange, isFundLockingEnabled);
+    setWeight(makeEdge(src, dst), weights);
   }
 
   public void setBound(int src, int dst, double val) {

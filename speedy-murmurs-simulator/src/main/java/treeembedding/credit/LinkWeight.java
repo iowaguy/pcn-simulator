@@ -45,6 +45,10 @@ public class LinkWeight {
             ((current - min < EPSILON) && (current - min > -EPSILON));
   }
 
+  void undoUpdateWeight(double weightChange) throws TransactionFailedException {
+    finalizeUpdateWeight(weightChange, true, true);
+  }
+
   public double getMin() {
     return min;
   }
@@ -73,11 +77,11 @@ public class LinkWeight {
     this.current -= weightChange;
   }
 
-  private double getUnlockedMax() {
+  double getUnlockedMax() {
     return this.unlockedMax;
   }
 
-  private double getUnlockedMin() {
+  double getUnlockedMin() {
     return this.unlockedMin;
   }
 
@@ -95,7 +99,7 @@ public class LinkWeight {
       setUnlockedMax(getUnlockedMax() + lockAmount);
     } else {
       // increase unlocked max by lockAmount
-      setUnlockedMin(getUnlockedMin() - lockAmount);
+      setUnlockedMin(getUnlockedMin() + lockAmount);
     }
   }
 
@@ -105,20 +109,20 @@ public class LinkWeight {
       setUnlockedMax(getUnlockedMax() - unlockAmount);
     } else {
       // increase unlocked max by lockAmount
-      setUnlockedMin(getUnlockedMin() + unlockAmount);
+      setUnlockedMin(getUnlockedMin() - unlockAmount);
     }
   }
 
-  private double getEffectiveMax(boolean concurrentTransactions) {
-    if (concurrentTransactions) {
+  private double getEffectiveMax(boolean isFundLockingEnabled) {
+    if (isFundLockingEnabled) {
       return getUnlockedMax();
     } else {
       return getMax();
     }
   }
 
-  private double getEffectiveMin(boolean concurrentTransactions) {
-    if (concurrentTransactions) {
+  private double getEffectiveMin(boolean isFundLockingEnabled) {
+    if (isFundLockingEnabled) {
       return getUnlockedMin();
     } else {
       return getMin();
@@ -127,37 +131,47 @@ public class LinkWeight {
 
   // if funds are being sent from a lower numbered node to a higher numbered node, the transaction
   // is considered "forward"
-  double getMaxTransactionAmount(boolean isForward, boolean concurrentTransactions) {
+  double getMaxTransactionAmount(boolean isForward, boolean isFundLockingEnabled) {
     if (isForward) {
-      return getCurrent() - getEffectiveMin(concurrentTransactions);
+      return getCurrent() - getEffectiveMin(isFundLockingEnabled);
     } else {
-      return getEffectiveMax(concurrentTransactions) - getCurrent();
+      return getEffectiveMax(isFundLockingEnabled) - getCurrent();
     }
   }
 
-  boolean areFundsAvailable(double weightChange, boolean concurrentTransactions) {
+  boolean areFundsAvailable(double weightChange, boolean isFundLockingEnabled) {
     double newPotentialWeight = getCurrent() - weightChange;
 
-    return newPotentialWeight <= getEffectiveMax(concurrentTransactions) &&
-            newPotentialWeight >= getEffectiveMin(concurrentTransactions);
+    return newPotentialWeight <= getEffectiveMax(isFundLockingEnabled) &&
+            newPotentialWeight >= getEffectiveMin(isFundLockingEnabled);
   }
 
-  synchronized void prepareUpdateWeight(double weightChange, boolean concurrentTransactions)
+  synchronized void prepareUpdateWeight(double weightChange, boolean lockFunds)
           throws InsufficientFundsException {
-    if (!areFundsAvailable(weightChange, concurrentTransactions)) {
+    if (!areFundsAvailable(weightChange, lockFunds)) {
       throw new InsufficientFundsException();
     }
 
     // if key is not in map, put 1 as value, otherwise sum 1 to the current value
     this.pendingTransactions.merge(weightChange, 1, Integer::sum);
-    if (concurrentTransactions) {
+    if (lockFunds) {
       lockFunds(weightChange);
     }
   }
 
-  synchronized void finalizeUpdateWeight(double weightChange, boolean concurrentTransactions)
+  synchronized void finalizeUpdateWeight(double weightChange, boolean isFundLockingEnabled)
+          throws TransactionFailedException {
+    finalizeUpdateWeight(weightChange, isFundLockingEnabled, false);
+  }
+
+  private synchronized void finalizeUpdateWeight(double weightChange, boolean isFundLockingEnabled, boolean undo)
           throws TransactionFailedException {
     // remove from pending transactions
+//    double sum = 0;
+//    for (Map.Entry<Double, Integer> tx : pendingTransactions.entrySet()) {
+//      sum += tx.getKey();
+//    }
+
     if (this.pendingTransactions.containsKey(weightChange)) {
       int num = this.pendingTransactions.get(weightChange);
       if (num > 1) {
@@ -169,11 +183,13 @@ public class LinkWeight {
       throw new TransactionFailedException("Cannot finalize a transaction that wasn't prepared");
     }
 
-    if (concurrentTransactions) {
+    if (isFundLockingEnabled) {
       unlockFunds(weightChange);
     }
 
-    updateCurrent(weightChange);
+    if (!undo) {
+      updateCurrent(weightChange);
+    }
   }
 
   @Override

@@ -480,6 +480,8 @@ public class CreditFlare extends Metric {
   private int[] route(Transaction cur, Graph g, Node[] nodes, boolean[] exclude) {
     int rec = cur.dst;
     CreditLinks edgeweights = (CreditLinks) g.getProperty("CREDIT_LINKS");
+    edgeweights.enableFundLocking(false);
+
     Vector<int[]> rtc = this.generateRT(nodes, cur.src, edgeweights);
     int seen = 0;
     Vector<int[]> paths = new Vector<int[]>();
@@ -588,7 +590,7 @@ public class CreditFlare extends Metric {
           }
 
           try {
-            edgeweights.prepareUpdateWeight(l, k, vals[j], false);
+            edgeweights.prepareUpdateWeight(l, k, vals[j]);
           } catch (InsufficientFundsException ex) {
             succ = false;
             break;

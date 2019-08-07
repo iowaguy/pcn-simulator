@@ -40,9 +40,9 @@ class CreditNetworkTest {
     runConfig.setTrees(2);
     runConfig.setConcurrentTransactions(true);
     runConfig.setConcurrentTransactionsCount(50);
-    runConfig.setNetworkLatencyMs(171);
+    runConfig.setNetworkLatencyMs(50);
     runConfig.setRunDirPath(TEST_DATA_BASE + "/output-data");
-    runConfig.setLogLevel("DEBUG");
+    runConfig.setLogLevel("ERROR");
     Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", Boolean.toString(false));
   }
 
@@ -126,13 +126,26 @@ class CreditNetworkTest {
     String testDir = "/many-concurrent-transactions-test";
     CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SILENTWHISPERS, testDir);
     assertEquals(24.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(0, 2).getUnlockedMin(), ACCEPTABLE_ERROR);
+
     assertEquals(24.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(2, 3).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(2, 3).getUnlockedMin(), ACCEPTABLE_ERROR);
+
     assertEquals(24.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(3, 5).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(3, 5).getUnlockedMin(), ACCEPTABLE_ERROR);
+
     assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(3, 4).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(3, 4).getUnlockedMin(), ACCEPTABLE_ERROR);
+
+    assertEquals(100.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(1, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(1, 2).getUnlockedMin(), ACCEPTABLE_ERROR);
   }
 
-  // TODO fix test. it is failing because sometimes speedymurmurs is not finding a path, even though
-  // it should always find a path in this topology
   @Test
   void singlePathManyConcurrentSpeedyMurmurs() {
     String testDir = "/many-concurrent-transactions-test";
@@ -217,7 +230,7 @@ class CreditNetworkTest {
    */
   @Test
   void concurrentTransactionsWithGriefingSpeedyMurmurs() {
-    String testDir = "/partially-disjoint-concurrent-transactions-test";
+    String testDir = "/partially-disjoint-concurrent-transactions-test-with-contention";
     Attack attack = new Attack();
     attack.setNumAttackers(1);
     attack.setReceiverDelayMs(2000);
@@ -227,12 +240,30 @@ class CreditNetworkTest {
     selectedByzantineNodes.add(5);
     attack.setSelectedByzantineNodes(selectedByzantineNodes);
 
+    // this is to guarantee that the griefed transaction starts first
+    runConfig.setTransactionDelayMs(500);
+
     CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir, attack);
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(0, 2).getUnlockedMin(), ACCEPTABLE_ERROR);
+
     assertEquals(100.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(2, 3).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(2, 3).getUnlockedMin(), ACCEPTABLE_ERROR);
+
     assertEquals(100.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(3, 5).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(3, 5).getUnlockedMin(), ACCEPTABLE_ERROR);
+
     assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(3, 4).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(3, 4).getUnlockedMin(), ACCEPTABLE_ERROR);
+
     assertEquals(100.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(1, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(1, 2).getUnlockedMin(), ACCEPTABLE_ERROR);
+
   }
 
   /**
@@ -240,7 +271,7 @@ class CreditNetworkTest {
    */
   @Test
   void concurrentTransactionsWithGriefingSilentWhispers() {
-    String testDir = "/partially-disjoint-concurrent-transactions-test";
+    String testDir = "/partially-disjoint-concurrent-transactions-test-with-contention";
     Attack attack = new Attack();
     attack.setNumAttackers(1);
     attack.setReceiverDelayMs(2000);
@@ -250,12 +281,12 @@ class CreditNetworkTest {
     selectedByzantineNodes.add(5);
     attack.setSelectedByzantineNodes(selectedByzantineNodes);
 
-    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir, attack);
+    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SILENTWHISPERS, testDir, attack);
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
-    assertEquals(80.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(20.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
     assertEquals(100.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
-    assertEquals(80.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
-    assertEquals(80.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
+    assertEquals(20.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+    assertEquals(20.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
   }
 
   /*
