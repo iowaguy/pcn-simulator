@@ -1,8 +1,9 @@
 #!/bin/bash
 
 LOG_DIR=logs
-EXPERIMENT_LOG=${LOG_DIR}/experiment-`hostname`-`date +%m-%d-%y:%S`.out
+EXPERIMENT_LOG=${LOG_DIR}/experiment-`hostname`-`date +%m-%d-%y-%H:%M:%S`.out
 IPCLUSTER_DIR=${HOME}/.ipython/`hostname`/
+
 usage() {
   echo "Usage: $0 [start|stop|status]" 1>&2
   exit 1

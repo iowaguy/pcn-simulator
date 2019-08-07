@@ -74,9 +74,11 @@ def do_distributed_experiments(ipyclient, config_dict_list):
 def start(configs):
     import time
     import ipyparallel
+    import socket
+    from pathlib import Path
 
     start = time.time()
-    ipyclient = ipyparallel.Client()
+    ipyclient = ipyparallel.Client(profile_dir=str(Path.home()) + '/.ipython/' + socket.gethostname()))
     ipyclient[:].apply_sync(setup)
 
     with ipyclient[:].sync_imports(local=True):
