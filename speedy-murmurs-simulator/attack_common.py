@@ -78,7 +78,7 @@ def start(configs):
     from pathlib import Path
 
     start = time.time()
-    ipyclient = ipyparallel.Client(profile_dir=str(Path.home()) + '/.ipython/' + socket.gethostname()))
+    ipyclient = ipyparallel.Client(profile_dir=str(Path.home()) + '/.ipython/' + socket.gethostname())
     ipyclient[:].apply_sync(setup)
 
     with ipyclient[:].sync_imports(local=True):
