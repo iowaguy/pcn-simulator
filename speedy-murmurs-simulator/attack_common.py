@@ -3,9 +3,6 @@
 import sys
 import ipyparallel
 import simulation_common
-import attack_1 as attack1
-import dynamic_latency_baseline as dlb
-import receiver_delay as rd
 
 def run_config(config_dict, output_dir, force=False):
     import os

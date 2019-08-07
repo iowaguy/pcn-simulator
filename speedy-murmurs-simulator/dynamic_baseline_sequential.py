@@ -4,7 +4,7 @@ import attack_common
 config = '''
 attempts: 1
 base: ../data/finalSets/dynamic
-data_set_name: full-{data_set}
+data_set_name: full
 experiment_name: dynamic-baseline-sequential
 force_overwrite: false
 step: {step}
