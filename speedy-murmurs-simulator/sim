@@ -2,14 +2,14 @@
 
 LOG_DIR=logs
 EXPERIMENT_LOG=${LOG_DIR}/experiment-`hostname`-`date +%m-%d-%y:%S`.out
-
+IPCLUSTER_DIR=${HOME}/.ipython/`hostname`/
 usage() {
   echo "Usage: $0 [start|stop|status]" 1>&2
   exit 1
 }
 
 stop() {
-  ipcluster stop
+  ipcluster stop --IPClusterApp.ipython_dir=${IPCLUSTER_DIR}
   echo "ipcluster killed."
 
   ps -ef | grep ipyparallel | grep -v grep | awk '{print $2}' | xargs kill -9
@@ -38,8 +38,8 @@ status() {
 
 start() {
   ENGINES="$1"
-  ipcluster start --daemonize=True -n "${ENGINES}"
-  exec tail -f ~/.ipython/profile_default/log/ipcluster-*.log
+  ipcluster start --daemonize=True -n "${ENGINES}" --ProfileDir.location="${IPCLUSTER_DIR}"
+  exec tail -f ${IPCLUSTER_DIR}/log/ipcluster-*.log
 }
 
 experiment() {
