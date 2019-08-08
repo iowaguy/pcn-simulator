@@ -31,6 +31,14 @@ public class Dynamic {
    *             previously completed
    */
   public static void main(String[] args) {
+    // this is to allow time for a remote debugger to be connected, if necessary
+    if (args.length > 1 && args[1].toLowerCase().equals("debug")) {
+      try {
+        Thread.sleep(5000);
+      } catch (InterruptedException e) {
+        // do nothing
+      }
+    }
     String runDirPath = args[0] + '/';
     String runConfigPath = runDirPath + "runconfig.yml";
 
