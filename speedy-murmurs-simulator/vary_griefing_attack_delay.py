@@ -28,7 +28,7 @@ attack_properties:
 
 def generate_configs():
     config_dict_list = []
-    for step in range(0, 10):
+    for step in range(0, 9):
         l = []
         for delay in range(0, 5001, 1000):
             for alg in [common.speedymurmurs, common.silentwhispers]:

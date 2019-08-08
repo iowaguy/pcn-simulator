@@ -26,7 +26,7 @@ def generate_configs():
     config_set = []
 
     for delay_ms in range(0, 1001, 100):
-        for step in range(0, 10):
+        for step in range(0, 9):
             config_dict_list = []
             for alg in [common.speedymurmurs, common.silentwhispers]:
                 for data_set in range(0, 9):

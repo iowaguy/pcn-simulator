@@ -28,7 +28,7 @@ attack_properties:
 
 def generate_configs():
     config_dict_list = []
-    for step in range(0, 10):
+    for step in range(0, 9):
         l = []
         for num_attackers in [10**x for x in range(0, 5)]:
             for alg in [common.speedymurmurs, common.silentwhispers]:
