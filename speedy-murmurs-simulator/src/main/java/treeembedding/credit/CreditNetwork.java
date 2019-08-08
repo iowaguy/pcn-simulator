@@ -428,7 +428,9 @@ public class CreditNetwork extends Metric {
   private void blockUntilAsyncTransactionsComplete(Queue<Future<TransactionResults>> pendingTransactions) {
     for (Future<TransactionResults> res : pendingTransactions) {
       try {
-        res.get();
+        if (res != null) {
+          res.get();
+        }
       } catch (InterruptedException | ExecutionException e) {
         log.error("Failed to block until async transactions complete: " + e.getMessage());
       }
@@ -522,9 +524,8 @@ public class CreditNetwork extends Metric {
 
       // collect result futures
       Future<TransactionResults> futureResults = transactionResultsFuture(currentTransaction, g, nodes, exclude, edgeweights);
-      if (futureResults != null) {
-        pendingTransactions.add(futureResults);
-      }
+      pendingTransactions.add(futureResults);
+
 
       //4 post-processing: remove edges set to 0, update spanning tree if dynRapir
       lastEpoch = currentEpoch;
