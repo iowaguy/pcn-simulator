@@ -24,7 +24,7 @@ log_level: warn
 def generate_configs():
 
     config_dict_list = []
-    for step in range(0, 10):
+    for step in range(0, 9):
         l = []
         for alg in [common.speedymurmurs, common.silentwhispers]:
             data_set = step
