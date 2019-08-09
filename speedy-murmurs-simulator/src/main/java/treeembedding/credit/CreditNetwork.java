@@ -688,7 +688,7 @@ public class CreditNetwork extends Metric {
 
     // first find parents with which the new node has a bidrectional link, if those don't exist,
     // choose parents with which the new node has a unidirectional link
-    MultipleSpanningTree.Direct[] directions = {Direct.BOTH, Direct.EITHER};
+    MultipleSpanningTree.Direct[] directions = {Direct.BOTH, Direct.EITHER, Direct.NONE};
     Queue<Integer> nodesToRetry = new LinkedList<>();
     for (Direct direction : directions) {
       while (!nodesToRetry.isEmpty()) {
