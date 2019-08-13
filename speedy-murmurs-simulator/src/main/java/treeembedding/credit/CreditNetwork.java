@@ -597,7 +597,7 @@ public class CreditNetwork extends Metric {
     this.pathsPerTree = new Distribution[this.roots.length];
     this.pathsPerTreeFound = new Distribution[this.roots.length];
     this.pathsPerTreeNF = new Distribution[this.roots.length];
-    for (int j = 0; j < this.pathsPerTree.length; j++) {
+    for (int j = 0; j < roots.length; j++) {
       this.pathsPerTree[j] = new Distribution(convertListToLongArray(pathSs.get(j)), cPerPath.get(j).get(0) + cPerPath.get(j).get(1));
       this.pathsPerTreeFound[j] = new Distribution(convertListToLongArray(pathSsF.get(j)), cPerPath.get(j).get(0));
       this.pathsPerTreeNF[j] = new Distribution(convertListToLongArray(pathSsNF.get(j)), cPerPath.get(j).get(1));
@@ -1198,7 +1198,7 @@ public class CreditNetwork extends Metric {
     double[] av1 = new double[this.roots.length];
     double[] av2 = new double[this.roots.length];
     double[] av3 = new double[this.roots.length];
-    for (int i = 0; i < s1.length; i++) {
+    for (int i = 0; i < roots.length; i++) {
       s1[i] = this.pathsPerTree[i].getDistribution();
       av1[i] = this.pathsPerTree[i].getAverage();
       s2[i] = this.pathsPerTreeFound[i].getDistribution();
@@ -1212,8 +1212,8 @@ public class CreditNetwork extends Metric {
     succ &= DataWriter.writeWithIndex(av3, this.key + "_PATH_PERTREE_NF_AV", folder);
 
     succ &= safeWriteWithoutIndex(s1, "_PATH_PERTREE", folder);
-    succ &= safeWriteWithoutIndex(s2, "_PATH_PERTREE", folder);
-    succ &= safeWriteWithoutIndex(s3, "_PATH_PERTREE_FOUND", folder);
+    succ &= safeWriteWithoutIndex(s2, "_PATH_PERTREE_FOUND", folder);
+    succ &= safeWriteWithoutIndex(s3, "_PATH_PERTREE_NF", folder);
 
     succ &= DataWriter.writeWithIndex(this.passRoot, this.key + "_ROOT_TRAF", folder);
 
@@ -1231,7 +1231,6 @@ public class CreditNetwork extends Metric {
         return false;
       }
     }
-
     return DataWriter.writeWithoutIndex(in, this.key + keyString, folder);
   }
 
