@@ -1,6 +1,6 @@
 package treeembedding.credit;
 
-class Transaction implements Comparable<Transaction> {
+class  Transaction implements Comparable<Transaction> {
 
   int src;
   int dst;
@@ -13,7 +13,7 @@ class Transaction implements Comparable<Transaction> {
   Transaction(double t, double v, int s, int d) {
     this.src = s;
     this.dst = d;
-    this.val = v;
+    this.val = v/1000;
     this.time = t;
   }
 
