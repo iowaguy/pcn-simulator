@@ -13,7 +13,7 @@ class  Transaction implements Comparable<Transaction> {
   Transaction(double t, double v, int s, int d) {
     this.src = s;
     this.dst = d;
-    this.val = v/1000;
+    this.val = v / 1000000d;
     this.time = t;
   }
 
