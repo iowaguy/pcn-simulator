@@ -66,9 +66,13 @@ def get_output_base_path(config_dict):
 
 def get_dynamic_data_path_config(config_dict):
     algo = config_dict["routing_algorithm"]
-    count = config_dict['step'] # + 1
+    count = config_dict['step'] + 1
     dir = f'/READABLE_FILE_{algo_info[algo]["short_name"]}-P{count}-{run_info["dynamic"]["node_count"]}'
-    dir2 = f'/0/CREDIT_NETWORK-{algo_info[algo]["short_name"]}-P{count}-{run_info["dynamic"]["epoch"]}-TREE_ROUTE_{algo_info[algo]["run_token"]}-{config_dict["trees"]}-331.10490994417796-RANDOM_PARTITIONER-{config_dict["attempts"]}/'
+
+    if algo == maxflow:
+        dir2 = f'/0/CREDIT_MAX_FLOW-0.0-0/'
+    else:
+        dir2 = f'/0/CREDIT_NETWORK-{algo_info[algo]["short_name"]}-P{count}-{run_info["dynamic"]["epoch"]}-TREE_ROUTE_{algo_info[algo]["run_token"]}-{config_dict["trees"]}-331.10490994417796-RANDOM_PARTITIONER-{config_dict["attempts"]}/'
 
     return (dir, dir2)
 

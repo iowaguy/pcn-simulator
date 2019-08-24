@@ -26,7 +26,7 @@ def generate_configs():
     config_dict_list = []
     for step in range(0, 9):
         l = []
-        for alg in [common.speedymurmurs, common.silentwhispers]:
+        for alg in [common.speedymurmurs, common.silentwhispers, common.maxflow]:
             data_set = step
             tran_set = data_set + 1
             l.append(common.parse_config(
