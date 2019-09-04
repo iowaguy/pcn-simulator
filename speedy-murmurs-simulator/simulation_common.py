@@ -66,7 +66,8 @@ def get_output_base_path(config_dict):
 
 def get_dynamic_data_path_config(config_dict):
     algo = config_dict["routing_algorithm"]
-    count = config_dict['step'] + 1
+    count = config_dict['step']
+
     dir = f'/READABLE_FILE_{algo_info[algo]["short_name"]}-P{count}-{run_info["dynamic"]["node_count"]}'
 
     if algo == maxflow:

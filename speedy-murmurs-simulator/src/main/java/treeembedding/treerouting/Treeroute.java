@@ -19,7 +19,7 @@ import treeembedding.Util;
 import treeembedding.credit.CreditLinks;
 
 public abstract class Treeroute extends Metric {
-  public static final double MIN_TRANSACTION = 0.0000001;
+  public static final double MIN_TRANSACTION = 1.0e-10;
   int trials;
   double fraction_root;
   double traffic_max;
