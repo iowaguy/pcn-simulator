@@ -9,7 +9,9 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.Future;
 
 import gtna.data.Single;
 import gtna.graph.Edge;
@@ -24,47 +26,50 @@ import gtna.util.Distribution;
 import gtna.util.parameter.DoubleParameter;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
+import treeembedding.RunConfig;
 
 import static treeembedding.credit.CreditLinks.makeEdge;
 
 
 public class CreditMaxFlow extends Metric {
   //input parameters
-  Vector<Transaction> transactions; //vector of transactions, sorted by time
-  double requeueInt; //interval until a failed transaction is re-tried; irrelevant if !dynRepair as
+  private Vector<Transaction> transactions; //vector of transactions, sorted by time
+  private double requeueInt; //interval until a failed transaction is re-tried; irrelevant if !dynRepair as
   //retry is start of next epoch
-  int maxTries;
-  Queue<double[]> newLinks;
-  boolean update;
+  private int maxTries;
+  private Queue<double[]> newLinks;
+  private boolean update;
   Vector<Edge> zeroEdges;
-  Graph graph;
-  double epoch;
+  private Graph graph;
+  private double epoch;
 
 
   //computed metrics
-  Distribution transactionMess; //distribution of #messages needed for one transaction trial
+  private Distribution transactionMess; //distribution of #messages needed for one transaction trial
   //(i.e., each retransaction count as new transactions)
-  Distribution transactionMessRe; //distribution of #messages needed, counting re-transactions as part of transaction
-  Distribution transactionMessSucc; //messages successful transactions
-  Distribution transactionMessFail; //messages failed transactions
-  Distribution pathL; //distribution of path length (sum over all trees!)
-  Distribution pathLRe; //distribution of path length counting re-transactions as one
-  Distribution pathLSucc; //path length successful transactions
-  Distribution pathLFail; //path length failed transactions
-  Distribution trials; //Distribution of number of trials needed to get through
-  Distribution path_single; //distribution of single paths
-  Distribution path_singleFound; //distribution of single paths, only discovered paths
-  Distribution path_singleNF; //distribution of single paths, not found dest
-  double success_first; //fraction of transactions successful in first try
-  double success; // fraction of transactions successful at all
-  double[] succs;
+  private Distribution transactionMessRe; //distribution of #messages needed, counting re-transactions as part of transaction
+  private Distribution transactionMessSucc; //messages successful transactions
+  private Distribution transactionMessFail; //messages failed transactions
+  private Distribution pathL; //distribution of path length (sum over all trees!)
+  private Distribution pathLRe; //distribution of path length counting re-transactions as one
+  private Distribution pathLSucc; //path length successful transactions
+  private Distribution pathLFail; //path length failed transactions
+  private Distribution trials; //Distribution of number of trials needed to get through
+  private Distribution path_single; //distribution of single paths
+  private Distribution path_singleFound; //distribution of single paths, only discovered paths
+  private Distribution path_singleNF; //distribution of single paths, not found dest
+  private double success_first; //fraction of transactions successful in first try
+  private double success; // fraction of transactions successful at all
+  private double[] succs;
 
-  boolean log = false;
-  boolean writeSucc = true;
+  private boolean log = false;
+  private boolean writeSucc = true;
 
+  private RunConfig runConfig;
+  private Set<Integer> byzantineNodes;
 
   public CreditMaxFlow(String file, String name, double requeueInt,
-                       int max, String links, boolean up, double epoch) {
+                       int max, String links, boolean up, double epoch, RunConfig runConfig) {
     super("CREDIT_MAX_FLOW", new Parameter[]{
             new DoubleParameter("REQUEUE_INTERVAL", requeueInt),
             new IntParameter("MAX_TRIES", max)});
@@ -78,28 +83,22 @@ public class CreditMaxFlow extends Metric {
     }
     this.update = up;
     this.epoch = epoch;
+    this.runConfig = runConfig;
   }
 
   public CreditMaxFlow(String file, String name, double requeueInt, int max,
-                       boolean up, double epoch) {
-    this(file, name, requeueInt, max, null, up, epoch);
-  }
-
-
-  public CreditMaxFlow(String file, String name, double requeueInt, int max, double epoch) {
-    this(file, name, requeueInt, max, null, true, epoch);
+                       boolean up, double epoch, RunConfig runConfig) {
+    this(file, name, requeueInt, max, null, up, epoch, runConfig);
   }
 
   public CreditMaxFlow(String file, String name, double requeueInt, int max,
-                       String links, double epoch) {
-    this(file, name, requeueInt, max, links, true, epoch);
+                       String links, double epoch, RunConfig runConfig) {
+    this(file, name, requeueInt, max, links, true, epoch, runConfig);
   }
 
 
   @Override
   public void computeData(Graph g, Network n, HashMap<String, Metric> m) {
-
-
     int count = 0;
     long[] trys = new long[2];
     long[] path = new long[2];
@@ -120,6 +119,10 @@ public class CreditMaxFlow extends Metric {
     Vector<Integer> stabMes = new Vector<>();
     Node[] nodes = g.getNodes();
     boolean[] exclude = new boolean[nodes.length];
+
+    // generate byzantine nodes
+    this.byzantineNodes = runConfig.getAttackProperties().generateAttackers(nodes);
+    Queue<Future<TransactionResults>> pendingTransactions = new LinkedList<>();
 
     //go over transactions
     LinkedList<Transaction> toRetry = new LinkedList<>();
@@ -254,6 +257,8 @@ public class CreditMaxFlow extends Metric {
 
   private int[] fordFulkerson(Transaction cur, Graph g, Node[] nodes, boolean[] exclude) {
     CreditLinks edgeweights = (CreditLinks) g.getProperty("CREDIT_LINKS");
+    edgeweights.enableFundLocking(runConfig.getRoutingAlgorithm().isFundLockingEnabled());
+
     HashMap<Edge, Double> original = new HashMap<Edge, Double>();
     int src = cur.src;
     int dest = cur.dst;

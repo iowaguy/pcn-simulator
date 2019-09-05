@@ -81,7 +81,7 @@ public class Static {
     if (routingAlgorithm == RoutingAlgorithm.MAXFLOW) {
       // max flow
       CreditMaxFlow m = new CreditMaxFlow(transList, name, tl, tries, up,
-              epoch);
+              epoch, runConfig);
       Network network = new ReadableFile(name, name, graph, null);
       Series.generate(network, new Metric[]{m}, iterations, iterations);
     } else {

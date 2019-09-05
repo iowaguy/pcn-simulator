@@ -105,7 +105,7 @@ public class Dynamic {
       m = new CreditNetwork(trans, name, epoch, routingAlgorithm, req, part, roots, max, newlinks, runConfig);
     } else if (routingAlgorithm == RoutingAlgorithm.MAXFLOW) {
       m = new CreditMaxFlow(trans, name,
-              0, 0, newlinks, epoch);
+              0, 0, newlinks, epoch, runConfig);
     } else {
       log.error("Unsupported routing algorithm");
       System.exit(1);
