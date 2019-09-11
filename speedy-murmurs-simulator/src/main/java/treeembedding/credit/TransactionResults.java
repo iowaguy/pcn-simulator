@@ -1,5 +1,7 @@
 package treeembedding.credit;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import gtna.graph.Edge;
@@ -32,14 +34,25 @@ public class TransactionResults {
   private int maxPathLength;
 
   // res[6:pathlength]
-  private int[] pathLengths;
+  private List<Integer> pathLengths;
+
+  private int sumMessages;
 
   private Map<Edge, LinkWeight> modifiedEdges;
 
-  TransactionResults(int numRoots) {
-    this.pathLengths = new int[numRoots];
+  TransactionResults() {
+    this.pathLengths = new ArrayList<>();
     this.sumPathLength = 0;
     this.maxPathLength = 0;
+    this.sumMessages = 0;
+  }
+
+  void addSumMessages(int mes) {
+    sumMessages += mes;
+  }
+
+  int getSumMessages() {
+    return sumMessages;
   }
 
   public boolean isSuccess() {
@@ -99,10 +112,14 @@ public class TransactionResults {
   }
 
   void addPathLength(int pathIndex, int pathLength) {
-    this.pathLengths[pathIndex] = pathLength;
+    this.pathLengths.add(pathIndex, pathLength);
   }
 
-  int[] getPathLengths() {
-    return this.pathLengths;
+  void addPathLength(int pathLength) {
+    this.pathLengths.add(pathLength);
+  }
+
+  Integer[] getPathLengths() {
+    return this.pathLengths.toArray(new Integer[0]);
   }
 }

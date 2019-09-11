@@ -3,87 +3,69 @@ package treeembedding.credit;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import gtna.data.Single;
 import gtna.graph.Edge;
 import gtna.graph.Graph;
 import gtna.graph.Node;
-import gtna.io.DataWriter;
-import gtna.io.graphWriter.GtnaGraphWriter;
 import gtna.metrics.Metric;
 import gtna.networks.Network;
-import gtna.util.Config;
 import gtna.util.Distribution;
 import gtna.util.parameter.DoubleParameter;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 import treeembedding.RunConfig;
 
-import static treeembedding.credit.CreditLinks.makeEdge;
 
-
-public class CreditMaxFlow extends Metric {
+public class CreditMaxFlow extends AbstractCreditNetworkBase {
   //input parameters
-  private Vector<Transaction> transactions; //vector of transactions, sorted by time
-  private double requeueInt; //interval until a failed transaction is re-tried; irrelevant if !dynRepair as
-  //retry is start of next epoch
+
+  //interval until a failed transaction is re-tried; irrelevant if !dynRepair b/c
+  // retry is start of next epoch
+  private double requeueInt;
   private int maxTries;
   private Queue<double[]> newLinks;
   private boolean update;
-  Vector<Edge> zeroEdges;
-  private Graph graph;
-  private double epoch;
-
-
-  //computed metrics
-  private Distribution transactionMess; //distribution of #messages needed for one transaction trial
-  //(i.e., each retransaction count as new transactions)
-  private Distribution transactionMessRe; //distribution of #messages needed, counting re-transactions as part of transaction
-  private Distribution transactionMessSucc; //messages successful transactions
-  private Distribution transactionMessFail; //messages failed transactions
-  private Distribution pathL; //distribution of path length (sum over all trees!)
-  private Distribution pathLRe; //distribution of path length counting re-transactions as one
-  private Distribution pathLSucc; //path length successful transactions
-  private Distribution pathLFail; //path length failed transactions
-  private Distribution trials; //Distribution of number of trials needed to get through
-  private Distribution path_single; //distribution of single paths
-  private Distribution path_singleFound; //distribution of single paths, only discovered paths
-  private Distribution path_singleNF; //distribution of single paths, not found dest
-  private double success_first; //fraction of transactions successful in first try
-  private double success; // fraction of transactions successful at all
-  private double[] succs;
-
-  private boolean log = false;
-  private boolean writeSucc = true;
+  private ExecutorService executor;
 
   private RunConfig runConfig;
   private Set<Integer> byzantineNodes;
+  private CreditLinks edgeweights;
 
   public CreditMaxFlow(String file, String name, double requeueInt,
                        int max, String links, boolean up, double epoch, RunConfig runConfig) {
-    super("CREDIT_MAX_FLOW", new Parameter[]{
+    super(CREDIT_MAX_FLOW, new Parameter[]{
             new DoubleParameter("REQUEUE_INTERVAL", requeueInt),
-            new IntParameter("MAX_TRIES", max)});
-    transactions = this.readList(file);
+            new IntParameter("MAX_TRIES", max)}, epoch, 1, file, runConfig);
     this.requeueInt = requeueInt;
     this.maxTries = max;
     if (links != null) {
       this.newLinks = this.readLinks(links);
     } else {
-      this.newLinks = new LinkedList<double[]>();
+      this.newLinks = new LinkedList<>();
     }
     this.update = up;
-    this.epoch = epoch;
     this.runConfig = runConfig;
+    int threads = 1;
+    if (runConfig.areTransactionsConcurrent()) {
+      threads = runConfig.getConcurrentTransactionsCount();
+    }
+    executor = Executors.newFixedThreadPool(threads);
+    this.distributions = new HashMap<>();
   }
 
   public CreditMaxFlow(String file, String name, double requeueInt, int max,
@@ -96,23 +78,11 @@ public class CreditMaxFlow extends Metric {
     this(file, name, requeueInt, max, links, true, epoch, runConfig);
   }
 
-
   @Override
   public void computeData(Graph g, Network n, HashMap<String, Metric> m) {
-    int count = 0;
-    long[] trys = new long[2];
-    long[] path = new long[2];
-    long[] pathAll = new long[2];
-    long[] pathSucc = new long[2];
-    long[] pathFail = new long[2];
-    long[] mes = new long[2];
-    long[] mesAll = new long[2];
-    long[] mesSucc = new long[2];
-    long[] mesFail = new long[2];
-    long[] pathS = new long[2];
-    long[] pathSF = new long[2];
-    long[] pathSNF = new long[2];
-    int[] cAllPath = new int[2];
+    this.graph = g;
+    int totalTransactionAttemptCount = 0;
+
     success_first = 0;
     success = 0;
     Vector<Double> succR = new Vector<>();
@@ -124,360 +94,300 @@ public class CreditMaxFlow extends Metric {
     this.byzantineNodes = runConfig.getAttackProperties().generateAttackers(nodes);
     Queue<Future<TransactionResults>> pendingTransactions = new LinkedList<>();
 
+    edgeweights = (CreditLinks) g.getProperty("CREDIT_LINKS");
+    edgeweights.enableFundLocking(runConfig.getRoutingAlgorithm().isFundLockingEnabled());
+
     //go over transactions
-    LinkedList<Transaction> toRetry = new LinkedList<>();
-    int epoch_old = 0;
-    int epoch_cur = 0;
-    double cur_succ = 0;
-    int cur_count = 0;
-    int c = 0;
-    Random rand = new Random();
-    while (c < this.transactions.size() || toRetry.size() > 0) {
-      //0: decide which is next transaction: previous one or new one? and add new links if any
-      Transaction a = c < this.transactions.size() ? this.transactions.get(c) : null;
-      Transaction b = toRetry.peek();
-      Transaction cur = null;
-      if (a != null && (b == null || a.time < b.time)) {
-        cur = a;
-        c++;
-      } else {
-        cur = toRetry.poll();
-      }
-      if (!this.newLinks.isEmpty()) {
-        double nt = this.newLinks.peek()[0];
-        while (nt <= cur.time) {
-          double[] link = this.newLinks.poll();
-          this.addLink((int) link[1], (int) link[2], new LinkWeight(makeEdge(cur.src, cur.dst), link[3], link[5], link[4]), g);
-          nt = this.newLinks.isEmpty() ? Double.MAX_VALUE : this.newLinks.peek()[0];
-        }
+    toRetry = new LinkedList<>();
+    int lastEpoch = 0;
+    //Random rand = new Random();
+    while (areTransactionsAvailable()) {
+      Transaction currentTransaction = getNextTransaction();
+
+      totalTransactionAttemptCount++;
+      if (log.isInfoEnabled()) {
+        log.info(currentTransaction.toString());
       }
 
-      count++;
-      //if (log){
-      System.out.println("Perform transaction s=" + cur.src + " d= " + cur.dst +
-              " val= " + cur.val + " time= " + cur.time);
-      //}
+      // calculate epoch
+      int currentEpoch = calculateEpoch(currentTransaction);
 
-      epoch_cur = (int) Math.floor(cur.time / epoch);
-      if (epoch_cur != epoch_old) {
-        cur_succ = cur_count == 0 ? 1 : cur_succ / (double) cur_count;
-        succR.add(cur_succ);
-        for (int j = epoch_old + 2; j <= epoch_cur; j++) {
+
+      // TODO this calculation won't make any sense if transactions are async, they will complete too quickly so the succ ratios will be way off
+      if (currentEpoch != lastEpoch) {
+        double cur_succd = cur_count == 0 ? 1 : (double) cur_succ / (double) cur_count;
+        succR.add(cur_succd);
+        for (int j = lastEpoch + 2; j <= currentEpoch; j++) {
           succR.add(1.0);
         }
         cur_count = 0;
         cur_succ = 0;
       }
 
-      //2: execute the transaction
-      int[] results = this.fordFulkerson(cur, g, nodes, exclude);
-      cur_count++;
-      if (results[0] == 0) {
-        cur_succ++;
-      }
+      // collect result futures
+      Future<TransactionResults> futureResults = transactionResultsFuture(currentTransaction, g);
+      pendingTransactions.add(futureResults);
 
-      //re-queue if necessary
-      cur.addPath(results[1]);
-      cur.addMes(results[2]);
-      if (results[0] == -1) {
-        cur.incRequeue(cur.time + rand.nextDouble() * this.requeueInt);
-        if (cur.requeue < this.maxTries) {
-          int st = 0;
-          while (st < toRetry.size() && toRetry.get(st).time < cur.time) {
-            st++;
-          }
-          toRetry.add(st, cur);
-        } else {
-          mesAll = this.inc(mesAll, cur.mes);
-          pathAll = this.inc(pathAll, cur.path);
-        }
-      }
-
-      //3 update metrics accordingly
-      path = this.inc(path, results[1]);
-      mes = this.inc(mes, results[2]);
-      if (results[0] == 0) {
-        trys = this.inc(trys, cur.requeue);
-        this.success++;
-        if (cur.requeue == 0) {
-          this.success_first++;
-        }
-        mesAll = this.inc(mesAll, cur.mes);
-        pathAll = this.inc(pathAll, cur.path);
-        pathSucc = this.inc(pathSucc, results[1]);
-        mesSucc = this.inc(mesSucc, results[2]);
-        if (this.writeSucc) {
-          System.out.println("Success: " + cur.time + " " + cur.val + " " + cur.src + " " + cur.dst);
-        }
-      } else {
-        pathFail = this.inc(pathFail, results[1]);
-        mesFail = this.inc(mesFail, results[2]);
-      }
-      for (int j = 3; j < results.length; j++) {
-        int index = 0;
-        if (results[j] < 0) {
-          index = 1;
-        }
-        cAllPath[index]++;
-        int val = Math.abs(results[j]);
-        pathS = this.inc(pathS, val);
-        if (index == 0) {
-          pathSF = this.inc(pathSF, val);
-        } else {
-          pathSNF = this.inc(pathSNF, val);
-        }
-      }
-      epoch_old = epoch_cur;
+      lastEpoch = currentEpoch;
     }
 
+    this.executor.shutdown();
+    // don't want metrics to be computed before all transactions are done
+    try {
+      if (!this.executor.awaitTermination(5, TimeUnit.HOURS)) {
+        log.error("Maximum time elapsed waiting for transactions to complete.");
+        this.executor.shutdownNow();
+      }
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
 
     //compute metrics
-    this.pathL = new Distribution(path, count);
-    this.transactionMess = new Distribution(mes, count);
-    this.pathLRe = new Distribution(pathAll, transactions.size());
-    this.transactionMessRe = new Distribution(mesAll, transactions.size());
-    this.pathLSucc = new Distribution(pathSucc, (int) this.success);
-    this.transactionMessSucc = new Distribution(mesSucc, (int) this.success);
-    this.pathLFail = new Distribution(pathFail, this.transactions.size() - (int) this.success);
-    this.transactionMessFail = new Distribution(mesFail, this.transactions.size() - (int) this.success);
-    this.trials = new Distribution(trys, (int) this.success);
-    this.path_single = new Distribution(pathS, cAllPath[0] + cAllPath[1]);
-    this.path_singleFound = new Distribution(pathSF, cAllPath[0]);
-    this.path_singleNF = new Distribution(pathSNF, cAllPath[1]);
+    distributions.put(PATH, new Distribution(convertListToLongArray(PATH), totalTransactionAttemptCount));
+    distributions.put(MESSAGES, new Distribution(convertListToLongArray(MESSAGES), totalTransactionAttemptCount));
+    distributions.put(PATHS_ALL, new Distribution(convertListToLongArray(PATHS_ALL), transactions.size()));
+    distributions.put(MESSAGES_ALL, new Distribution(convertListToLongArray(MESSAGES_ALL), transactions.size()));
+    distributions.put(PATH_SUCCESS, new Distribution(convertListToLongArray(PATH_SUCCESS), (int) this.success));
+    distributions.put(MESSAGES_SUCCESS, new Distribution(convertListToLongArray(MESSAGES_SUCCESS), (int) this.success));
+    distributions.put(PATH_FAIL, new Distribution(convertListToLongArray(PATH_FAIL), transactions.size() - (int) this.success));
+    distributions.put(MESSAGES_FAIL, new Distribution(convertListToLongArray(MESSAGES_FAIL), transactions.size() - (int) this.success));
+    distributions.put(ATTEMPTS, new Distribution(convertListToLongArray(ATTEMPTS), (int) this.success));
+    distributions.put(SINGLE_PATHS, new Distribution(convertListToLongArray(SINGLE_PATHS), cAllPath.get(0) + cAllPath.get(1)));
+    distributions.put(SINGLE_PATHS_DEST_FOUND, new Distribution(convertListToLongArray(SINGLE_PATHS_DEST_FOUND), cAllPath.get(0)));
+    distributions.put(SINGLE_PATHS_DEST_NOT_FOUND, new Distribution(convertListToLongArray(SINGLE_PATHS_DEST_NOT_FOUND), cAllPath.get(1)));
+
     this.success = this.success / (double) transactions.size();
     this.success_first = this.success_first / (double) transactions.size();
     this.graph = g;
     this.succs = new double[succR.size()];
+
     for (int i = 0; i < this.succs.length; i++) {
       succs[i] = succR.get(i);
     }
-
-
   }
 
-  private int[] fordFulkerson(Transaction cur, Graph g, Node[] nodes, boolean[] exclude) {
-    CreditLinks edgeweights = (CreditLinks) g.getProperty("CREDIT_LINKS");
-    edgeweights.enableFundLocking(runConfig.getRoutingAlgorithm().isFundLockingEnabled());
+  @Override
+  public boolean writeData(String folder) {
+    return writeDataCommon(folder);
+  }
 
-    HashMap<Edge, Double> original = new HashMap<Edge, Double>();
-    int src = cur.src;
-    int dest = cur.dst;
-    int mes = 0;
-    int path = 0;
-    Vector<Integer> paths = new Vector<Integer>();
+  private Future<TransactionResults> transactionResultsFuture(Transaction cur, Graph g) {
+    return executor.submit(() -> transact(cur, g));
+  }
+
+  private TransactionResults transact(Transaction currentTransaction, Graph g) {
+    TransactionResults results = fordFulkerson(currentTransaction, g);
+    Random rand = new Random();
+
+    //re-queue if necessary
+    if (!results.isSuccess()) {
+      currentTransaction.incRequeue(currentTransaction.time + rand.nextDouble() * this.requeueInt);
+      if (currentTransaction.requeue <= this.maxTries) {
+        toRetry.add(currentTransaction);
+      } else {
+        incrementCount(MESSAGES_ALL, currentTransaction.mes);
+        incrementCount(PATHS_ALL, currentTransaction.path);
+      }
+    }
+
+    currentTransaction.addPath(results.getSumPathLength());
+    currentTransaction.addMes(results.getSumMessages());
+
+    // requeue if necessary
+    if (!results.isSuccess()) {
+      currentTransaction.incRequeue(currentTransaction.time + rand.nextDouble() * this.requeueInt);
+      if (currentTransaction.requeue < this.maxTries) {
+        toRetry.add(currentTransaction);
+      } else {
+        incrementCount(MESSAGES_ALL, currentTransaction.mes);
+        incrementCount(PATHS_ALL, currentTransaction.path);
+      }
+    }
+
+    //3 update metrics accordingly
+    calculateMetrics(results, currentTransaction);
+//    path = this.inc(path, results[1]);
+//    mes = this.inc(mes, results[2]);
+//    if (results[0] == 0) {
+//      trys = this.inc(trys, currentTransaction.requeue);
+//      this.success++;
+//      if (currentTransaction.requeue == 0) {
+//        this.success_first++;
+//      }
+//      mesAll = this.inc(mesAll, currentTransaction.mes);
+//      pathAll = this.inc(pathAll, currentTransaction.path);
+//      pathSucc = this.inc(pathSucc, results[1]);
+//      mesSucc = this.inc(mesSucc, results[2]);
+//      if (this.writeSucc) {
+//        System.out.println("Success: " + currentTransaction.time + " " + currentTransaction.val + " " + currentTransaction.src + " " + currentTransaction.dst);
+//      }
+//    } else {
+//      pathFail = this.inc(pathFail, results[1]);
+//      mesFail = this.inc(mesFail, results[2]);
+//    }
+//    for (int j = 3; j < results.length; j++) {
+//      int index = 0;
+//      if (results[j] < 0) {
+//        index = 1;
+//      }
+//      cAllPath[index]++;
+//      int val = Math.abs(results[j]);
+//      pathS = this.inc(pathS, val);
+//      if (index == 0) {
+//        pathSF = this.inc(pathSF, val);
+//      } else {
+//        pathSNF = this.inc(pathSNF, val);
+//      }
+//    }
+
+
+    return results;
+  }
+
+  private TransactionResults fordFulkerson(Transaction currentTransaction, Graph g) {
+
+    Map<Edge, Double> original = new HashMap<>();
 
     double totalflow = 0;
-    int[][] resp = new int[0][0];
-    while (totalflow < cur.val && (resp = findResidualFlow(edgeweights, g.getNodes(), src, dest)).length > 1) {
-      if (log) System.out.println("Found residual flow " + resp[0].length);
-      //pot flow along this path
-      double min = Double.MAX_VALUE;
-      int[] respath = resp[0];
-      for (int i = 0; i < respath.length - 1; i++) {
-        double a = edgeweights.getMaxTransactionAmount(respath[i], respath[i + 1]);
-        if (a < min) {
-          min = a;
+
+    // residual paths is a 2d array where first dimension is the path, and second dimension is the messages
+    int[][] residualPaths = new int[0][0];
+    TransactionResults results = new TransactionResults();
+
+    // loop until a flow has been found for the full transaction amount, or there are no more residual paths
+    while (totalflow < currentTransaction.val && (residualPaths = findResidualFlow(edgeweights, g.getNodes(), currentTransaction)).length > 1) {
+      if (log.isDebugEnabled()) {
+        log.debug("Found residual flow of length " + residualPaths[0].length);
+      }
+
+      //potential flow along this path
+      double minAlongPath = Double.MAX_VALUE;
+      int[] residualPath = residualPaths[0];
+      for (int i = 0; i < residualPath.length - 1; i++) {
+        double maxTransactionAmount = edgeweights.getMaxTransactionAmount(residualPath[i], residualPath[i + 1]);
+        if (maxTransactionAmount < minAlongPath) {
+          minAlongPath = maxTransactionAmount;
         }
       }
       //update flows
-      min = Math.min(min, cur.val - totalflow);
-      totalflow = totalflow + min;
-      for (int i = 0; i < respath.length - 1; i++) {
-        int n1 = respath[i];
-        int n2 = respath[i + 1];
+      minAlongPath = Math.min(minAlongPath, currentTransaction.val - totalflow);
+      totalflow = totalflow + minAlongPath;
+      for (int i = 0; i < residualPath.length - 1; i++) {
+        int n1 = residualPath[i];
+        int n2 = residualPath[i + 1];
         double w = edgeweights.getWeight(n1, n2);
         Edge e = n1 < n2 ? new Edge(n1, n2) : new Edge(n2, n1);
         if (!original.containsKey(e)) {
           original.put(e, w);
         }
         if (n1 < n2) {
-          edgeweights.setWeight(e, w + min);
-          if (log) System.out.println("Set weight of (" + n1 + "," + n2 + ") to " + (w + min));
+          edgeweights.setWeight(e, w + minAlongPath);
+          if (log.isDebugEnabled()) {
+            log.debug("Set weight of (" + n1 + "," + n2 + ") to " + (w + minAlongPath));
+          }
         } else {
-          edgeweights.setWeight(e, w - min);
-          if (log) System.out.println("Set weight of (" + n2 + "," + n1 + ") to " + (w - min));
+          edgeweights.setWeight(e, w - minAlongPath);
+          if (log.isDebugEnabled()) {
+            log.debug("Set weight of (" + n2 + "," + n1 + ") to " + (w - minAlongPath));
+          }
         }
       }
-      mes = mes + resp[1][0];
-      path = path + respath.length - 1;
-      paths.add(respath.length - 1);
+      results.addSumMessages(residualPaths[1][0]);
+      results.addSumPathLength(residualPath.length - 1);
+      results.addPathLength(residualPath.length - 1);
     }
 
-    int[] res = new int[3 + paths.size()];
-    res[1] = path;
-    res[2] = mes;
-    for (int j = 3; j < res.length; j++) {
-      res[j] = paths.get(j - 3);
-    }
-    if (cur.val - totalflow > 0) {
+    if (currentTransaction.val - totalflow > 0) {
       //fail
-      res[0] = -1;
-      res[2] = res[2] + resp[0][0];
+      results.setSuccess(false);
+
+      results.addSumMessages(residualPaths[0][0]);
+      //res[2] = res[2] + residualPaths[0][0];
       this.weightUpdate(edgeweights, original);
     } else {
+      results.setSuccess(true);
 
-      res[0] = 0;
       if (!this.update) {
         this.weightUpdate(edgeweights, original);
       }
     }
-    return res;
+    return results;
   }
 
-  private int[][] findResidualFlow(CreditLinks ew, Node[] nodes, int src, int dst) {
-    int[][] pre = new int[nodes.length][2];
-    for (int i = 0; i < pre.length; i++) {
-      pre[i][0] = -1;
+  private int[][] findResidualFlow(CreditLinks edgeweights, Node[] nodes, Transaction currentTransaction) {
+
+    // first index: previous hop
+    // second index: number of hops along the path it took to reach this node
+    int[][] previousHops = new int[nodes.length][2];
+    for (int i = 0; i < previousHops.length; i++) {
+      // -1 is serving as a marker to indicate that node i has not been analyzed yet
+      previousHops[i][0] = -1;
     }
-    Queue<Integer> q = new LinkedList<Integer>();
-    q.add(src);
-    pre[src][0] = -2;
-    boolean found = false;
+    Queue<Integer> q = new LinkedList<>();
+    q.add(currentTransaction.src);
+
+    // the source does not have a previous hop
+    previousHops[currentTransaction.src][0] = -2;
+
     int mes = 0;
-    while (!found && !q.isEmpty()) {
-      int n1 = q.poll();
-      int[] out = nodes[n1].getOutgoingEdges();
-      for (int n : out) {
-        if (pre[n][0] == -1 && ew.getMaxTransactionAmount(n1, n) > 0) {
-          pre[n][0] = n1;
-          pre[n][1] = pre[n1][1] + 1;
+    while (!q.isEmpty()) {
+      int currentNode = q.poll();
+
+      int[] allOutgoingNeighbors = nodes[currentNode].getOutgoingEdges();
+      for (int neighbor : allOutgoingNeighbors) {
+
+        // if the neighbor has not been inspected yet, and has some outgoing credit available
+        if (previousHops[neighbor][0] == -1 && edgeweights.getMaxTransactionAmount(currentNode, neighbor) > 0) {
+
+          // set previous hop
+          previousHops[neighbor][0] = currentNode;
+
+          // set the number of hops to the amount of hops to get to the previous node plus 1
+          previousHops[neighbor][1] = previousHops[currentNode][1] + 1;
           mes++;
-          if (n == dst) {
-            int[] respath = new int[pre[n][1] + 1];
-            while (n != -2) {
-              respath[pre[n][1]] = n;
-              n = pre[n][0];
+
+          if (neighbor == currentTransaction.dst) {
+            // assemble the residual path that reached the dest by going backwards until reaching
+            // the source
+            int[] residualPath = new int[previousHops[neighbor][1] + 1];
+            int backwardsNeighborIter = neighbor;
+            while (backwardsNeighborIter != -2) {
+              residualPath[previousHops[backwardsNeighborIter][1]] = backwardsNeighborIter;
+              backwardsNeighborIter = previousHops[backwardsNeighborIter][0];
             }
             int[] stats = {mes};
-            return new int[][]{respath, stats};
+            return new int[][]{residualPath, stats};
           }
-          q.add(n);
+          q.add(neighbor);
         }
-
       }
     }
     return new int[][]{new int[]{mes}};
   }
 
-  /**
-   * reconnect disconnected branch with root subroot
-   */
-
-  private void addLink(int src, int dst, LinkWeight weight, Graph g) {
-    CreditLinks edgeweights = (CreditLinks) g.getProperty("CREDIT_LINKS");
-    edgeweights.setWeight(new Edge(src, dst), weight);
-  }
-
-
-  private void weightUpdate(CreditLinks edgeweights, HashMap<Edge, Double> updateWeight) {
-    Iterator<Entry<Edge, Double>> it = updateWeight.entrySet().iterator();
-    while (it.hasNext()) {
-      Entry<Edge, Double> entry = it.next();
+  private void weightUpdate(CreditLinks edgeweights, Map<Edge, Double> updateWeight) {
+    for (Entry<Edge, Double> entry : updateWeight.entrySet()) {
       edgeweights.setWeight(entry.getKey(), entry.getValue());
     }
   }
 
-
-  @Override
-  public boolean writeData(String folder) {
-    boolean succ = true;
-    succ &= DataWriter.writeWithIndex(this.transactionMess.getDistribution(),
-            this.key + "_MESSAGES", folder);
-    succ &= DataWriter.writeWithIndex(this.transactionMessRe.getDistribution(),
-            this.key + "_MESSAGES_RE", folder);
-    succ &= DataWriter.writeWithIndex(this.transactionMessSucc.getDistribution(),
-            this.key + "_MESSAGES_SUCC", folder);
-    succ &= DataWriter.writeWithIndex(this.transactionMessFail.getDistribution(),
-            this.key + "_MESSAGES_FAIL", folder);
-
-    succ &= DataWriter.writeWithIndex(this.pathL.getDistribution(),
-            this.key + "_PATH_LENGTH", folder);
-    succ &= DataWriter.writeWithIndex(this.pathLRe.getDistribution(),
-            this.key + "_PATH_LENGTH_RE", folder);
-    succ &= DataWriter.writeWithIndex(this.pathLSucc.getDistribution(),
-            this.key + "_PATH_LENGTH_SUCC", folder);
-    succ &= DataWriter.writeWithIndex(this.pathLFail.getDistribution(),
-            this.key + "_PATH_LENGTH_FAIL", folder);
-
-    succ &= DataWriter.writeWithIndex(this.trials.getDistribution(),
-            this.key + "_TRIALS", folder);
-
-
-    succ &= DataWriter.writeWithIndex(this.path_single.getDistribution(),
-            this.key + "_PATH_SINGLE", folder);
-    succ &= DataWriter.writeWithIndex(this.path_singleFound.getDistribution(),
-            this.key + "_PATH_SINGLE_FOUND", folder);
-    succ &= DataWriter.writeWithIndex(this.path_singleNF.getDistribution(),
-            this.key + "_PATH_SINGLE_NF", folder);
-    succ &= DataWriter.writeWithIndex(this.succs,
-            this.key + "_SUCC_RATIOS", folder);
-
-
-    if (Config.getBoolean("SERIES_GRAPH_WRITE")) {
-      (new GtnaGraphWriter()).writeWithProperties(graph, folder + "graph.txt");
-    }
-
-
-    return succ;
-  }
-
   @Override
   public Single[] getSingles() {
-    Single m_av = new Single("CREDIT_MAX_FLOW_MES_AV", this.transactionMess.getAverage());
-    Single m_Re_av = new Single("CREDIT_MAX_FLOW_MES_RE_AV", this.transactionMessRe.getAverage());
-    Single m_S_av = new Single("CREDIT_MAX_FLOW_MES_SUCC_AV", this.transactionMessSucc.getAverage());
-    Single m_F_av = new Single("CREDIT_MAX_FLOW_MES_FAIL_AV", this.transactionMessFail.getAverage());
+    List<Single> l = new ArrayList<>(20);
+    for (String dataKey : distributions.keySet()) {
+      l.add(new Single(CREDIT_MAX_FLOW + SINGLE_NAMES.get(dataKey), distributions.get(dataKey).getAverage()));
+    }
+    Single[] singles = l.toArray(new Single[l.size() + 2]);
 
-    Single p_av = new Single("CREDIT_MAX_FLOW_PATH_AV", this.pathL.getAverage());
-    Single p_Re_av = new Single("CREDIT_MAX_FLOW_PATH_RE_AV", this.pathLRe.getAverage());
-    Single p_S_av = new Single("CREDIT_MAX_FLOW_PATH_SUCC_AV", this.pathLSucc.getAverage());
-    Single p_F_av = new Single("CREDIT_MAX_FLOW_PATH_FAIL_AV", this.pathLFail.getAverage());
+    singles[l.size()] = new Single(CREDIT_MAX_FLOW + "_SUCCESS_DIRECT", this.success_first);
+    singles[l.size() + 1] = new Single(CREDIT_MAX_FLOW + "_SUCCESS", this.success);
 
-
-    Single pP_av = new Single("CREDIT_MAX_FLOW_PATH_SINGLE_AV", this.path_single.getAverage());
-    Single pPF_av = new Single("CREDIT_MAX_FLOW_PATH_SINGLE_FOUND_AV", this.path_singleFound.getAverage());
-    Single pPNF_av = new Single("CREDIT_MAX_FLOW_PATH_SINGLE_NF_AV", this.path_singleNF.getAverage());
-
-
-    Single s1 = new Single("CREDIT_MAX_FLOW_SUCCESS_DIRECT", this.success_first);
-    Single s = new Single("CREDIT_MAX_FLOW_SUCCESS", this.success);
-
-    return new Single[]{m_av, m_Re_av, m_S_av, m_F_av, p_av, p_Re_av, p_S_av, p_F_av,
-            s1, s, pP_av, pPF_av, pPNF_av};
+    return singles;
   }
 
   @Override
   public boolean applicable(Graph g, Network n, HashMap<String, Metric> m) {
     return g.hasProperty("CREDIT_LINKS");
-  }
-
-  private Vector<Transaction> readList(String file) {
-    Vector<Transaction> vec = new Vector<Transaction>();
-    try {
-      BufferedReader br = new BufferedReader(new FileReader(file));
-      String line;
-      while ((line = br.readLine()) != null) {
-        String[] parts = line.split(" ");
-        if (parts.length == 4) {
-          Transaction ta = new Transaction(Double.parseDouble(parts[0]),
-                  Double.parseDouble(parts[1]),
-                  Integer.parseInt(parts[2]),
-                  Integer.parseInt(parts[3]));
-          vec.add(ta);
-        }
-        if (parts.length == 3) {
-          Transaction ta = new Transaction(0,
-                  Double.parseDouble(parts[0]),
-                  Integer.parseInt(parts[1]),
-                  Integer.parseInt(parts[2]));
-          vec.add(ta);
-        }
-      }
-      br.close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return vec;
   }
 
   private LinkedList<double[]> readLinks(String file) {
@@ -501,19 +411,4 @@ public class CreditMaxFlow extends Metric {
     }
     return vec;
   }
-
-
-  private long[] inc(long[] values, int index) {
-    try {
-      values[index]++;
-      return values;
-    } catch (ArrayIndexOutOfBoundsException e) {
-      long[] valuesNew = new long[index + 1];
-      System.arraycopy(values, 0, valuesNew, 0, values.length);
-      valuesNew[index] = 1;
-      return valuesNew;
-    }
-  }
-
-
 }
