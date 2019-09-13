@@ -27,6 +27,8 @@ class CreditNetworkTest {
   private RunConfig runConfig;
   private static final int EPOCH = 100;
   private static final double ACCEPTABLE_ERROR = 0.0001;
+  private RoutingAlgorithm[] algos = new RoutingAlgorithm[]{RoutingAlgorithm.SILENTWHISPERS,
+          RoutingAlgorithm.SPEEDYMURMURS, RoutingAlgorithm.MAXFLOW};
 
   @BeforeEach
   void setup() {
@@ -73,51 +75,41 @@ class CreditNetworkTest {
     int[] roots = {2, 3};
     Partitioner part = new RandomPartitioner();
 
-    CreditNetwork creditNetwork = new CreditNetwork(trans, name, epoch, routingAlgorithm, req, part, roots, max, newlinks, runConfig);
+    AbstractCreditNetworkBase m = null;
+    if (ra == RoutingAlgorithm.MAXFLOW) {
+      m = new CreditMaxFlow(trans, name, 0, 0, newlinks, epoch, runConfig);
+    } else {
+      m = new CreditNetwork(trans, name, epoch, routingAlgorithm, req, part, roots, max, newlinks, runConfig);
+
+    }
 
     Network net = new ReadableFile(name, name, graph, null);
-    Series.generate(net, new Metric[]{creditNetwork}, 0, 0);
-    return creditNetwork.getCreditLinks();
+    Series.generate(net, new Metric[]{m}, 0, 0);
+    return m.getCreditLinks();
   }
 
   @Test
-  void singlePathLinkUpdateSilentWhispers() {
+  void singlePathLinkUpdate() {
     String testDir = "/single-transaction-test";
-    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SILENTWHISPERS, testDir);
-    assertEquals(90.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
-    assertEquals(90.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
-    assertEquals(90.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
-    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+    for (RoutingAlgorithm ra : algos) {
+      CreditLinks edgeweights = singlePathLinkUpdate(ra, testDir);
+      assertEquals(90.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+      assertEquals(90.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+      assertEquals(90.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+      assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+    }
   }
 
   @Test
-  void singlePathLinkUpdateSpeedyMurmurs() {
-    String testDir = "/single-transaction-test";
-    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir);
-    assertEquals(90.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
-    assertEquals(90.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
-    assertEquals(90.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
-    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
-  }
-
-  @Test
-  void singlePathConcurrentSilentWhispers() {
+  void singlePathConcurrent() {
     String testDir = "/concurrent-transactions-test";
-    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SILENTWHISPERS, testDir);
-    assertEquals(70.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
-    assertEquals(70.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
-    assertEquals(70.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
-    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
-  }
-
-  @Test
-  void singlePathConcurrentSpeedyMurmurs() {
-    String testDir = "/concurrent-transactions-test";
-    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir);
-    assertEquals(70.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
-    assertEquals(70.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
-    assertEquals(70.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
-    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+    for (RoutingAlgorithm ra : algos) {
+      CreditLinks edgeweights = singlePathLinkUpdate(ra, testDir);
+      assertEquals(70.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+      assertEquals(70.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+      assertEquals(70.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+      assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+    }
   }
 
   // many concurrent transactions
@@ -158,47 +150,29 @@ class CreditNetworkTest {
 
   // multiple paths that are partially disjoint
   @Test
-  void multiplePartiallyDisjointPathsSilentWhispers() {
+  void multiplePartiallyDisjointPaths() {
     String testDir = "/partially-disjoint-concurrent-transactions-test";
-    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SILENTWHISPERS, testDir);
-    assertEquals(90.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
-    assertEquals(70.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
-    assertEquals(90.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
-    assertEquals(80.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
-    assertEquals(80.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+    for (RoutingAlgorithm ra : algos) {
+      CreditLinks edgeweights = singlePathLinkUpdate(ra, testDir);
+      assertEquals(90.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+      assertEquals(70.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+      assertEquals(90.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+      assertEquals(80.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
+      assertEquals(80.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+    }
   }
-
-  @Test
-  void multiplePartiallyDisjointPathsSpeedyMurmurs() {
-    String testDir = "/partially-disjoint-concurrent-transactions-test";
-    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir);
-    assertEquals(90.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
-    assertEquals(70.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
-    assertEquals(90.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
-    assertEquals(80.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
-    assertEquals(80.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
-  }
-
 
   // transactions in opposite directions
   @Test
-  void oppositeDirectionsConcurrentSilentWhispers() {
+  void oppositeDirectionsConcurrent() {
     String testDir = "/opposite-directions-concurrent-transactions-test";
-    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SILENTWHISPERS, testDir);
-    assertEquals(110.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
-    assertEquals(110.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
-    assertEquals(110.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
-    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
-  }
-
-  @Test
-  void oppositeDirectionsConcurrentSpeedyMurmurs() {
-    String testDir = "/opposite-directions-concurrent-transactions-test";
-    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir);
-    assertEquals(110.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
-    assertEquals(110.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
-    assertEquals(110.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
-    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+    for (RoutingAlgorithm ra : algos) {
+      CreditLinks edgeweights = singlePathLinkUpdate(ra, testDir);
+      assertEquals(110.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+      assertEquals(110.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+      assertEquals(110.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+      assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+    }
   }
 
   /**

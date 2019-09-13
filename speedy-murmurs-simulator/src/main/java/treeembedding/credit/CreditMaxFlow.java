@@ -13,6 +13,7 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -28,7 +29,11 @@ import gtna.util.Distribution;
 import gtna.util.parameter.DoubleParameter;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
+import treeembedding.RoutingAlgorithm;
 import treeembedding.RunConfig;
+import treeembedding.byzantine.AttackType;
+import treeembedding.credit.exceptions.InsufficientFundsException;
+import treeembedding.credit.exceptions.TransactionFailedException;
 
 
 public class CreditMaxFlow extends AbstractCreditNetworkBase {
@@ -44,7 +49,6 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
 
   private RunConfig runConfig;
   private Set<Integer> byzantineNodes;
-  private CreditLinks edgeweights;
 
   public CreditMaxFlow(String file, String name, double requeueInt,
                        int max, String links, boolean up, double epoch, RunConfig runConfig) {
@@ -206,56 +210,23 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
 
     //3 update metrics accordingly
     calculateMetrics(results, currentTransaction);
-//    path = this.inc(path, results[1]);
-//    mes = this.inc(mes, results[2]);
-//    if (results[0] == 0) {
-//      trys = this.inc(trys, currentTransaction.requeue);
-//      this.success++;
-//      if (currentTransaction.requeue == 0) {
-//        this.success_first++;
-//      }
-//      mesAll = this.inc(mesAll, currentTransaction.mes);
-//      pathAll = this.inc(pathAll, currentTransaction.path);
-//      pathSucc = this.inc(pathSucc, results[1]);
-//      mesSucc = this.inc(mesSucc, results[2]);
-//      if (this.writeSucc) {
-//        System.out.println("Success: " + currentTransaction.time + " " + currentTransaction.val + " " + currentTransaction.src + " " + currentTransaction.dst);
-//      }
-//    } else {
-//      pathFail = this.inc(pathFail, results[1]);
-//      mesFail = this.inc(mesFail, results[2]);
-//    }
-//    for (int j = 3; j < results.length; j++) {
-//      int index = 0;
-//      if (results[j] < 0) {
-//        index = 1;
-//      }
-//      cAllPath[index]++;
-//      int val = Math.abs(results[j]);
-//      pathS = this.inc(pathS, val);
-//      if (index == 0) {
-//        pathSF = this.inc(pathSF, val);
-//      } else {
-//        pathSNF = this.inc(pathSNF, val);
-//      }
-//    }
-
 
     return results;
   }
 
-  private TransactionResults fordFulkerson(Transaction currentTransaction, Graph g) {
-
-    Map<Edge, Double> original = new HashMap<>();
+  private TransactionResults fordFulkerson(Transaction currentTransaction, Graph g) throws TransactionFailedException {
+    Map<Edge, List<Double>> edgeModifications = new ConcurrentHashMap<>();
 
     double totalflow = 0;
-
     // residual paths is a 2d array where first dimension is the path, and second dimension is the messages
     int[][] residualPaths = new int[0][0];
     TransactionResults results = new TransactionResults();
+    List<int[]> paths = new LinkedList<>();
+    List<Double> transactionVals = new LinkedList<>();
 
     // loop until a flow has been found for the full transaction amount, or there are no more residual paths
-    while (totalflow < currentTransaction.val && (residualPaths = findResidualFlow(edgeweights, g.getNodes(), currentTransaction)).length > 1) {
+    while (totalflow < currentTransaction.val &&
+            (residualPaths = findResidualFlow(edgeweights, g.getNodes(), currentTransaction)).length > 1) {
       if (log.isDebugEnabled()) {
         log.debug("Found residual flow of length " + residualPaths[0].length);
       }
@@ -263,54 +234,138 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
       //potential flow along this path
       double minAlongPath = Double.MAX_VALUE;
       int[] residualPath = residualPaths[0];
+      paths.add(residualPath);
       for (int i = 0; i < residualPath.length - 1; i++) {
         double maxTransactionAmount = edgeweights.getMaxTransactionAmount(residualPath[i], residualPath[i + 1]);
         if (maxTransactionAmount < minAlongPath) {
           minAlongPath = maxTransactionAmount;
         }
       }
+      transactionVals.add(minAlongPath);
+
       //update flows
       minAlongPath = Math.min(minAlongPath, currentTransaction.val - totalflow);
       totalflow = totalflow + minAlongPath;
       for (int i = 0; i < residualPath.length - 1; i++) {
-        int n1 = residualPath[i];
-        int n2 = residualPath[i + 1];
-        double w = edgeweights.getWeight(n1, n2);
-        Edge e = n1 < n2 ? new Edge(n1, n2) : new Edge(n2, n1);
-        if (!original.containsKey(e)) {
-          original.put(e, w);
-        }
-        if (n1 < n2) {
-          edgeweights.setWeight(e, w + minAlongPath);
-          if (log.isDebugEnabled()) {
-            log.debug("Set weight of (" + n1 + "," + n2 + ") to " + (w + minAlongPath));
-          }
-        } else {
-          edgeweights.setWeight(e, w - minAlongPath);
-          if (log.isDebugEnabled()) {
-            log.debug("Set weight of (" + n2 + "," + n1 + ") to " + (w - minAlongPath));
+        simulateNetworkLatency();
+
+        int currentNodeId = residualPath[i];
+        int nextNodeId = residualPath[i + 1];
+
+        // Attack logic
+        if (attack != null && attack.getType() == AttackType.DROP_ALL) {
+          if (this.byzantineNodes.contains(currentNodeId)) {
+            // do byzantine action
+            transactionFailed(edgeweights, edgeModifications);
+            return null;
           }
         }
+
+        Edge edge = CreditLinks.makeEdge(currentNodeId, nextNodeId);
+//        LinkWeight w = edgeweights.getWeights(edge);
+
+        try {
+          if (log.isInfoEnabled()) {
+            log.info("Prepare: cur=" + currentNodeId + "; next=" + nextNodeId + "; val=" + minAlongPath);
+          }
+          edgeweights.prepareUpdateWeight(currentNodeId, nextNodeId, minAlongPath);
+
+          double currentVal = minAlongPath;
+          List<Double> base = new LinkedList<>();
+          base.add(currentVal);
+          edgeModifications.merge(edge, base, (l, ignore) -> {
+            l.add(currentVal);
+            return l;
+          });
+
+        } catch (InsufficientFundsException e) {
+          transactionFailed(edgeweights, edgeModifications);
+          return null;
+        }
+
+//        if (!edgeModifications.containsKey(edge)) {
+//          edgeModifications.put(edge, w);
+//        }
+//        if (currentNodeId < nextNodeId) {
+//          edgeweights.setWeight(edge, w + minAlongPath);
+//          if (log.isDebugEnabled()) {
+//            log.debug("Set weight of (" + currentNodeId + "," + nextNodeId + ") to " + (w + minAlongPath));
+//          }
+//        } else {
+//          edgeweights.setWeight(edge, w - minAlongPath);
+//          if (log.isDebugEnabled()) {
+//            log.debug("Set weight of (" + nextNodeId + "," + currentNodeId + ") to " + (w - minAlongPath));
+//          }
+//        }
       }
+
       results.addSumMessages(residualPaths[1][0]);
       results.addSumPathLength(residualPath.length - 1);
       results.addPathLength(residualPath.length - 1);
     }
 
-    if (currentTransaction.val - totalflow > 0) {
-      //fail
-      results.setSuccess(false);
+    // payment griefing attack logic
+    for (int[] path : paths) {
+      if (attack != null && attack.getType() == AttackType.GRIEFING) {
+        int destination = path[path.length - 1];
+        if (this.byzantineNodes.contains(destination)) {
+          try {
+            Thread.sleep(attack.getReceiverDelayMs());
+          } catch (InterruptedException e) {
+            // don't worry about it
+          }
+          transactionFailed(edgeweights, edgeModifications);
+          throw new TransactionFailedException("This payment was griefed");
 
-      results.addSumMessages(residualPaths[0][0]);
-      //res[2] = res[2] + residualPaths[0][0];
-      this.weightUpdate(edgeweights, original);
-    } else {
-      results.setSuccess(true);
-
-      if (!this.update) {
-        this.weightUpdate(edgeweights, original);
+        }
       }
     }
+
+    for (int pathIndex = 0; pathIndex < paths.size(); pathIndex++) {
+      if (transactionVals.get(pathIndex) != 0) {
+        int currentNodeIndex = paths.get(pathIndex)[0];
+        for (int nodeIndex = 1; nodeIndex < paths.get(pathIndex).length; nodeIndex++) {
+          simulateNetworkLatency();
+
+          int nextNodeIndex = paths.get(pathIndex)[nodeIndex];
+          Edge edge = CreditLinks.makeEdge(currentNodeIndex, nextNodeIndex);
+
+          if (log.isInfoEnabled()) {
+            log.info("Finalize: cur=" + currentNodeIndex + "; next=" + nextNodeIndex +
+                    "; val=" + transactionVals.get(pathIndex));
+          }
+          edgeweights.finalizeUpdateWeight(currentNodeIndex, nextNodeIndex,
+                  transactionVals.get(pathIndex));
+
+          if (edgeModifications.containsKey(edge)) {
+            log.debug("Removing updated edge from set");
+            edgeModifications.get(edge).remove(transactionVals.get(pathIndex));
+          }
+
+          if (runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW &&
+                  edgeweights.isZero(currentNodeIndex, nextNodeIndex)) {
+            this.zeroEdges.add(edge);
+          }
+          currentNodeIndex = nextNodeIndex;
+
+        }
+      }
+    }
+
+
+//    if (currentTransaction.val - totalflow > 0) {
+//      //fail
+//      results.setSuccess(false);
+//
+//      results.addSumMessages(residualPaths[0][0]);
+//      this.weightUpdate(edgeweights, edgeModifications);
+//    } else {
+//      results.setSuccess(true);
+//
+//      if (!this.update) {
+//        this.weightUpdate(edgeweights, edgeModifications);
+//      }
+//    }
     return results;
   }
 

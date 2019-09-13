@@ -15,12 +15,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.PriorityBlockingQueue;
 
+import gtna.graph.Edge;
 import gtna.graph.Graph;
 import gtna.io.DataWriter;
 import gtna.io.graphWriter.GtnaGraphWriter;
@@ -29,6 +31,8 @@ import gtna.util.Config;
 import gtna.util.Distribution;
 import gtna.util.parameter.Parameter;
 import treeembedding.RunConfig;
+import treeembedding.byzantine.Attack;
+import treeembedding.credit.exceptions.TransactionFailedException;
 
 public abstract class AbstractCreditNetworkBase extends Metric {
   Logger log;
@@ -37,10 +41,15 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   private int transactionCount = 0;
   protected Vector<Transaction> transactions; //vector of transactions, sorted by time
   Queue<Transaction> toRetry;
-  private RunConfig runConfig;
+  RunConfig runConfig;
   private final double epoch; //interval for stabilization overhead (=epoch between spanning tree recomputations if !dynRepair)
   Map<String, Distribution> distributions;
   double[] passRoot;
+  CreditLinks edgeweights;
+  private int networkLatency;
+  Set<Integer> byzantineNodes;
+  final Attack attack;
+  Queue<Edge> zeroEdges;
 
   volatile int cur_succ = 0;
   volatile int cur_count = 0;
@@ -137,6 +146,8 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     this.log = LogManager.getLogger();
     this.epoch = epoch;
     transactions = readList(file);
+    this.networkLatency = runConfig.getNetworkLatencyMs();
+    this.attack = runConfig.getAttackProperties();
 
     longMetrics = new ConcurrentHashMap<>(17);
     longMetrics.put(MESSAGES_ALL, new ArrayList<>());
@@ -205,6 +216,36 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     }
 
     return currentTransaction;
+  }
+
+  void simulateNetworkLatency() {
+    try {
+      Thread.sleep(networkLatency);
+    } catch (InterruptedException e) {
+      // do nothing
+    }
+  }
+
+  // reset to old weights if failed
+  synchronized void transactionFailed(CreditLinks edgeweights, Map<Edge, List<Double>> edgeModifications) {
+    if (edgeModifications == null) {
+      return;
+    }
+
+    // undo the effects of each of the edge modifications individually
+    // for each edge modification, undo the update
+    for (Map.Entry<Edge, List<Double>> modifications : edgeModifications.entrySet()) {
+      for (Double d : modifications.getValue()) {
+        int src = modifications.getKey().getSrc();
+        int dst = modifications.getKey().getDst();
+        try {
+          edgeweights.undoUpdateWeight(src, dst, d);
+        } catch (TransactionFailedException e) {
+          log.error("Unable to undo a failed transaction. Exiting...");
+          System.exit(2);
+        }
+      }
+    }
   }
 
   synchronized void calculateMetrics(TransactionResults results, Transaction currentTransaction) {
@@ -370,4 +411,8 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     }
   }
 
+  // used for unit tests
+  CreditLinks getCreditLinks() {
+    return this.edgeweights;
+  }
 }

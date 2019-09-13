@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Random;
-import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -39,7 +38,6 @@ import gtna.util.parameter.Parameter;
 import gtna.util.parameter.StringParameter;
 import treeembedding.RoutingAlgorithm;
 import treeembedding.RunConfig;
-import treeembedding.byzantine.Attack;
 import treeembedding.byzantine.AttackType;
 import treeembedding.credit.exceptions.InsufficientFundsException;
 import treeembedding.credit.exceptions.TransactionFailedException;
@@ -61,7 +59,6 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
   private final int maxTries;
   private Queue<double[]> newLinks;
 
-  private Queue<Edge> zeroEdges;
   private Graph graph;
   private final boolean update;
 
@@ -72,18 +69,9 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
   private double passRootAll = 0;
   private int rootPath = 0;
 
-  private Set<Integer> byzantineNodes;
-  private final Attack attack;
   private final ExecutorService executor;
 
-  private int networkLatency;
-  private CreditLinks edgeweights;
   private RoutingAlgorithm algo;
-
-  // used for unit tests
-  CreditLinks getCreditLinks() {
-    return this.edgeweights;
-  }
 
   public CreditNetwork(String file, String name, double epoch, RoutingAlgorithm algo,
                        double requeueInt, Partitioner part, int[] roots, int max, String links,
@@ -103,15 +91,12 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     this.part = part;
     this.roots = roots;
     this.maxTries = max;
-    this.networkLatency = runConfig.getNetworkLatencyMs();
     if (links != null) {
       this.newLinks = this.readLinks(links);
     } else {
       this.newLinks = new LinkedList<>();
     }
     this.update = up;
-
-    this.attack = runConfig.getAttackProperties();
 
     this.zeroEdges = new ConcurrentLinkedQueue<>();
 
@@ -128,12 +113,6 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
                        double requeueInt, Partitioner part, int[] roots, int max, String links,
                        RunConfig runConfig) {
     this(file, name, epoch, algo, requeueInt, part, roots, max, links, true, runConfig);
-  }
-
-  public CreditNetwork(String file, String name, double epoch, RoutingAlgorithm algo,
-                       double requeueInt, Partitioner part, int[] roots, int max,
-                       RunConfig runConfig) {
-    this(file, name, epoch, algo, requeueInt, part, roots, max, null, true, runConfig);
   }
 
   public CreditNetwork(String file, String name, double epoch, RoutingAlgorithm algo,
@@ -561,157 +540,6 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     return false;
   }
 
-  // reset to old weights if failed
-  private synchronized void transactionFailed(CreditLinks edgeweights, Map<Edge, List<Double>> edgeModifications) {
-    if (edgeModifications == null) {
-      return;
-    }
-
-    // undo the effects of each of the edge modifications individually
-    // for each edge modification, undo the update
-    for (Map.Entry<Edge, List<Double>> modifications : edgeModifications.entrySet()) {
-      for (Double d : modifications.getValue()) {
-        int src = modifications.getKey().getSrc();
-        int dst = modifications.getKey().getDst();
-        try {
-          edgeweights.undoUpdateWeight(src, dst, d);
-        } catch (TransactionFailedException e) {
-          log.error("Unable to undo a failed transaction. Exiting...");
-          System.exit(2);
-        }
-      }
-    }
-  }
-
-  private void simulateNetworkLatency() {
-    try {
-      Thread.sleep(networkLatency);
-    } catch (InterruptedException e) {
-      // do nothing
-    }
-  }
-
-  /**
-   * Step through transaction one hop at a time, and returns its success status
-   *
-   * @return a map of lists of all the weight changes, and the edges they correspond to. A single
-   *         edge can have multiple weight changes.
-   */
-  private Map<Edge, List<Double>> stepThroughTransaction(double[] vals, int[][] paths, CreditLinks edgeweights, Map<Edge, LinkWeight> modifiedEdges) {
-    Map<Edge, List<Double>> edgeModifications = new ConcurrentHashMap<>();
-    if (vals == null) {
-      transactionFailed(edgeweights, edgeModifications);
-      return null;
-    }
-
-    for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
-      if (vals[treeIndex] != 0) {
-        if (paths[treeIndex][paths[treeIndex].length - 1] == -1) {
-          // could not find a path
-          transactionFailed(edgeweights, edgeModifications);
-          return null;
-        }
-        int currentNodeId = paths[treeIndex][0];
-        for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
-          simulateNetworkLatency();
-
-          // Attack logic
-          if (attack != null && attack.getType() == AttackType.DROP_ALL) {
-            if (this.byzantineNodes.contains(paths[treeIndex][nodeIndex])) {
-              // do byzantine action
-              transactionFailed(edgeweights, edgeModifications);
-              return null;
-            }
-          }
-
-          int nextNodeId = paths[treeIndex][nodeIndex];
-          Edge edge = CreditLinks.makeEdge(currentNodeId, nextNodeId);
-          LinkWeight weights = edgeweights.getWeights(edge);
-
-          try {
-            if (log.isInfoEnabled()) {
-              log.info("Prepare: cur=" + currentNodeId + "; next=" + nextNodeId + "; val=" + vals[treeIndex]);
-            }
-            edgeweights.prepareUpdateWeight(currentNodeId, nextNodeId, vals[treeIndex]);
-
-            if (!modifiedEdges.containsKey(edge)) {
-              modifiedEdges.put(edge, weights);
-            }
-
-            double currentVal = vals[treeIndex];
-            List<Double> base = new LinkedList<>();
-            base.add(currentVal);
-            edgeModifications.merge(edge, base, (l, ignore) -> {
-              l.add(currentVal);
-              return l;
-            });
-
-            //edgeModifications.merge(edge, vals[treeIndex], Double::sum);
-
-          } catch (InsufficientFundsException e) {
-            transactionFailed(edgeweights, edgeModifications);
-            return null;
-          }
-
-          currentNodeId = nextNodeId;
-        }
-      }
-    }
-
-    return edgeModifications;
-  }
-
-  private void finalizeTransaction(double[] vals, int[][] paths, CreditLinks edgeweights, Map<Edge, List<Double>> edgeModifications)
-          throws TransactionFailedException {
-    if (vals == null) {
-      throw new TransactionFailedException("Transaction values cannot be null");
-    }
-
-    // payment griefing attack logic
-    for (int[] path : paths) {
-      if (attack != null && attack.getType() == AttackType.GRIEFING) {
-        if (this.byzantineNodes.contains(path[path.length - 1])) {
-          try {
-            Thread.sleep(attack.getReceiverDelayMs());
-          } catch (InterruptedException e) {
-            // don't worry about it
-          }
-          transactionFailed(edgeweights, edgeModifications);
-          throw new TransactionFailedException("This payment was griefed");
-
-        }
-      }
-    }
-
-    for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
-      if (vals[treeIndex] != 0) {
-        int currentNodeIndex = paths[treeIndex][0];
-        for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
-          simulateNetworkLatency();
-
-          int nextNodeIndex = paths[treeIndex][nodeIndex];
-          Edge edge = CreditLinks.makeEdge(currentNodeIndex, nextNodeIndex);
-
-          if (log.isInfoEnabled()) {
-            log.info("Finalize: cur=" + currentNodeIndex + "; next=" + nextNodeIndex + "; val=" + vals[treeIndex]);
-          }
-          edgeweights.finalizeUpdateWeight(currentNodeIndex, nextNodeIndex, vals[treeIndex]);
-
-          if (edgeModifications.containsKey(edge)) {
-            log.debug("Removing updated edge from set");
-            edgeModifications.get(edge).remove(vals[treeIndex]);
-          }
-
-          if (edgeweights.isZero(currentNodeIndex, nextNodeIndex)) {
-            this.zeroEdges.add(edge);
-          }
-          currentNodeIndex = nextNodeIndex;
-
-        }
-      }
-    }
-  }
-
   /**
    * routing using a multi-part computation: costs are i) finding path (one-way, but 3x path length
    * as each neighbor needs to sign its predecessor and successors) ii) sending shares to all
@@ -923,7 +751,126 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     }
   }
 
+  /**
+   * Step through transaction one hop at a time, and returns its success status
+   *
+   * @return a map of lists of all the weight changes, and the edges they correspond to. A single
+   *         edge can have multiple weight changes.
+   */
+  private Map<Edge, List<Double>> stepThroughTransaction(double[] vals, int[][] paths, CreditLinks edgeweights, Map<Edge, LinkWeight> modifiedEdges) {
+    Map<Edge, List<Double>> edgeModifications = new ConcurrentHashMap<>();
+    if (vals == null) {
+      transactionFailed(edgeweights, edgeModifications);
+      return null;
+    }
 
+    for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
+      if (vals[treeIndex] != 0) {
+        if (paths[treeIndex][paths[treeIndex].length - 1] == -1) {
+          // could not find a path
+          transactionFailed(edgeweights, edgeModifications);
+          return null;
+        }
+        int currentNodeId = paths[treeIndex][0];
+        for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
+          simulateNetworkLatency();
+
+          // Attack logic
+          if (attack != null && attack.getType() == AttackType.DROP_ALL) {
+            if (this.byzantineNodes.contains(paths[treeIndex][nodeIndex])) {
+              // do byzantine action
+              transactionFailed(edgeweights, edgeModifications);
+              return null;
+            }
+          }
+
+          int nextNodeId = paths[treeIndex][nodeIndex];
+          Edge edge = CreditLinks.makeEdge(currentNodeId, nextNodeId);
+          LinkWeight weights = edgeweights.getWeights(edge);
+
+          try {
+            if (log.isInfoEnabled()) {
+              log.info("Prepare: cur=" + currentNodeId + "; next=" + nextNodeId + "; val=" + vals[treeIndex]);
+            }
+            edgeweights.prepareUpdateWeight(currentNodeId, nextNodeId, vals[treeIndex]);
+
+            if (!modifiedEdges.containsKey(edge)) {
+              modifiedEdges.put(edge, weights);
+            }
+
+            double currentVal = vals[treeIndex];
+            List<Double> base = new LinkedList<>();
+            base.add(currentVal);
+            edgeModifications.merge(edge, base, (l, ignore) -> {
+              l.add(currentVal);
+              return l;
+            });
+
+          } catch (InsufficientFundsException e) {
+            transactionFailed(edgeweights, edgeModifications);
+            return null;
+          }
+
+          currentNodeId = nextNodeId;
+        }
+      }
+    }
+
+    return edgeModifications;
+  }
+
+  private void finalizeTransaction(double[] vals, int[][] paths, CreditLinks edgeweights, Map<Edge, List<Double>> edgeModifications)
+          throws TransactionFailedException {
+    if (vals == null) {
+      throw new TransactionFailedException("Transaction values cannot be null");
+    }
+
+    // payment griefing attack logic
+    for (int[] path : paths) {
+      if (attack != null && attack.getType() == AttackType.GRIEFING) {
+        int destination = path[path.length - 1];
+        if (this.byzantineNodes.contains(destination)) {
+          try {
+            Thread.sleep(attack.getReceiverDelayMs());
+          } catch (InterruptedException e) {
+            // don't worry about it
+          }
+          transactionFailed(edgeweights, edgeModifications);
+          throw new TransactionFailedException("This payment was griefed");
+
+        }
+      }
+    }
+
+    for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
+      if (vals[treeIndex] != 0) {
+        int currentNodeIndex = paths[treeIndex][0];
+        for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
+          simulateNetworkLatency();
+
+          int nextNodeIndex = paths[treeIndex][nodeIndex];
+          Edge edge = CreditLinks.makeEdge(currentNodeIndex, nextNodeIndex);
+
+          if (log.isInfoEnabled()) {
+            log.info("Finalize: cur=" + currentNodeIndex + "; next=" + nextNodeIndex + "; val=" + vals[treeIndex]);
+          }
+          edgeweights.finalizeUpdateWeight(currentNodeIndex, nextNodeIndex, vals[treeIndex]);
+
+          if (edgeModifications.containsKey(edge)) {
+            log.debug("Removing updated edge from set");
+            edgeModifications.get(edge).remove(vals[treeIndex]);
+          }
+
+          if (runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW &&
+                  edgeweights.isZero(currentNodeIndex, nextNodeIndex)) {
+            this.zeroEdges.add(edge);
+          }
+          currentNodeIndex = nextNodeIndex;
+
+        }
+      }
+    }
+  }
 
   @Override
   public Single[] getSingles() {
