@@ -20,7 +20,8 @@ public enum RoutingAlgorithm {
   TREE_ONLY_MCP_NO_DYN(8, "TO_MPC_NO_DYN", true, false, new TreerouteOnly(), true),
   TREE_ONLY_DYN_NO_MCP(9, "TO_DYN_NO_MPC", false, true, new TreerouteOnly(), true),
 
-  MAXFLOW(10, "M", false, false, null, false);
+  MAXFLOW(10, "M", false, false, null, false),
+  MAXFLOW_COLLATERALIZE(10, "M", false, false, null, true);
 
   private int id;
   private String shortName;

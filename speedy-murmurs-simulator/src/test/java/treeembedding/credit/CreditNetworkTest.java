@@ -28,7 +28,8 @@ class CreditNetworkTest {
   private static final int EPOCH = 100;
   private static final double ACCEPTABLE_ERROR = 0.0001;
   private RoutingAlgorithm[] algos = new RoutingAlgorithm[]{RoutingAlgorithm.SILENTWHISPERS,
-          RoutingAlgorithm.SPEEDYMURMURS, RoutingAlgorithm.MAXFLOW};
+          RoutingAlgorithm.SPEEDYMURMURS, RoutingAlgorithm.MAXFLOW,
+          RoutingAlgorithm.MAXFLOW_COLLATERALIZE};
 
   @BeforeEach
   void setup() {
@@ -76,7 +77,7 @@ class CreditNetworkTest {
     Partitioner part = new RandomPartitioner();
 
     AbstractCreditNetworkBase m = null;
-    if (ra == RoutingAlgorithm.MAXFLOW) {
+    if (ra == RoutingAlgorithm.MAXFLOW || ra == RoutingAlgorithm.MAXFLOW_COLLATERALIZE) {
       m = new CreditMaxFlow(trans, name, 0, 0, newlinks, epoch, runConfig);
     } else {
       m = new CreditNetwork(trans, name, epoch, routingAlgorithm, req, part, roots, max, newlinks, runConfig);

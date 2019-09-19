@@ -12,7 +12,6 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -122,13 +121,14 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
   }
 
   private Future<TransactionResults> transactionResultsFuture(Transaction cur, Graph g, Node[] nodes,
-                                                              boolean[] exclude, CreditLinks edgeweights) {
-    return executor.submit(() -> transact(cur, g, nodes, exclude, edgeweights));
+                                                              CreditLinks edgeweights) {
+    return executor.submit(() -> transact(cur, g, nodes, edgeweights));
   }
 
-  private TransactionResults transact(Transaction currentTransaction, Graph g, Node[] nodes, boolean[] exclude,
+  private TransactionResults transact(Transaction currentTransaction, Graph g, Node[] nodes,
                                       CreditLinks edgeweights) {
     TransactionResults results = null;
+    boolean[] exclude = new boolean[nodes.length];
     try {
       // execute the transaction
       if (this.multi) {
@@ -201,7 +201,6 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     Vector<Integer> stabMes = new Vector<>();
     Vector<Double> successRationPerEpoch = new Vector<>();
     Node[] nodes = g.getNodes();
-    boolean[] exclude = new boolean[nodes.length];
 
     // generate byzantine nodes
     this.byzantineNodes = this.attack.generateAttackers(nodes);
@@ -261,7 +260,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       }
 
       // collect result futures
-      Future<TransactionResults> futureResults = transactionResultsFuture(currentTransaction, g, nodes, exclude, edgeweights);
+      Future<TransactionResults> futureResults = transactionResultsFuture(currentTransaction, g, nodes, edgeweights);
       pendingTransactions.add(futureResults);
 
 
@@ -758,7 +757,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
    *         edge can have multiple weight changes.
    */
   private Map<Edge, List<Double>> stepThroughTransaction(double[] vals, int[][] paths, CreditLinks edgeweights, Map<Edge, LinkWeight> modifiedEdges) {
-    Map<Edge, List<Double>> edgeModifications = new ConcurrentHashMap<>();
+    Map<Edge, List<Double>> edgeModifications = new HashMap<>();
     if (vals == null) {
       transactionFailed(edgeweights, edgeModifications);
       return null;

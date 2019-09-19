@@ -214,7 +214,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
     return results;
   }
 
-  private TransactionResults fordFulkerson(Transaction currentTransaction, Graph g) throws TransactionFailedException {
+  private TransactionResults fordFulkerson(Transaction currentTransaction, Graph g) {
     Map<Edge, List<Double>> edgeModifications = new ConcurrentHashMap<>();
 
     double totalflow = 0;
@@ -225,7 +225,8 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
     List<Double> transactionVals = new LinkedList<>();
 
     // loop until a flow has been found for the full transaction amount, or there are no more residual paths
-    while (totalflow < currentTransaction.val &&
+    while (((currentTransaction.val > 0 && totalflow < currentTransaction.val) ||
+            (currentTransaction.val < 0 && totalflow > currentTransaction.val)) &&
             (residualPaths = findResidualFlow(edgeweights, g.getNodes(), currentTransaction)).length > 1) {
       if (log.isDebugEnabled()) {
         log.debug("Found residual flow of length " + residualPaths[0].length);
@@ -241,10 +242,10 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
           minAlongPath = maxTransactionAmount;
         }
       }
-      transactionVals.add(minAlongPath);
 
       //update flows
       minAlongPath = Math.min(minAlongPath, currentTransaction.val - totalflow);
+      transactionVals.add(minAlongPath);
       totalflow = totalflow + minAlongPath;
       for (int i = 0; i < residualPath.length - 1; i++) {
         simulateNetworkLatency();
@@ -257,7 +258,8 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
           if (this.byzantineNodes.contains(currentNodeId)) {
             // do byzantine action
             transactionFailed(edgeweights, edgeModifications);
-            return null;
+            results.setSuccess(false);
+            return results;
           }
         }
 
@@ -315,8 +317,8 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
             // don't worry about it
           }
           transactionFailed(edgeweights, edgeModifications);
-          throw new TransactionFailedException("This payment was griefed");
-
+          results.setSuccess(false);
+          return results;
         }
       }
     }
@@ -334,8 +336,13 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
             log.info("Finalize: cur=" + currentNodeIndex + "; next=" + nextNodeIndex +
                     "; val=" + transactionVals.get(pathIndex));
           }
-          edgeweights.finalizeUpdateWeight(currentNodeIndex, nextNodeIndex,
-                  transactionVals.get(pathIndex));
+          try {
+            edgeweights.finalizeUpdateWeight(currentNodeIndex, nextNodeIndex,
+                    transactionVals.get(pathIndex));
+          } catch (TransactionFailedException e) {
+            results.setSuccess(false);
+            return results;
+          }
 
           if (edgeModifications.containsKey(edge)) {
             log.debug("Removing updated edge from set");
@@ -366,6 +373,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
 //        this.weightUpdate(edgeweights, edgeModifications);
 //      }
 //    }
+    results.setSuccess(true);
     return results;
   }
 

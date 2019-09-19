@@ -136,8 +136,8 @@ public abstract class Treeroute extends Metric {
     return getRoute(src, dest, r, g, nodes, exclude, null, 0);
   }
 
-  public int[] getRoute(int src, int dest, int r, Graph g, Node[] nodes, boolean[] exclude,
-                        CreditLinks edgeweights, double weight) {
+  public synchronized int[] getRoute(int src, int dest, int r, Graph g, Node[] nodes, boolean[] exclude,
+                                     CreditLinks edgeweights, double weight) {
     coords = ((TreeCoordinates) g.getProperty("TREE_COORDINATES_" + r)).coords;
     sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + r);
     int root = sp.getSrc();
