@@ -13,7 +13,7 @@ public class LinkWeight {
   private double max;
   private double current;
   private Map<Double, Integer> pendingTransactions;
-  private static final double EPSILON = 0.000000001;
+  static final double EPSILON = 0.000000001;
 
   // these are the bounds of the funds taking into consideration funds that have been locked up by
   // concurrent transactions

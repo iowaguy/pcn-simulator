@@ -197,17 +197,6 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
     currentTransaction.addPath(results.getSumPathLength());
     currentTransaction.addMes(results.getSumMessages());
 
-    // requeue if necessary
-    if (!results.isSuccess()) {
-      currentTransaction.incRequeue(currentTransaction.time + rand.nextDouble() * this.requeueInt);
-      if (currentTransaction.requeue < this.maxTries) {
-        toRetry.add(currentTransaction);
-      } else {
-        incrementCount(MESSAGES_ALL, currentTransaction.mes);
-        incrementCount(PATHS_ALL, currentTransaction.path);
-      }
-    }
-
     //3 update metrics accordingly
     calculateMetrics(results, currentTransaction);
 
@@ -219,7 +208,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
 
     double totalflow = 0;
     // residual paths is a 2d array where first dimension is the path, and second dimension is the messages
-    int[][] residualPaths = new int[0][0];
+    int[][] residualPaths;
     TransactionResults results = new TransactionResults();
     List<int[]> paths = new LinkedList<>();
     List<Double> transactionVals = new LinkedList<>();
@@ -306,6 +295,13 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
       results.addPathLength(residualPath.length - 1);
     }
 
+    double totalPaymentPossible = transactionVals.stream().mapToDouble(d -> d).sum();
+    if (totalPaymentPossible < (currentTransaction.val - LinkWeight.EPSILON)) {
+      transactionFailed(edgeweights, edgeModifications);
+      results.setSuccess(false);
+      return results;
+    }
+
     // payment griefing attack logic
     for (int[] path : paths) {
       if (attack != null && attack.getType() == AttackType.GRIEFING) {
@@ -340,6 +336,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
             edgeweights.finalizeUpdateWeight(currentNodeIndex, nextNodeIndex,
                     transactionVals.get(pathIndex));
           } catch (TransactionFailedException e) {
+            transactionFailed(edgeweights, edgeModifications);
             results.setSuccess(false);
             return results;
           }
