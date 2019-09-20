@@ -103,7 +103,8 @@ public class Dynamic {
       Partitioner part = new RandomPartitioner();
 
       m = new CreditNetwork(trans, name, epoch, routingAlgorithm, req, part, roots, max, newlinks, runConfig);
-    } else if (routingAlgorithm == RoutingAlgorithm.MAXFLOW) {
+    } else if (routingAlgorithm == RoutingAlgorithm.MAXFLOW ||
+            routingAlgorithm == RoutingAlgorithm.MAXFLOW_COLLATERALIZE) {
       m = new CreditMaxFlow(trans, name,
               0, 0, newlinks, epoch, runConfig);
     } else {
