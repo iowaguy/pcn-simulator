@@ -8,11 +8,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
-import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -89,10 +87,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
 
     success_first = 0;
     success = 0;
-    Vector<Double> succR = new Vector<>();
-    Vector<Integer> stabMes = new Vector<>();
     Node[] nodes = g.getNodes();
-    boolean[] exclude = new boolean[nodes.length];
 
     // generate byzantine nodes
     this.byzantineNodes = runConfig.getAttackProperties().generateAttackers(nodes);
@@ -103,8 +98,6 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
 
     //go over transactions
     toRetry = new LinkedList<>();
-    int lastEpoch = 0;
-    //Random rand = new Random();
     while (areTransactionsAvailable()) {
       Transaction currentTransaction = getNextTransaction();
 
@@ -116,23 +109,9 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
       // calculate epoch
       int currentEpoch = calculateEpoch(currentTransaction);
 
-
-      // TODO this calculation won't make any sense if transactions are async, they will complete too quickly so the succ ratios will be way off
-      if (currentEpoch != lastEpoch) {
-        double cur_succd = cur_count == 0 ? 1 : (double) cur_succ / (double) cur_count;
-        succR.add(cur_succd);
-        for (int j = lastEpoch + 2; j <= currentEpoch; j++) {
-          succR.add(1.0);
-        }
-        cur_count = 0;
-        cur_succ = 0;
-      }
-
       // collect result futures
-      Future<TransactionResults> futureResults = transactionResultsFuture(currentTransaction, g);
+      Future<TransactionResults> futureResults = transactionResultsFuture(currentTransaction, g, currentEpoch);
       pendingTransactions.add(futureResults);
-
-      lastEpoch = currentEpoch;
     }
 
     this.executor.shutdown();
@@ -163,10 +142,10 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
     this.success = this.success / (double) transactions.size();
     this.success_first = this.success_first / (double) transactions.size();
     this.graph = g;
-    this.succs = new double[succR.size()];
 
-    for (int i = 0; i < this.succs.length; i++) {
-      succs[i] = succR.get(i);
+    this.succs = new double[transactionsPerEpoch.length];
+    for (int i = 0; i < transactionsPerEpoch.length; i++) {
+      this.succs[i] = (double) successesPerEpoch[i] / (double) transactionsPerEpoch[i];
     }
   }
 
@@ -175,11 +154,11 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
     return writeDataCommon(folder);
   }
 
-  private Future<TransactionResults> transactionResultsFuture(Transaction cur, Graph g) {
-    return executor.submit(() -> transact(cur, g));
+  private Future<TransactionResults> transactionResultsFuture(Transaction cur, Graph g, int currentEpoch) {
+    return executor.submit(() -> transact(cur, g, currentEpoch));
   }
 
-  private TransactionResults transact(Transaction currentTransaction, Graph g) {
+  private TransactionResults transact(Transaction currentTransaction, Graph g, int currentEpoch) {
     TransactionResults results = fordFulkerson(currentTransaction, g);
     Random rand = new Random();
 
@@ -198,7 +177,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
     currentTransaction.addMes(results.getSumMessages());
 
     //3 update metrics accordingly
-    calculateMetrics(results, currentTransaction);
+    calculateMetrics(results, currentTransaction, currentEpoch);
 
     return results;
   }
@@ -273,21 +252,6 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
           transactionFailed(edgeweights, edgeModifications);
           return null;
         }
-
-//        if (!edgeModifications.containsKey(edge)) {
-//          edgeModifications.put(edge, w);
-//        }
-//        if (currentNodeId < nextNodeId) {
-//          edgeweights.setWeight(edge, w + minAlongPath);
-//          if (log.isDebugEnabled()) {
-//            log.debug("Set weight of (" + currentNodeId + "," + nextNodeId + ") to " + (w + minAlongPath));
-//          }
-//        } else {
-//          edgeweights.setWeight(edge, w - minAlongPath);
-//          if (log.isDebugEnabled()) {
-//            log.debug("Set weight of (" + nextNodeId + "," + currentNodeId + ") to " + (w - minAlongPath));
-//          }
-//        }
       }
 
       results.addSumMessages(residualPaths[1][0]);
@@ -356,20 +320,6 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
       }
     }
 
-
-//    if (currentTransaction.val - totalflow > 0) {
-//      //fail
-//      results.setSuccess(false);
-//
-//      results.addSumMessages(residualPaths[0][0]);
-//      this.weightUpdate(edgeweights, edgeModifications);
-//    } else {
-//      results.setSuccess(true);
-//
-//      if (!this.update) {
-//        this.weightUpdate(edgeweights, edgeModifications);
-//      }
-//    }
     results.setSuccess(true);
     return results;
   }
@@ -423,12 +373,6 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
       }
     }
     return new int[][]{new int[]{mes}};
-  }
-
-  private void weightUpdate(CreditLinks edgeweights, Map<Edge, Double> updateWeight) {
-    for (Entry<Edge, Double> entry : updateWeight.entrySet()) {
-      edgeweights.setWeight(entry.getKey(), entry.getValue());
-    }
   }
 
   @Override

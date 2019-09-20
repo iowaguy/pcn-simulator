@@ -51,8 +51,8 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   final Attack attack;
   Queue<Edge> zeroEdges;
 
-  volatile int cur_succ = 0;
-  volatile int cur_count = 0;
+  int[] transactionsPerEpoch;
+  int[] successesPerEpoch;
 
   private Map<String, List<Long>> longMetrics;
 
@@ -149,6 +149,11 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     this.networkLatency = runConfig.getNetworkLatencyMs();
     this.attack = runConfig.getAttackProperties();
 
+    // calculate the number of epochs by calculating the epoch of the last transaction
+    int numEpochs = calculateEpoch(transactions.get(transactions.size() - 1));
+    this.transactionsPerEpoch = new int[numEpochs];
+    this.successesPerEpoch = new int[numEpochs];
+
     longMetrics = new ConcurrentHashMap<>(17);
     longMetrics.put(MESSAGES_ALL, new ArrayList<>());
     longMetrics.put(PATHS_ALL, new ArrayList<>());
@@ -189,6 +194,14 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     this.distributions = new HashMap<>();
 
     toRetry = new PriorityBlockingQueue<>();
+  }
+
+  private synchronized void incrementTransactionCount(int currentEpoch) {
+    transactionsPerEpoch[currentEpoch]++;
+  }
+
+  private synchronized void incrementSuccessfulTransactionCount(int currentEpoch) {
+    successesPerEpoch[currentEpoch]++;
   }
 
   boolean areTransactionsAvailable() {
@@ -248,10 +261,10 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     }
   }
 
-  synchronized void calculateMetrics(TransactionResults results, Transaction currentTransaction) {
-    cur_count++;
+  synchronized void calculateMetrics(TransactionResults results, Transaction currentTransaction, int currentEpoch) {
+    incrementTransactionCount(currentEpoch);
     if (results.isSuccess()) {
-      cur_succ++;
+      incrementSuccessfulTransactionCount(currentEpoch);
     }
 
     //3 update metrics accordingly

@@ -121,12 +121,12 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
   }
 
   private Future<TransactionResults> transactionResultsFuture(Transaction cur, Graph g, Node[] nodes,
-                                                              CreditLinks edgeweights) {
-    return executor.submit(() -> transact(cur, g, nodes, edgeweights));
+                                                              CreditLinks edgeweights, int currentEpoch) {
+    return executor.submit(() -> transact(cur, g, nodes, edgeweights, currentEpoch));
   }
 
   private TransactionResults transact(Transaction currentTransaction, Graph g, Node[] nodes,
-                                      CreditLinks edgeweights) {
+                                      CreditLinks edgeweights, int currentEpoch) {
     TransactionResults results = null;
     boolean[] exclude = new boolean[nodes.length];
     try {
@@ -159,7 +159,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       this.weightUpdate(edgeweights, results.getModifiedEdges());
     }
 
-    calculateMetrics(results, currentTransaction);
+    calculateMetrics(results, currentTransaction, currentEpoch);
     return results;
   }
 
@@ -199,7 +199,6 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     success = 0;
     this.passRoot = new double[this.roots.length];
     Vector<Integer> stabMes = new Vector<>();
-    Vector<Double> successRationPerEpoch = new Vector<>();
     Node[] nodes = g.getNodes();
 
     // generate byzantine nodes
@@ -250,19 +249,11 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
           }
           stabilizationMessages = 0;
         }
-        double cur_succd = cur_count == 0 ? 1 : (double) cur_succ / (double) cur_count;
-        successRationPerEpoch.add(cur_succd);
-        for (int j = lastEpoch + 2; j <= currentEpoch; j++) {
-          successRationPerEpoch.add(1.0);
-        }
-        cur_count = 0;
-        cur_succ = 0;
       }
 
       // collect result futures
-      Future<TransactionResults> futureResults = transactionResultsFuture(currentTransaction, g, nodes, edgeweights);
+      Future<TransactionResults> futureResults = transactionResultsFuture(currentTransaction, g, nodes, edgeweights, currentEpoch);
       pendingTransactions.add(futureResults);
-
 
       //4 post-processing: remove edges set to 0, update spanning tree if dynRapir
       lastEpoch = currentEpoch;
@@ -303,9 +294,6 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       e.printStackTrace();
     }
 
-    //blockUntilAsyncTransactionsComplete(pendingTransactions);
-    //this.creditLinks = edgeweights;
-
     if (this.dynRepair) {
       stabMes.add(stabilizationMessages);
     }
@@ -345,17 +333,13 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       stab[i] = stabMes.get(i);
       this.stab_av = this.stab_av + stab[i];
     }
-    this.succs = new double[successRationPerEpoch.size()];
+    this.succs = new double[transactionsPerEpoch.length];
     for (int i = 0; i < this.succs.length; i++) {
-      succs[i] = successRationPerEpoch.get(i);
+      this.succs[i] = (double) successesPerEpoch[i] / (double) transactionsPerEpoch[i];
     }
     this.stab_av = this.stab_av / (double) stab.length;
     this.passRootAll = this.passRootAll / this.rootPath;
-//    for (int j = 0; j < this.passRoot.length; j++) {
-//      this.passRoot[j] = this.passRoot[j] / totalTransactionAttemptCount;
-//    }
     this.graph = g;
-
   }
 
   private int computeNonZeroEdges(Graph g, CreditLinks ew) {
