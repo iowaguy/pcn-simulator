@@ -2,10 +2,12 @@
 import simulation_common as common
 import os
 import numpy
+import math
 
 ## General utility functions and variables
 
 def running_mean(x, N):
+    x = [1 if math.isnan(a) else a for a in x]
     cumsum = numpy.cumsum(numpy.insert(x, 0, 0))
     return (cumsum[N:] - cumsum[:-N]) / float(N)
 

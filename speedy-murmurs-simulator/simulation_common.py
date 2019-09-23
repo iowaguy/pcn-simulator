@@ -5,7 +5,7 @@ classpath = 'target/pcn-simulator-1.0-SNAPSHOT-jar-with-dependencies.jar'
 ID = 'id'
 silentwhispers = 'silentwhispers'
 speedymurmurs = 'speedymurmurs'
-maxflow = 'maxflow'
+maxflow = 'maxflow_collateralize'
 max_steps = 9
 max_attempts = 10
 max_trees = 7
@@ -28,7 +28,11 @@ algo_info = {
     'maxflow': {
         'short_name': 'M',
         'id': 10
-    }
+    },
+    'maxflow_collateralize': {
+        'short_name': 'M',
+        'id': 10
+    }    
 }
 
 run_info = {

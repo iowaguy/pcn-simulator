@@ -45,7 +45,7 @@ start() {
 
 experiment() {
   EXPERIMENT_TYPE="$1"
-  nohup python "${EXPERIMENT_TYPE}.py" &> ${EXPERIMENT_LOG} &
+  nohup python "${EXPERIMENT_TYPE}" &> ${EXPERIMENT_LOG} &
   echo "${EXPERIMENT_LOG}"
   exit 0
 }
