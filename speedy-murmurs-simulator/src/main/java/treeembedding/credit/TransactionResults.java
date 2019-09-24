@@ -45,6 +45,7 @@ public class TransactionResults {
     this.sumPathLength = 0;
     this.maxPathLength = 0;
     this.sumMessages = 0;
+    this.success = false;
   }
 
   void addSumMessages(int mes) {

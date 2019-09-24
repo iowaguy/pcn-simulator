@@ -30,6 +30,7 @@ import gtna.metrics.Metric;
 import gtna.util.Config;
 import gtna.util.Distribution;
 import gtna.util.parameter.Parameter;
+import treeembedding.RoutingAlgorithm;
 import treeembedding.RunConfig;
 import treeembedding.byzantine.Attack;
 import treeembedding.credit.exceptions.TransactionFailedException;
@@ -294,17 +295,28 @@ public abstract class AbstractCreditNetworkBase extends Metric {
       if (results.getPathLengths()[j] < 0) {
         index = 1;
       }
-      incrementIntegerCount(cPerPath.get(j), index);
-      incrementIntegerCount(cAllPath, index);
       int pathLength = Math.abs(results.getPathLengths()[j]);
+      if (runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW &&
+              runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW_COLLATERALIZE) {
+        incrementIntegerCount(cPerPath.get(j), index);
+        incrementIntegerCount(cAllPath, index);
+        incrementCount(pathSs.get(j), pathLength);
+      }
+
       incrementCount(SINGLE_PATHS, pathLength);
-      incrementCount(pathSs.get(j), pathLength);
+
       if (index == 0) {
         incrementCount(SINGLE_PATHS_DEST_FOUND, pathLength);
-        incrementCount(pathSsF.get(j), pathLength);
+        if (runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW &&
+                runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW_COLLATERALIZE) {
+          incrementCount(pathSsF.get(j), pathLength);
+        }
       } else {
         incrementCount(SINGLE_PATHS_DEST_NOT_FOUND, pathLength);
-        incrementCount(pathSsNF.get(j), pathLength);
+        if (runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW &&
+                runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW_COLLATERALIZE) {
+          incrementCount(pathSsNF.get(j), pathLength);
+        }
       }
     }
   }
@@ -410,6 +422,19 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     }
     return vec;
   }
+
+  void blockUntilAsyncTransactionCompletes(Future<TransactionResults> res) {
+    try {
+      if (res != null) {
+        res.get();
+      }
+    } catch (InterruptedException e) {
+      log.error("Failed to block until async transactions complete, InterruptedException: " + e.getMessage());
+    } catch (ExecutionException e) {
+      log.error("Failed to block until async transactions complete, computation threw an exception: " + e.getMessage());
+    }
+  }
+
 
   // this will block until the current result is available
   void blockUntilAsyncTransactionsComplete(Queue<Future<TransactionResults>> pendingTransactions) {

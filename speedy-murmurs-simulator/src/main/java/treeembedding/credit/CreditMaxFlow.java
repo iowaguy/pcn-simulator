@@ -91,7 +91,6 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
 
     // generate byzantine nodes
     this.byzantineNodes = runConfig.getAttackProperties().generateAttackers(nodes);
-    Queue<Future<TransactionResults>> pendingTransactions = new LinkedList<>();
 
     edgeweights = (CreditLinks) g.getProperty("CREDIT_LINKS");
     edgeweights.enableFundLocking(runConfig.getRoutingAlgorithm().isFundLockingEnabled());
@@ -111,7 +110,10 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
 
       // collect result futures
       Future<TransactionResults> futureResults = transactionResultsFuture(currentTransaction, g, currentEpoch);
-      pendingTransactions.add(futureResults);
+
+      if (!runConfig.areTransactionsConcurrent()) {
+        blockUntilAsyncTransactionCompletes(futureResults);
+      }
     }
 
     this.executor.shutdown();
@@ -159,27 +161,32 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
   }
 
   private TransactionResults transact(Transaction currentTransaction, Graph g, int currentEpoch) {
-    TransactionResults results = fordFulkerson(currentTransaction, g);
-    Random rand = new Random();
+    try {
+      TransactionResults results = fordFulkerson(currentTransaction, g);
+      Random rand = new Random();
 
-    //re-queue if necessary
-    if (!results.isSuccess()) {
-      currentTransaction.incRequeue(currentTransaction.time + rand.nextDouble() * this.requeueInt);
-      if (currentTransaction.requeue <= this.maxTries) {
-        toRetry.add(currentTransaction);
-      } else {
-        incrementCount(MESSAGES_ALL, currentTransaction.mes);
-        incrementCount(PATHS_ALL, currentTransaction.path);
+      //re-queue if necessary
+      if (!results.isSuccess()) {
+        currentTransaction.incRequeue(currentTransaction.time + rand.nextDouble() * this.requeueInt);
+        if (currentTransaction.requeue <= this.maxTries) {
+          toRetry.add(currentTransaction);
+        } else {
+          incrementCount(MESSAGES_ALL, currentTransaction.mes);
+          incrementCount(PATHS_ALL, currentTransaction.path);
+        }
       }
+
+      currentTransaction.addPath(results.getSumPathLength());
+      currentTransaction.addMes(results.getSumMessages());
+
+      //3 update metrics accordingly
+      calculateMetrics(results, currentTransaction, currentEpoch);
+
+      return results;
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw e;
     }
-
-    currentTransaction.addPath(results.getSumPathLength());
-    currentTransaction.addMes(results.getSumMessages());
-
-    //3 update metrics accordingly
-    calculateMetrics(results, currentTransaction, currentEpoch);
-
-    return results;
   }
 
   private TransactionResults fordFulkerson(Transaction currentTransaction, Graph g) {
@@ -250,7 +257,8 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
 
         } catch (InsufficientFundsException e) {
           transactionFailed(edgeweights, edgeModifications);
-          return null;
+          results.setSuccess(false);
+          return results;
         }
       }
 
@@ -310,7 +318,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
             edgeModifications.get(edge).remove(transactionVals.get(pathIndex));
           }
 
-          if (runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW &&
+          if ((runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW && runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW_COLLATERALIZE) &&
                   edgeweights.isZero(currentNodeIndex, nextNodeIndex)) {
             this.zeroEdges.add(edge);
           }
