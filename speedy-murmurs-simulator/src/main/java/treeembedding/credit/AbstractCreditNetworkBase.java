@@ -52,6 +52,14 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   final Attack attack;
   Queue<Edge> zeroEdges;
 
+  public int[] getTransactionsPerEpoch() {
+    return transactionsPerEpoch;
+  }
+
+  public int[] getSuccessesPerEpoch() {
+    return successesPerEpoch;
+  }
+
   int[] transactionsPerEpoch;
   int[] successesPerEpoch;
 
@@ -152,6 +160,10 @@ public abstract class AbstractCreditNetworkBase extends Metric {
 
     // calculate the number of epochs by calculating the epoch of the last transaction
     int numEpochs = calculateEpoch(transactions.get(transactions.size() - 1));
+
+    // epochs are zero indexed, and the previous calculation will only tell us which epoch index the
+    // last transaction was in
+    numEpochs++;
     this.transactionsPerEpoch = new int[numEpochs];
     this.successesPerEpoch = new int[numEpochs];
 

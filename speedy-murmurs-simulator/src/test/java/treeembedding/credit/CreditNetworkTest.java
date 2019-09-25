@@ -49,11 +49,11 @@ class CreditNetworkTest {
     Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", Boolean.toString(false));
   }
 
-  CreditLinks singlePathLinkUpdate(RoutingAlgorithm ra, String testDir) {
+  AbstractCreditNetworkBase singlePathLinkUpdate(RoutingAlgorithm ra, String testDir) {
     return singlePathLinkUpdate(ra, testDir, null);
   }
 
-  CreditLinks singlePathLinkUpdate(RoutingAlgorithm ra, String testDir, Attack attack) {
+  AbstractCreditNetworkBase singlePathLinkUpdate(RoutingAlgorithm ra, String testDir, Attack attack) {
     runConfig.setBasePath(TEST_DATA_BASE + testDir);
     runConfig.setRoutingAlgorithm(ra);
     runConfig.setTopologyPath("topology.graph");
@@ -86,14 +86,15 @@ class CreditNetworkTest {
 
     Network net = new ReadableFile(name, name, graph, null);
     Series.generate(net, new Metric[]{m}, 0, 0);
-    return m.getCreditLinks();
+    return m;
   }
 
   @Test
   void singlePathLinkUpdate() {
     String testDir = "/single-transaction-test";
     for (RoutingAlgorithm ra : algos) {
-      CreditLinks edgeweights = singlePathLinkUpdate(ra, testDir);
+      AbstractCreditNetworkBase abc = singlePathLinkUpdate(ra, testDir);
+      CreditLinks edgeweights = abc.getCreditLinks();
       assertEquals(90.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
       assertEquals(90.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
       assertEquals(90.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
@@ -105,7 +106,8 @@ class CreditNetworkTest {
   void singlePathConcurrent() {
     String testDir = "/concurrent-transactions-test";
     for (RoutingAlgorithm ra : algos) {
-      CreditLinks edgeweights = singlePathLinkUpdate(ra, testDir);
+      AbstractCreditNetworkBase abc = singlePathLinkUpdate(ra, testDir);
+      CreditLinks edgeweights = abc.getCreditLinks();
       assertEquals(70.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
       assertEquals(70.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
       assertEquals(70.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
@@ -117,7 +119,8 @@ class CreditNetworkTest {
   @Test
   void singlePathManyConcurrentSilentWhispers() {
     String testDir = "/many-concurrent-transactions-test";
-    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SILENTWHISPERS, testDir);
+    AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.SILENTWHISPERS, testDir);
+    CreditLinks edgeweights = abc.getCreditLinks();
     assertEquals(24.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
     assertEquals(0.0, edgeweights.getWeights(0, 2).getUnlockedMin(), ACCEPTABLE_ERROR);
@@ -142,7 +145,8 @@ class CreditNetworkTest {
   @Test
   void singlePathManyConcurrentSpeedyMurmurs() {
     String testDir = "/many-concurrent-transactions-test";
-    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir);
+    AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir);
+    CreditLinks edgeweights = abc.getCreditLinks();
     assertEquals(24.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(24.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
     assertEquals(24.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
@@ -154,7 +158,8 @@ class CreditNetworkTest {
   void multiplePartiallyDisjointPaths() {
     String testDir = "/partially-disjoint-concurrent-transactions-test";
     for (RoutingAlgorithm ra : algos) {
-      CreditLinks edgeweights = singlePathLinkUpdate(ra, testDir);
+      AbstractCreditNetworkBase abc = singlePathLinkUpdate(ra, testDir);
+      CreditLinks edgeweights = abc.getCreditLinks();
       assertEquals(90.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
       assertEquals(70.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
       assertEquals(90.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
@@ -168,7 +173,8 @@ class CreditNetworkTest {
   void oppositeDirectionsConcurrent() {
     String testDir = "/opposite-directions-concurrent-transactions-test";
     for (RoutingAlgorithm ra : algos) {
-      CreditLinks edgeweights = singlePathLinkUpdate(ra, testDir);
+      AbstractCreditNetworkBase abc = singlePathLinkUpdate(ra, testDir);
+      CreditLinks edgeweights = abc.getCreditLinks();
       assertEquals(110.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
       assertEquals(110.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
       assertEquals(110.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
@@ -191,7 +197,8 @@ class CreditNetworkTest {
     selectedByzantineNodes.add(5);
     attack.setSelectedByzantineNodes(selectedByzantineNodes);
 
-    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir, attack);
+    AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir, attack);
+    CreditLinks edgeweights = abc.getCreditLinks();
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(100.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
     assertEquals(100.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
@@ -218,7 +225,9 @@ class CreditNetworkTest {
     // this is to guarantee that the griefed transaction starts first
     runConfig.setTransactionDelayMs(500);
 
-    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir, attack);
+    AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir, attack);
+    CreditLinks edgeweights = abc.getCreditLinks();
+
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
     assertEquals(0.0, edgeweights.getWeights(0, 2).getUnlockedMin(), ACCEPTABLE_ERROR);
@@ -261,7 +270,9 @@ class CreditNetworkTest {
     // this is to guarantee that the griefed transaction starts first
     runConfig.setTransactionDelayMs(500);
 
-    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.MAXFLOW_COLLATERALIZE, testDir, attack);
+    AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.MAXFLOW_COLLATERALIZE, testDir, attack);
+    CreditLinks edgeweights = abc.getCreditLinks();
+
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
     assertEquals(0.0, edgeweights.getWeights(0, 2).getUnlockedMin(), ACCEPTABLE_ERROR);
@@ -299,7 +310,9 @@ class CreditNetworkTest {
     selectedByzantineNodes.add(5);
     attack.setSelectedByzantineNodes(selectedByzantineNodes);
 
-    CreditLinks edgeweights = singlePathLinkUpdate(RoutingAlgorithm.SILENTWHISPERS, testDir, attack);
+    AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.SILENTWHISPERS, testDir, attack);
+    CreditLinks edgeweights = abc.getCreditLinks();
+
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(20.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
     assertEquals(100.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
