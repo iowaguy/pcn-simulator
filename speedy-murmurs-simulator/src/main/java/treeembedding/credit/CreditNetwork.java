@@ -137,6 +137,8 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
         results = this.routeAdhoc(currentTransaction, g, nodes, exclude, edgeweights);
       }
     } catch (TransactionFailedException e) {
+      results = new TransactionResults();
+      results.setSuccess(false);
       log.error(e.getMessage());
     }
 
