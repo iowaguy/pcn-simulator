@@ -369,6 +369,106 @@ class CreditNetworkTest {
     assertEquals(20.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
   }
 
+  ///// DEFAULT VALUES FOR SMALL TOPOLOGY ////////////
+//    assertEquals(9.0, edgeweights.getWeight(0, 1), ACCEPTABLE_ERROR);
+//    assertEquals(5.0, edgeweights.getWeight(0, 4), ACCEPTABLE_ERROR);
+//    assertEquals(12.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
+//    assertEquals(11.0, edgeweights.getWeight(1, 5), ACCEPTABLE_ERROR);
+//    assertEquals(15.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+//    assertEquals(6.0, edgeweights.getWeight(2, 6), ACCEPTABLE_ERROR);
+//    assertEquals(11.0, edgeweights.getWeight(3, 7), ACCEPTABLE_ERROR);
+//    assertEquals(15.0, edgeweights.getWeight(4, 5), ACCEPTABLE_ERROR);
+//    assertEquals(9.0, edgeweights.getWeight(4, 8), ACCEPTABLE_ERROR);
+//    assertEquals(15.0, edgeweights.getWeight(5, 6), ACCEPTABLE_ERROR);
+//    assertEquals(13.0, edgeweights.getWeight(5, 9), ACCEPTABLE_ERROR);
+//    assertEquals(16.0, edgeweights.getWeight(6, 7), ACCEPTABLE_ERROR);
+//    assertEquals(5.0, edgeweights.getWeight(6, 10), ACCEPTABLE_ERROR);
+//    assertEquals(5.0, edgeweights.getWeight(7, 11), ACCEPTABLE_ERROR);
+//    assertEquals(17.0, edgeweights.getWeight(8, 9), ACCEPTABLE_ERROR);
+//    assertEquals(11.0, edgeweights.getWeight(8, 12), ACCEPTABLE_ERROR);
+//    assertEquals(1.0, edgeweights.getWeight(9, 10), ACCEPTABLE_ERROR);
+//    assertEquals(12.0, edgeweights.getWeight(9, 13), ACCEPTABLE_ERROR);
+//    assertEquals(19.0, edgeweights.getWeight(10, 11), ACCEPTABLE_ERROR);
+//    assertEquals(11.0, edgeweights.getWeight(10, 14), ACCEPTABLE_ERROR);
+//    assertEquals(15.0, edgeweights.getWeight(11, 15), ACCEPTABLE_ERROR);
+//    assertEquals(5.0, edgeweights.getWeight(12, 13), ACCEPTABLE_ERROR);
+//    assertEquals(15.0, edgeweights.getWeight(13, 14), ACCEPTABLE_ERROR);
+//    assertEquals(3.0, edgeweights.getWeight(14, 15), ACCEPTABLE_ERROR);
+
+  @Test
+  void singleTransactionMaxflowSmallTopology() {
+    String testDir = "/small-topology-single-transaction";
+
+    AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.MAXFLOW_COLLATERALIZE, testDir);
+    CreditLinks edgeweights = abc.getCreditLinks();
+
+    assertEquals(1, abc.getSuccessesPerEpoch()[0]);
+    assertEquals(1, abc.getTransactionsPerEpoch()[0]);
+
+    assertEquals(9.0, edgeweights.getWeight(0, 1), ACCEPTABLE_ERROR);
+    assertEquals(5.0, edgeweights.getWeight(0, 4), ACCEPTABLE_ERROR);
+    assertEquals(12.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
+    assertEquals(11.0, edgeweights.getWeight(1, 5), ACCEPTABLE_ERROR);
+    assertEquals(15.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(6.0, edgeweights.getWeight(2, 6), ACCEPTABLE_ERROR);
+    assertEquals(11.0, edgeweights.getWeight(3, 7), ACCEPTABLE_ERROR);
+    assertEquals(14.0, edgeweights.getWeight(4, 5), ACCEPTABLE_ERROR);
+    assertEquals(9.0, edgeweights.getWeight(4, 8), ACCEPTABLE_ERROR);
+    assertEquals(4.0, edgeweights.getWeight(5, 6), ACCEPTABLE_ERROR);
+    assertEquals(13.0, edgeweights.getWeight(5, 9), ACCEPTABLE_ERROR);
+    assertEquals(15.0, edgeweights.getWeight(6, 7), ACCEPTABLE_ERROR);
+    assertEquals(5.0, edgeweights.getWeight(6, 10), ACCEPTABLE_ERROR);
+    assertEquals(4.0, edgeweights.getWeight(7, 11), ACCEPTABLE_ERROR);
+    assertEquals(17.0, edgeweights.getWeight(8, 9), ACCEPTABLE_ERROR);
+    assertEquals(11.0, edgeweights.getWeight(8, 12), ACCEPTABLE_ERROR);
+    assertEquals(1.0, edgeweights.getWeight(9, 10), ACCEPTABLE_ERROR);
+    assertEquals(12.0, edgeweights.getWeight(9, 13), ACCEPTABLE_ERROR);
+    assertEquals(19.0, edgeweights.getWeight(10, 11), ACCEPTABLE_ERROR);
+    assertEquals(11.0, edgeweights.getWeight(10, 14), ACCEPTABLE_ERROR);
+    assertEquals(14.0, edgeweights.getWeight(11, 15), ACCEPTABLE_ERROR);
+    assertEquals(5.0, edgeweights.getWeight(12, 13), ACCEPTABLE_ERROR);
+    assertEquals(5.0, edgeweights.getWeight(13, 14), ACCEPTABLE_ERROR);
+    assertEquals(3.0, edgeweights.getWeight(14, 15), ACCEPTABLE_ERROR);
+  }
+
+  @Test
+  void manyTransactionsSequentialMaxflowSmallTopology() {
+    String testDir = "/small-topology-many-transactions";
+    runConfig.setConcurrentTransactionsCount(1);
+    runConfig.setConcurrentTransactions(false);
+
+    AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.MAXFLOW_COLLATERALIZE, testDir);
+    CreditLinks edgeweights = abc.getCreditLinks();
+
+    assertEquals(2, abc.getSuccessesPerEpoch()[0]);
+    assertEquals(2, abc.getTransactionsPerEpoch()[0]);
+
+    assertEquals(9.0, edgeweights.getWeight(0, 1), ACCEPTABLE_ERROR);
+    assertEquals(5.0, edgeweights.getWeight(0, 4), ACCEPTABLE_ERROR);
+    assertEquals(1.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeight(1, 5), ACCEPTABLE_ERROR);
+    assertEquals(3.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(5.0, edgeweights.getWeight(2, 6), ACCEPTABLE_ERROR);
+    assertEquals(11.0, edgeweights.getWeight(3, 7), ACCEPTABLE_ERROR);
+    assertEquals(14.0, edgeweights.getWeight(4, 5), ACCEPTABLE_ERROR);
+    assertEquals(9.0, edgeweights.getWeight(4, 8), ACCEPTABLE_ERROR);
+    assertEquals(3.0, edgeweights.getWeight(5, 6), ACCEPTABLE_ERROR);
+    assertEquals(1.0, edgeweights.getWeight(5, 9), ACCEPTABLE_ERROR);
+    assertEquals(15.0, edgeweights.getWeight(6, 7), ACCEPTABLE_ERROR);
+    assertEquals(5.0, edgeweights.getWeight(6, 10), ACCEPTABLE_ERROR);
+    assertEquals(4.0, edgeweights.getWeight(7, 11), ACCEPTABLE_ERROR);
+    assertEquals(17.0, edgeweights.getWeight(8, 9), ACCEPTABLE_ERROR);
+    assertEquals(11.0, edgeweights.getWeight(8, 12), ACCEPTABLE_ERROR);
+    assertEquals(1.0, edgeweights.getWeight(9, 10), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeight(9, 13), ACCEPTABLE_ERROR);
+    assertEquals(19.0, edgeweights.getWeight(10, 11), ACCEPTABLE_ERROR);
+    assertEquals(11.0, edgeweights.getWeight(10, 14), ACCEPTABLE_ERROR);
+    assertEquals(14.0, edgeweights.getWeight(11, 15), ACCEPTABLE_ERROR);
+    assertEquals(5.0, edgeweights.getWeight(12, 13), ACCEPTABLE_ERROR);
+    assertEquals(5.0, edgeweights.getWeight(13, 14), ACCEPTABLE_ERROR);
+    assertEquals(3.0, edgeweights.getWeight(14, 15), ACCEPTABLE_ERROR);
+  }
+
   /*
   The goal with these is to test out a transaction that goes along two (at least partially) disjoint
   paths. Couldn't get it to work, because I couldn't find a way to force the tree creation to use
