@@ -16,4 +16,4 @@ def show(graph):
 if __name__ == '__main__':
     G = nx.powerlaw_cluster_graph(100, 5, 1.0)
     print("small worldness=" + str(get_small_worldness(G)))
-
+    show(G)
