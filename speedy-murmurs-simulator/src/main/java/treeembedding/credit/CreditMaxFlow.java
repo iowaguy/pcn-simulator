@@ -249,9 +249,17 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
 
           double currentVal = minAlongPath;
           List<Double> base = new LinkedList<>();
-          base.add(currentVal);
+          if (currentNodeId > nextNodeId) {
+            base.add(-currentVal);
+          } else {
+            base.add(currentVal);
+          }
           edgeModifications.merge(edge, base, (l, ignore) -> {
-            l.add(currentVal);
+            if (currentNodeId > nextNodeId) {
+              l.add(-currentVal);
+            } else {
+              l.add(currentVal);
+            }
             return l;
           });
 

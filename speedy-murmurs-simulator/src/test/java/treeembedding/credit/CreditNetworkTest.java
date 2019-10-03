@@ -445,7 +445,7 @@ class CreditNetworkTest {
 
     assertEquals(9.0, edgeweights.getWeight(0, 1), ACCEPTABLE_ERROR);
     assertEquals(5.0, edgeweights.getWeight(0, 4), ACCEPTABLE_ERROR);
-    assertEquals(4.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
+    assertEquals(5.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
     assertEquals(18.0, edgeweights.getWeight(1, 5), ACCEPTABLE_ERROR);
     assertEquals(7.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
     assertEquals(7.0, edgeweights.getWeight(2, 6), ACCEPTABLE_ERROR);

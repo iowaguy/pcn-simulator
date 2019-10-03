@@ -78,6 +78,9 @@ public class CreditLinks extends GraphProperty {
 
   synchronized void prepareUpdateWeight(int src, int dst, double weightChange)
           throws InsufficientFundsException {
+    if (src > dst) {
+      weightChange *= -1;
+    }
     LinkWeight weights = getWeights(src, dst);
     if (weights.areFundsAvailable(weightChange, isFundLockingEnabled)) {
       weights.prepareUpdateWeight(weightChange, isFundLockingEnabled);
@@ -94,6 +97,9 @@ public class CreditLinks extends GraphProperty {
 
   synchronized void finalizeUpdateWeight(int src, int dst, double weightChange)
           throws TransactionFailedException {
+    if (src > dst) {
+      weightChange *= -1;
+    }
     LinkWeight weights = getWeights(src, dst);
     weights.finalizeUpdateWeight(weightChange, isFundLockingEnabled);
     setWeight(makeEdge(src, dst), weights);
