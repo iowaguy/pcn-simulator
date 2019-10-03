@@ -785,9 +785,18 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
             double currentVal = vals[treeIndex];
             List<Double> base = new LinkedList<>();
-            base.add(currentVal);
+            if (currentNodeId > nextNodeId) {
+              base.add(-currentVal);
+            } else {
+              base.add(currentVal);
+            }
+            int finalCurrentNodeId = currentNodeId;
             edgeModifications.merge(edge, base, (l, ignore) -> {
-              l.add(currentVal);
+              if (finalCurrentNodeId > nextNodeId) {
+                l.add(-currentVal);
+              } else {
+                l.add(currentVal);
+              }
               return l;
             });
 
