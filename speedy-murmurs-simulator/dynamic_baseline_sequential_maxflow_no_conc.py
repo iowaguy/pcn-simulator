@@ -5,7 +5,7 @@ config = '''
 attempts: 1
 base: ../data/finalSets/dynamic
 data_set_name: full
-experiment_name: dynamic-baseline-sequential-maxflow
+experiment_name: dynamic-baseline-sequential-maxflow-no-conc
 force_overwrite: false
 step: {step}
 iterations: 1
