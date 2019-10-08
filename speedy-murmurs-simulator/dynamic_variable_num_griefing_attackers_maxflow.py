@@ -31,7 +31,7 @@ def generate_configs():
     for step in range(0, 9):
         l = []
         for num_attackers in [10**x for x in range(0, 5)]:
-            for alg in [common.speedymurmurs, common.silentwhispers]:
+            for alg in [common.maxflow]:
                 l.append(common.parse_config(
                     config.format(data_set=step, alg=alg, num_attackers=num_attackers, tran_set=(step + 1), step=step)))
         config_dict_list.append(l)

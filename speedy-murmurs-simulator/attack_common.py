@@ -62,17 +62,31 @@ def do_experiment(config_dict):
     return run_config(config_dict, output_dir, config_dict['force_overwrite'])
 
 def do_distributed_experiments(ipyclient, config_dict_list):
+    # just running this command to get the absolute output path
+    output_dir = simulation_common.create_output_dir(config_dict_list[0])
+
+    # ignore last part that might be specific to that run
+    logfile = output_dir[:output_dir.rfind('/')+1] + 'simulation.log'
+
     lbv = ipyclient.load_balanced_view()
     result = lbv.map_sync(do_experiment, config_dict_list)
 
     for i, r in enumerate(result):
-        print(f"Task ID #{i}; Command: {r}", flush=True)
+        print(f"Task ID #{i}; Command: {r}", flush=True, file=open(logfile, 'a'))
 
 def start(configs):
     import time
     import ipyparallel
     import socket
+    import simulation_common
     from pathlib import Path
+
+    # just running this command to get the absolute output path
+    output_dir = simulation_common.create_output_dir(configs[0][0])
+
+    # ignore last part that might be specific to that run
+    logfile = output_dir[:output_dir.rfind('/')+1] + 'simulation.log'
+    print(logfile, flush=True)
 
     start = time.time()
     ipyclient = ipyparallel.Client(profile_dir=str(Path.home()) + '/.ipython/' + socket.gethostname())
@@ -92,4 +106,5 @@ def start(configs):
 
     end = time.time()
     elapsed = end - start
-    print(f"Done. Time: {elapsed}")
+
+    print(f'Done. Time: {elapsed}', flush=True, file=open(logfile, 'a'))
