@@ -1,0 +1,4 @@
+node_count: 100
+tx_count: 100
+tx_distribution: powerlaw
+base_topology: hybrid
