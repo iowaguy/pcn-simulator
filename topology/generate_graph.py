@@ -6,12 +6,14 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import logging
 import random
+import math
 
 node_count = 'node_count'
 tx_count = 'tx_count'
 tx_value_distro = 'tx_value_distribution'
 tx_participant_distro = 'tx_participant_distribution'
 base_topology = 'base_topology'
+log_level = 'log_level'
 
 class Topology:
     def __init__(self, base_topology, nodes):
@@ -56,26 +58,28 @@ class Topology:
         cur_weight = {}
 
         # set all edge weights to zero
-        for source, dest in nx.edges(self.__graph):
+        logging.info("Setting edge weights to zero")
+        for source, dest in self.edges:
             max_weight[(source, dest)] = 0
-            max_weight[(dest, source)] = 0
             cur_weight[(source, dest)] = 0
-            cur_weight[(dest, source)] = 0
 
         for source, dest, val in tx_list:
+            logging.debug("Searching for path...")
             r_i = routingalgo(self.__graph, source=source, target=dest)
+
             for i in range(0, len(r_i)-1):
                 node1 = r_i[i]
                 node2 = r_i[i+1]
 
-                # apply tx
+                logging.info("Applying transaction...")
                 cur_weight[(node1, node2)] += val
 
                 if cur_weight[(node2, node1)] > 0:
+                    logging.debug(f"{node1} -> {node2}: {cur_weight[(node1, node2)]}; {node2} -> {node1}: {cur_weight[(node2, node1)]}")
                     min_weight = min(cur_weight[(node1, node2)], cur_weight[(node2, node1)])
                     cur_weight[(node1, node2)] -= min_weight
                     cur_weight[(node2, node1)] -= min_weight
-
+                    logging.debug(f"Updated weights: {node1} -> {node2}: {cur_weight[(node1, node2)]}; {node2} -> {node1}: {cur_weight[(node2, node1)]}")
                 max_weight[(node1, node2)] = max(max_weight[(node1, node2)], cur_weight[(node1, node2)])
 
         return max_weight
@@ -88,6 +92,14 @@ class Topology:
     def graph(self, graph):
         self.__graph = graph
 
+    @property
+    def edges(self):
+        out = []
+        for s, d in nx.edges(self.__graph):
+            out.append((s,d))
+            out.append((d,s))
+        return out
+
 
 class TxDistro:
     # future considerations for sampling
@@ -98,7 +110,7 @@ class TxDistro:
 
     def __init__(self, value_distro, participant_distro, topology):
         self.__tx_value_distribution_types = {'powerlaw':self.__sample_tx_pareto}
-        self.__tx_participant_distribution_types = {'random':self.__sample_random_nodes}
+        self.__tx_participant_distribution_types = {'random':self.__sample_random_nodes, 'powerlaw':self.__sample_pairs_pareto_dist}
         self.__value_distribution = value_distro
         self.__participant_distribution = participant_distro
         self.__topology = topology
@@ -120,17 +132,47 @@ class TxDistro:
     def __sample_random_nodes(self):
         return random.sample(self.__topology.graph.nodes, 2)
 
+    def __sample_pairs_pareto_dist(self):
+        source = self.__sample_pareto_dist(self.__topology.graph.nodes, max=5)
+        dest = self.__sample_pareto_dist(self.__topology.graph.nodes, max=5)
+
+        logging.debug(f"dest={dest}; source={source}")
+        while dest == source:
+            dest = self.__sample_pareto_dist(self.__topology.graph.nodes, max=5)
+            logging.debug(f"dest={dest}; source={source}")
+
+        return (source, dest)
+
+    def __sample_pareto_dist(self, l, max=None):
+        l = list(l)
+        alpha=1.16 # from the pareto principle, i.e. 80/20 rule
+        bucket_width = 5.0/len(l)
+
+        # sample number, need to subtract 1 so that distro starts at zero.
+        # pareto normally starts at one.
+        num = random.paretovariate(alpha) - 1
+
+        while max and max < num:
+            num = random.paretovariate(alpha) - 1
+
+        # find corresponding bucket
+        bucket = math.floor(num/bucket_width)
+        logging.debug(f"num={num}; bucket-width={bucket_width}; bucket={bucket}; node={l[bucket]}")
+        return l[bucket]
 
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.ERROR)
     with open(sys.argv[1], 'r') as stream:
         try:
             configs = yaml.safe_load(stream)
         except yaml.YAMLError as e:
             logging.error(e)
             exit(1)
+    if log_level in configs:
+        logging.basicConfig(level=configs[log_level].upper())
+    else:
+        logging.basicConfig(level=logging.ERROR)
 
     topo = Topology(configs[base_topology], configs[node_count])
     txdist = TxDistro(configs[tx_value_distro], configs[tx_participant_distro], topo)

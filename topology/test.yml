@@ -1,5 +1,6 @@
 node_count: 10
 tx_count: 100
 tx_value_distribution: powerlaw
-tx_participant_distribution: random
+tx_participant_distribution: powerlaw
 base_topology: scalefree
+log_level: error
