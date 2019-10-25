@@ -114,6 +114,10 @@ class TxDistro:
         self.__value_distribution = value_distro
         self.__participant_distribution = participant_distro
         self.__topology = topology
+        self.__source_nodes_distro = list(self.__topology.graph.nodes)
+        random.shuffle(self.__source_nodes_distro)
+        self.__dest_nodes_distro = list(self.__topology.graph.nodes)
+        random.shuffle(self.__dest_nodes_distro)
 
     def sample(self, n=1):
         values = self.__tx_value_distribution_types[self.__value_distribution](n)
@@ -133,8 +137,8 @@ class TxDistro:
         return random.sample(self.__topology.graph.nodes, 2)
 
     def __sample_pairs_pareto_dist(self):
-        source = self.__sample_pareto_dist(self.__topology.graph.nodes, max=5)
-        dest = self.__sample_pareto_dist(self.__topology.graph.nodes, max=5)
+        source = self.__sample_pareto_dist(self.__source_nodes_distro, max=5)
+        dest = self.__sample_pareto_dist(self.__dest_nodes_distro, max=5)
 
         logging.debug(f"dest={dest}; source={source}")
         while dest == source:
@@ -161,6 +165,31 @@ class TxDistro:
         return l[bucket]
 
 
+def convert_topo_to_gtna(topo):
+
+    edge_map = {}
+    for s, d in topo.edges:
+        if str(s) in edge_map:
+            edge_map[str(s)].append(str(d))
+        else:
+            edge_map[str(s)] = [str(d)]
+
+    filename = "topology.graph"
+    with open(filename, 'w') as f:
+        f.write("# Name of the Graph:\n")
+        f.write(f"G (Nodes = {len(topo.graph)})\n")
+        f.write("# Number of Nodes:\n")
+        f.write(f"{len(topo.graph)}\n")
+        f.write("# Number of Edges:\n")
+        f.write(f"{len(topo.edges)}\n\n")
+
+        for source, dest_list in edge_map.items():
+            dest_str = ";".join(dest_list)
+            f.write(f"{source}:{dest_str}\n")
+
+
+def convert_txs_to_gtna():
+    print("not supported")
 
 if __name__ == '__main__':
     with open(sys.argv[1], 'r') as stream:
@@ -184,5 +213,8 @@ if __name__ == '__main__':
     # print(txdist.sample(5))
 
     # topo.full_knowledge_edge_weight_gen(txdist.sample(configs[tx_count]))
-    print(topo.full_knowledge_edge_weight_gen(txdist.sample(configs[tx_count])))
+    # print(topo.edges)
+    convert_topo_to_gtna(topo)
+
+    # print(topo.full_knowledge_edge_weight_gen(txdist.sample(configs[tx_count])))
     # topo.show()
