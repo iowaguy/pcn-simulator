@@ -19,6 +19,7 @@ class Topology:
     def __init__(self, base_topology, nodes):
         self.__base_topolgies = {'hybrid':self.__gen_hybrid_topology, 'smallworld':self.__gen_smallworld_topology, 'random':self.__gen_random_topology, 'scalefree':self.__gen_scalefree_topology}
         self.__graph = self.__base_topolgies[base_topology](nodes)
+        self.__link_weights = None
 
     def get_small_worldness(self):
         rando_graph = nx.erdos_renyi_graph(len(self.__graph.nodes), 0.2)
@@ -82,6 +83,7 @@ class Topology:
                     logging.debug(f"Updated weights: {node1} -> {node2}: {cur_weight[(node1, node2)]}; {node2} -> {node1}: {cur_weight[(node2, node1)]}")
                 max_weight[(node1, node2)] = max(max_weight[(node1, node2)], cur_weight[(node1, node2)])
 
+        self.__link_weights = max_weight
         return max_weight
 
     @property
@@ -100,6 +102,9 @@ class Topology:
             out.append((d,s))
         return out
 
+    @property
+    def link_credit(self):
+        return self.__link_weights
 
 class TxDistro:
     # future considerations for sampling
@@ -165,8 +170,7 @@ class TxDistro:
         return l[bucket]
 
 
-def convert_topo_to_gtna(topo):
-
+def convert_topo_to_gtna(topo, name="topology"):
     edge_map = {}
     for s, d in topo.edges:
         if str(s) in edge_map:
@@ -174,8 +178,7 @@ def convert_topo_to_gtna(topo):
         else:
             edge_map[str(s)] = [str(d)]
 
-    filename = "topology.graph"
-    with open(filename, 'w') as f:
+    with open(f"{name}.graph", 'w') as f:
         f.write("# Name of the Graph:\n")
         f.write(f"G (Nodes = {len(topo.graph)})\n")
         f.write("# Number of Nodes:\n")
@@ -187,9 +190,36 @@ def convert_topo_to_gtna(topo):
             dest_str = ";".join(dest_list)
             f.write(f"{source}:{dest_str}\n")
 
+def convert_credit_links_to_gtna(topo, name="topology"):
+    with open(f"{name}.graph_CREDIT_LINKS", 'w') as f:
+        f.write("# Graph Property Class\n")
+        f.write("treeembedding.credit.CreditLinks\n")
+        f.write("# Key\n")
+        f.write("CREDIT_LINKS\n")
 
-def convert_txs_to_gtna():
-    print("not supported")
+        # print(topo.link_credit)
+        edges = {}
+        for s, d in topo.graph.edges:
+            if s < d:
+                cur = roundup(topo.link_credit[(s,d)])
+                max = roundup(cur + topo.link_credit[(d, s)])
+                line = f"{s} {d} 0.0 {cur} {max}\n"
+                f.write(line)
+
+
+def convert_txs_to_gtna(transactions, name="transactions"):
+    with open(f"{name}.txt", 'w') as f:
+        counter = 0
+        for source, dest, value in transactions:
+            f.write(f"{counter} {rounddown(value)} {source} {dest}\n")
+            counter += 1
+
+
+def roundup(x):
+    return math.ceil(x * 10) / 10.0
+
+def rounddown(x):
+    return math.floor(x * 10) / 10.0
 
 if __name__ == '__main__':
     with open(sys.argv[1], 'r') as stream:
@@ -214,7 +244,11 @@ if __name__ == '__main__':
 
     # topo.full_knowledge_edge_weight_gen(txdist.sample(configs[tx_count]))
     # print(topo.edges)
-    convert_topo_to_gtna(topo)
 
-    # print(topo.full_knowledge_edge_weight_gen(txdist.sample(configs[tx_count])))
+    txs = txdist.sample(configs[tx_count])
+    topo.full_knowledge_edge_weight_gen(txs)
+
+    convert_topo_to_gtna(topo)
+    convert_credit_links_to_gtna(topo)
+    convert_txs_to_gtna(txs)
     # topo.show()
