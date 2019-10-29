@@ -33,7 +33,8 @@ def run_config(config_dict, output_dir, force=False):
             shutil.rmtree(base + data_path[0], ignore_errors=True)
 
     sim_type = config_dict['simulation_type']
-    out = subprocess.run(['java', '-cp', f'{simulation_common.classpath}', f'{simulation_common.run_info[sim_type]["class"]}', f'{output_dir}'], capture_output=True)
+    # return f'java -cp {simulation_common.classpath} {simulation_common.run_info[sim_type]["class"]} {output_dir}'
+    out = subprocess.run(['java', '-cp', f'{simulation_common.classpath}', f'{simulation_common.run_info[sim_type]["class"]}', f'{output_dir}'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # if it fails, delete dir
     if out.returncode == 1:
@@ -69,7 +70,7 @@ def do_distributed_experiments(ipyclient, config_dict_list):
     logfile = output_dir[:output_dir.rfind('/')+1] + 'simulation.log'
 
     lbv = ipyclient.load_balanced_view()
-    result = lbv.map_sync(do_experiment, config_dict_list)
+    result = lbv.map(do_experiment, config_dict_list)
 
     for i, r in enumerate(result):
         print(f"Task ID #{i}; Command: {r}", flush=True, file=open(logfile, 'a'))

@@ -1,5 +1,8 @@
 #!/usr/local/bin/python3
 
+import os
+import linecache
+
 singles = '_singles.txt'
 classpath = 'target/pcn-simulator-1.0-SNAPSHOT-jar-with-dependencies.jar'
 ID = 'id'
@@ -67,12 +70,19 @@ def get_output_base_path(config_dict):
 
     return dir
 
+def __get_input_data_dir_path(config_dict):
+    return os.getcwd() + '/' + config_dict['base']
+
+def parse_node_count(config_dict):
+    input_data_path = __get_input_data_dir_path(config_dict)
+    return int(linecache.getline(input_data_path + '/' + config_dict['topology'], 4))
 
 def get_dynamic_data_path_config(config_dict):
     algo = config_dict["routing_algorithm"]
     count = config_dict['step']
 
-    dir = f'/READABLE_FILE_{algo_info[algo]["short_name"]}-P{count}-{run_info["dynamic"]["node_count"]}'
+    nodes = parse_node_count(config_dict)
+    dir = f'/READABLE_FILE_{algo_info[algo]["short_name"]}-P{count}-{nodes}'
 
     if algo == maxflow:
         dir2 = f'/0/CREDIT_MAX_FLOW-0.0-0/'
