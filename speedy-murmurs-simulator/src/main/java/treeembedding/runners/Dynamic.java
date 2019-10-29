@@ -9,6 +9,11 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import gtna.data.Series;
 import gtna.metrics.Metric;
@@ -71,12 +76,16 @@ public class Dynamic {
     String newlinks = runConfig.getBasePath() + "/" + runConfig.getNewLinksPath();
 
     String graph;
+    String originalTopoFile = runConfig.getBasePath() + "/" + runConfig.getTopologyPath();
+
+
     int step = runConfig.getStep();
     if (step == 0) {
-      graph = runConfig.getBasePath() + "/" + runConfig.getTopologyPath();
+      graph = originalTopoFile;
     } else {
       // make sure previous step has completed
-      graph = runDirPath + "READABLE_FILE_" + prefix + "-P" + (step - 1) + "-93502/0/";
+      String nodeCountStr = getNodesFromTopoFile(originalTopoFile);
+      graph = runDirPath + "READABLE_FILE_" + prefix + "-P" + (step - 1) + "-" + nodeCountStr + "/0/";
       FilenameFilter fileNameFilter = (dir, name) -> name.contains("CREDIT_NETWORK") || name.contains("CREDIT_MAX");
       String[] files = (new File(graph)).list(fileNameFilter);
       if (files == null || files.length == 0) {
@@ -117,4 +126,17 @@ public class Dynamic {
     Series.generate(net, new Metric[]{m}, 0, 0);
   }
 
+  private static String getNodesFromTopoFile(String topoFilePath) {
+    // get number of nodes from topo file
+    try (Stream<String> lines = Files.lines(Paths.get(topoFilePath))) {
+      Optional<String> op = lines.skip(3).findFirst();
+      if (op.isPresent()) {
+        return op.get();
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    return "";
+  }
 }
