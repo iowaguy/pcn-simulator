@@ -66,8 +66,23 @@ public class RunConfig {
   @JsonProperty("experiment_name")
   private String experimentName;
 
+  @JsonProperty("epoch_length")
+  private double epochLength;
+
   // useful for controlling the order of transactions in tests
   private int transactionDelayMs;
+
+  public double getEpochLength() {
+    if (epochLength == 0) {
+      return 165.55245497208898;
+    } else {
+      return epochLength;
+    }
+  }
+
+  public void setEpochLength(double epochLength) {
+    this.epochLength = epochLength;
+  }
 
   public int getTransactionDelayMs() {
     return transactionDelayMs;

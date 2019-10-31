@@ -29,7 +29,7 @@ import treeembedding.credit.partioner.RandomPartitioner;
 
 public class Dynamic {
   private static Logger log = LogManager.getLogger();
-  private static final double E = 165.55245497208898;
+  //private static final double E = 165.55245497208898;
 
   /**
    * @param args 0: run 1: config (0- SilentWhispers, 7- SpeedyMurmurs, 10-MaxFlow) 2: steps
@@ -99,7 +99,7 @@ public class Dynamic {
 
     String name = routingAlgorithm.getShortName() + "-P" + step;
 
-    double epoch = E * 1000;
+    double epoch = runConfig.getEpochLength();//E * 1000;
 
 
 
@@ -107,7 +107,7 @@ public class Dynamic {
     if (routingAlgorithm == RoutingAlgorithm.SILENTWHISPERS ||
             routingAlgorithm == RoutingAlgorithm.SPEEDYMURMURS) {
       int max = 1;
-      double req = E * 2;
+      double req = runConfig.getEpochLength() / 1000 * 2;
       int[] roots = {64, 36, 43};
       Partitioner part = new RandomPartitioner();
 
