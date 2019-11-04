@@ -66,7 +66,7 @@ def get_output_base_path(config_dict):
         if config_dict["attack_properties"]["attackers"] != 0:
             dir += f'-{config_dict["attack_properties"]["attack_type"]}-{config_dict["attack_properties"]["attacker_selection"]}-{config_dict["attack_properties"]["attackers"]}'
         if config_dict["attack_properties"]["receiver_delay_ms"] != 0:
-            dir += f'-{config_dict["attack_properties"]["attack_type"]}-{config_dict["attack_properties"]["receiver_delay_ms"]}'
+            dir += f'-{config_dict["attack_properties"]["attack_type"]}-{config_dict["attack_properties"]["receiver_delay_ms"]}ms'
 
     return dir
 

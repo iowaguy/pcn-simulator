@@ -246,9 +246,9 @@ if __name__ == '__main__':
     # print(topo.edges)
 
     txs = txdist.sample(configs[tx_count])
-    topo.full_knowledge_edge_weight_gen(txs)
+    # topo.full_knowledge_edge_weight_gen(txs)
 
-    convert_topo_to_gtna(topo)
-    convert_credit_links_to_gtna(topo)
+    # convert_topo_to_gtna(topo)
+    # convert_credit_links_to_gtna(topo)
     convert_txs_to_gtna(txs)
     # topo.show()

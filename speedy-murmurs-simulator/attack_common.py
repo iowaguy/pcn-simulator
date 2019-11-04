@@ -70,6 +70,7 @@ def do_distributed_experiments(ipyclient, config_dict_list):
     logfile = output_dir[:output_dir.rfind('/')+1] + 'simulation.log'
 
     lbv = ipyclient.load_balanced_view()
+    # print("TEST", flush=True, file=open(logfile, 'a'))
     result = lbv.map(do_experiment, config_dict_list)
 
     for i, r in enumerate(result):
@@ -88,7 +89,7 @@ def start(configs):
     # ignore last part that might be specific to that run
     logfile = output_dir[:output_dir.rfind('/')+1] + 'simulation.log'
     print(logfile, flush=True)
-
+    print("TEST", flush=True, file=open(logfile, 'a'))
     start = time.time()
     ipyclient = ipyparallel.Client(profile_dir=str(Path.home()) + '/.ipython/' + socket.gethostname())
     ipyclient[:].apply_sync(setup)

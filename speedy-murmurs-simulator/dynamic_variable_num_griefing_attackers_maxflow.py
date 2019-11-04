@@ -17,7 +17,7 @@ new_links_path: jan2013-newlinks-lcc-sorted-uniq-t{data_set}.txt
 trees: 3
 concurrent_transactions: true
 concurrent_transactions_count: 20
-network_latency_ms: 30
+network_latency_ms: 20
 log_level: warn
 attack_properties:
   attack_type: griefing
@@ -28,7 +28,7 @@ attack_properties:
 
 def generate_configs():
     config_dict_list = []
-    for step in range(0, 9):
+    for step in range(0, 3):
         l = []
         for num_attackers in [10**x for x in range(0, 5)]:
             for alg in [common.maxflow]:

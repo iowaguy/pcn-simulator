@@ -12,12 +12,12 @@ lines=['r*-', 'b*-', 'g*-']
 # succr_dicts = {sc.maxflow: {}, sc.speedymurmurs: {}, sc.silentwhispers: {}}
 # succr_lists = {sc.maxflow: [], sc.speedymurmurs: [], sc.silentwhispers: []}
 
-def plot_success_ratio(configs, exp, sort_by="routing_algorithm"):
+def plot_success_ratio(configs, exp, sort_by="routing_algorithm", secondary_sort=None):
     buckets = {}
 
     # sort by routing algo
     for c in configs:
-        buckets = su.sort_singles_configs(c, buckets, sort_by)
+        buckets = su.sort_singles_configs(c, buckets, sort_by, secondary_sort)
 
     for feature in buckets:
         for c in buckets[feature]:
@@ -54,7 +54,7 @@ def plot_success_ratio(configs, exp, sort_by="routing_algorithm"):
             # lines[i]
             # print(i)
             # plt.plot(range(50, 801), su.running_mean(succr_lists[feature], 50), lines[i], markersize=1, linewidth=1, label=feature)
-            plt.plot(range(50, 801), su.running_mean(succr_lists[feature], 50), markersize=1, linewidth=1, label=feature)
+            plt.plot(range(50, 801), su.running_mean(succr_lists[feature], 50), markersize=1, linewidth=2, label=feature)
     # if len(succr_lists[sc.silentwhispers]) > 0:
     #     plt.plot(range(50, 801), su.running_mean(succr_lists[sc.silentwhispers], 50), 'r*-', markersize=1, linewidth=1, label='SilentWhispers')
     # if len(succr_lists[sc.speedymurmurs]) > 0:
@@ -70,5 +70,8 @@ if __name__ == "__main__":
     modulename = sys.argv[1]
     new_module = __import__(modulename)
     configs = new_module.generate_configs()
-    # plot_success_ratio(configs, modulename, "routing_algorithm")
-    plot_success_ratio(configs, modulename, "concurrent_transactions_count")
+    plot_success_ratio(configs, modulename, "routing_algorithm")
+    # plot_success_ratio(configs, modulename, "concurrent_transactions_count")
+    # plot_success_ratio(configs, modulename, "network_latency_ms")
+    # plot_success_ratio(configs, modulename, "attack_properties", "attackers")
+    # plot_success_ratio(configs, modulename, "attack_properties", "receiver_delay_ms")
