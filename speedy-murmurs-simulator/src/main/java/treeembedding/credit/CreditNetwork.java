@@ -58,7 +58,6 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
   private final int maxTries;
   private Queue<double[]> newLinks;
 
-  private Graph graph;
   private final boolean update;
 
   //computed metrics
