@@ -1,0 +1,85 @@
+lines:
+  - line: 1
+      avg-last-50: true
+      merge: true
+      base: data/dynamic-id0-dynamic-baseline-sequential/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-silentwhispers-3-1-1-lat0ms/
+      algo: silentwhispers
+      files:
+        - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P1-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P2-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P3-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P4-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P5-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P6-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P7-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P8-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P9-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+
+  - line: 10
+      avg-last-50: true
+      merge: true
+      base: data/dynamic-id0-dynamic-variable-concurrent-txs/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-silentwhispers-3-1-1-lat5ms-concurrent-10/
+      algo: silentwhispers
+      files:
+        - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P1-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P2-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P3-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P4-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P5-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P6-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P7-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P8-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P9-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+
+  - line: 25
+      avg-last-50: true
+      merge: true
+      base: data/dynamic-id0-dynamic-variable-concurrent-txs/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-silentwhispers-3-1-1-lat5ms-concurrent-25/
+      algo: silentwhispers
+      files:
+        - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P1-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P2-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P3-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P4-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P5-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P6-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P7-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P8-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P9-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+
+  - line: 50
+      avg-last-50: true
+      merge: true
+      base: data/dynamic-id0-dynamic-variable-concurrent-txs/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-silentwhispers-3-1-1-lat5ms-concurrent-50/
+      algo: silentwhispers
+      files:
+        - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P1-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P2-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P3-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P4-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P5-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P6-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P7-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P8-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P9-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+
+  - line: 100
+      avg-last-50: true
+      merge: true
+      base: data/dynamic-id0-dynamic-variable-concurrent-txs/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-silentwhispers-3-1-1-lat5ms-concurrent-100/
+      algo: silentwhispers
+      files:
+        - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P1-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P2-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P3-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P4-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P5-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P6-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P7-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P8-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P9-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt

@@ -5,7 +5,7 @@ config = '''
 attempts: 1
 base: ../data/{data_set}
 data_set_name: {data_set}
-experiment_name: dynamic-baseline-sequential
+experiment_name: dynamic-variable-concurrent-txs
 force_overwrite: false
 step: {step}
 iterations: 1
@@ -13,12 +13,11 @@ routing_algorithm: "{alg}"
 simulation_type: dynamic
 topology: topology.graph
 transaction_set: transactions-{tran_set}.txt
-trees: 3
 new_links_path: newlinks-{new_links}.txt
-concurrent_transactions: false
-concurrent_transactions_count: 1
-network_latency_ms: 0
-epoch_length: {epoch}
+trees: 3
+concurrent_transactions: true
+concurrent_transactions_count: {threads}
+network_latency_ms: 5
 log_level: warn
 '''
 
@@ -31,10 +30,11 @@ def generate_configs():
     for step in range(0, 10):
         l = []
         for i in range(0, len(data_set)):
-            for alg in [common.maxflow, common.speedymurmurs, common.silentwhispers]:
-                tran_set = step + 1
-                l.append(common.parse_config(
-                    config.format(alg=alg, tran_set=tran_set, step=step, data_set=data_set[i], epoch=epochs[i], new_links=tran_set)))
+            for threads in [10, 25, 50, 100]:
+                for alg in [common.maxflow, common.speedymurmurs, common.silentwhispers]:
+                    tran_set = step + 1
+                    l.append(common.parse_config(
+                        config.format(alg=alg, tran_set=tran_set, step=step, data_set=data_set[i], epoch=epochs[i], new_links=tran_set, threads=threads)))
         config_dict_list.append(l)
     return config_dict_list
 

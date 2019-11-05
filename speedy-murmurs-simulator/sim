@@ -45,11 +45,15 @@ status() {
 start() {
   ENGINES="$1"
   ipcluster start --daemonize=True -n "${ENGINES}" --ProfileDir.location="${IPCLUSTER_DIR}"
+  echo "${IPCLUSTER_DIR}/log/ipcluster-*.log"
   exec tail -f ${IPCLUSTER_DIR}/log/ipcluster-*.log
 }
 
 experiment() {
   EXPERIMENT_TYPE="$1"
+  if [ -f "${EXPERIMENT_LOG}" ]; then
+      mv "${EXPERIMENT_LOG}" "${EXPERIMENT_LOG}-$(date +%m-%d-%y-%H:%M:%S)"
+  fi
   nohup python "${EXPERIMENT_TYPE}" &> ${EXPERIMENT_LOG} &
   sleep 1
   echo "Experiment started" > $(cat ${EXPERIMENT_LOG})

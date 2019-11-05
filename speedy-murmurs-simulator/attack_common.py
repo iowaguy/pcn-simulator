@@ -89,7 +89,7 @@ def start(configs):
     # ignore last part that might be specific to that run
     logfile = output_dir[:output_dir.rfind('/')+1] + 'simulation.log'
     print(logfile, flush=True)
-    print("TEST", flush=True, file=open(logfile, 'a'))
+    #print("TEST", flush=True, file=open(logfile, 'a'))
     start = time.time()
     ipyclient = ipyparallel.Client(profile_dir=str(Path.home()) + '/.ipython/' + socket.gethostname())
     ipyclient[:].apply_sync(setup)
