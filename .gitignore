@@ -19,3 +19,4 @@ speedy-murmurs-simulator/target/*
 *~
 speedy-murmurs-simulator/logs/*
 */nohup*.out
+**.png

@@ -1,7 +1,13 @@
+xmin: 0
+xmax: 700
+running_avg: 50
+plotname: "Success Ratios Over Time for Ford-Fulkerson"
+legend_loc:
+  - 0.45
+  - 0.75
 lines:
-  - line: maxflow-id0
-      avg-last-50: true
-      merge: true
+  - line:
+      name: Full Knowledge (id0)
       base: data/dynamic-id0-dynamic-baseline-sequential/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize-3-1-1-lat0ms
       algo: maxflow
       files:
@@ -16,9 +22,8 @@ lines:
         - READABLE_FILE_M-P8-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
         - READABLE_FILE_M-P9-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
 
-  - line: maxflow-id2
-      avg-last-50: true
-      merge: true
+  - line:
+      name: Alternate Tx Set (id2)
       base: data/dynamic-id2-dynamic-baseline-sequential/dynamic-id2-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize-3-1-1-lat0ms
       algo: maxflow
       files:
@@ -33,19 +38,18 @@ lines:
         - READABLE_FILE_M-P8-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
         - READABLE_FILE_M-P9-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
 
-  - line: maxflow-id3
-      avg-last-50: true
-      merge: true
-      base: data/dynamic-id3-dynamic-baseline-sequential/dynamic-id3-ripple-dynamic-maxflow_collateralize-3-1-1-lat0ms
+  - line:
+      name: Measured Ripple Dataset (id3)
+      base: data/dynamic-id3-dynamic-baseline-sequential/dynamic-id3-measured-nodes-93502-txs-1m-ripple-dynamic-maxflow_collateralize-3-1-1-lat0ms
       algo: maxflow
       files:
-        - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P1-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P2-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P3-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P4-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P5-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P6-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P7-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P8-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P9-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P0-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P1-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P2-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P3-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P4-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P5-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P6-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P7-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P8-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        # - READABLE_FILE_M-P9-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt

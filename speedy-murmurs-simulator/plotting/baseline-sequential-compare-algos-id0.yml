@@ -1,5 +1,5 @@
 xmin: 0
-xmax: 800
+xmax: 700
 running_avg: 50
 plotname: "Success Ratios Over Time on Synthetic Dataset #1"
 legend_loc:
@@ -7,7 +7,7 @@ legend_loc:
   - 0.75
 lines:
   - line:
-      name: Maxflow
+      name: Ford-Fulkerson
       base: data/dynamic-id0-dynamic-baseline-sequential/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize-3-1-1-lat0ms
       algo: maxflow
       files:
@@ -37,17 +37,17 @@ lines:
         - READABLE_FILE_SM-P8-100000/0/CREDIT_NETWORK-SM-P8-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
         - READABLE_FILE_SM-P9-100000/0/CREDIT_NETWORK-SM-P9-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
 
-  - line:
-      name: SilentWhispers
-      base: data/dynamic-id0-dynamic-baseline-sequential/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-silentwhispers-3-1-1-lat0ms
-      files:
-        - READABLE_FILE_SW-P0-100000/0/CREDIT_NETWORK-SW-P0-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
-        - READABLE_FILE_SW-P1-100000/0/CREDIT_NETWORK-SW-P1-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
-        - READABLE_FILE_SW-P2-100000/0/CREDIT_NETWORK-SW-P2-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
-        - READABLE_FILE_SW-P3-100000/0/CREDIT_NETWORK-SW-P3-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
-        - READABLE_FILE_SW-P4-100000/0/CREDIT_NETWORK-SW-P4-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
-        - READABLE_FILE_SW-P5-100000/0/CREDIT_NETWORK-SW-P5-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
-        - READABLE_FILE_SW-P6-100000/0/CREDIT_NETWORK-SW-P6-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
-        - READABLE_FILE_SW-P7-100000/0/CREDIT_NETWORK-SW-P7-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
-        - READABLE_FILE_SW-P8-100000/0/CREDIT_NETWORK-SW-P8-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
-        - READABLE_FILE_SW-P9-100000/0/CREDIT_NETWORK-SW-P9-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+  # - line:
+  #     name: SilentWhispers
+  #     base: data/dynamic-id0-dynamic-baseline-sequential/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-silentwhispers-3-1-1-lat0ms
+  #     files:
+  #       - READABLE_FILE_SW-P0-100000/0/CREDIT_NETWORK-SW-P0-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+  #       - READABLE_FILE_SW-P1-100000/0/CREDIT_NETWORK-SW-P1-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+  #       - READABLE_FILE_SW-P2-100000/0/CREDIT_NETWORK-SW-P2-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+  #       - READABLE_FILE_SW-P3-100000/0/CREDIT_NETWORK-SW-P3-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+  #       - READABLE_FILE_SW-P4-100000/0/CREDIT_NETWORK-SW-P4-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+  #       - READABLE_FILE_SW-P5-100000/0/CREDIT_NETWORK-SW-P5-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+  #       - READABLE_FILE_SW-P6-100000/0/CREDIT_NETWORK-SW-P6-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+  #       - READABLE_FILE_SW-P7-100000/0/CREDIT_NETWORK-SW-P7-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+  #       - READABLE_FILE_SW-P8-100000/0/CREDIT_NETWORK-SW-P8-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+  #       - READABLE_FILE_SW-P9-100000/0/CREDIT_NETWORK-SW-P9-1250.0-TREE_ROUTE_SILENTW-false-true-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt

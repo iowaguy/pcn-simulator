@@ -1,11 +1,15 @@
+import sys
+# insert at 1, 0 is the script path (or '' in REPL)
+sys.path.insert(1, 'common')
+
 import simulation_common as common
 import attack_common
 
 config = '''
 attempts: 1
-base: ../data/{data_set}
+base: ../../pcn-topologies/datasets/{data_set}
 data_set_name: {data_set}
-experiment_name: dynamic-variable-concurrent-txs
+experiment_name: dynamic-variable-concurrent-txs-50
 force_overwrite: false
 step: {step}
 iterations: 1
@@ -18,20 +22,21 @@ trees: 3
 concurrent_transactions: true
 concurrent_transactions_count: {threads}
 network_latency_ms: 5
+epoch_length: {epoch}
 log_level: warn
 '''
 
 # epoch length is 1M/800 for synthetic data sets
 epochs = [1250, 1250, 165552.45497208898]
-data_set = ["id0-synthetic-nodes-100k-txs-1m-scalefree", "id2-synthetic-nodes-100k-txs-1m-scalefree", "id3-ripple-dynamic"]
+data_set = ["id0-synthetic-nodes-100k-txs-1m-scalefree", "id2-synthetic-nodes-100k-txs-1m-scalefree", "id3-measured-nodes-93502-txs-1m-ripple-dynamic"]
 
 def generate_configs():
     config_dict_list = []
     for step in range(0, 10):
         l = []
         for i in range(0, len(data_set)):
-            for threads in [10, 25, 50, 100]:
-                for alg in [common.maxflow, common.speedymurmurs, common.silentwhispers]:
+            for threads in [50]:
+                for alg in [common.maxflow, common.speedymurmurs]:
                     tran_set = step + 1
                     l.append(common.parse_config(
                         config.format(alg=alg, tran_set=tran_set, step=step, data_set=data_set[i], epoch=epochs[i], new_links=tran_set, threads=threads)))

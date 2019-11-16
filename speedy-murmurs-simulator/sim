@@ -57,6 +57,7 @@ experiment() {
   nohup python "${EXPERIMENT_TYPE}" &> ${EXPERIMENT_LOG} &
   sleep 1
   echo "Experiment started" > $(cat ${EXPERIMENT_LOG})
+  echo "${EXPERIMENT_LOG}"
   cat "${EXPERIMENT_LOG}"
   exit 0
 }

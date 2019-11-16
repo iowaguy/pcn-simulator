@@ -1,85 +1,89 @@
+xmin: 0
+xmax: 700
+running_avg: 50
+plotname: "Success Ratios Over Time for SpeedyMurmurs on Dataset #1 with Variable Thread Counts"
+legend_loc:
+  - 0.67
+  - 0.75
 lines:
-  - line: 1
-      avg-last-50: true
-      merge: true
+  - line:
+      name: 1 thread
       base: data/dynamic-id0-dynamic-baseline-sequential/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-speedymurmurs-3-1-1-lat0ms/
       algo: speedymurmurs
       files:
-        - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P1-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P2-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P3-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P4-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P5-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P6-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P7-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P8-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P9-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_SM-P0-100000/0/CREDIT_NETWORK-SM-P0-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P1-100000/0/CREDIT_NETWORK-SM-P1-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P2-100000/0/CREDIT_NETWORK-SM-P2-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P3-100000/0/CREDIT_NETWORK-SM-P3-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P4-100000/0/CREDIT_NETWORK-SM-P4-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P5-100000/0/CREDIT_NETWORK-SM-P5-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P6-100000/0/CREDIT_NETWORK-SM-P6-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P7-100000/0/CREDIT_NETWORK-SM-P7-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P8-100000/0/CREDIT_NETWORK-SM-P8-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P9-100000/0/CREDIT_NETWORK-SM-P9-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
 
-  - line: 10
-      avg-last-50: true
-      merge: true
+  - line:
+      name: 10 threads
       base: data/dynamic-id0-dynamic-variable-concurrent-txs/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-speedymurmurs-3-1-1-lat5ms-concurrent-10/
       algo: speedymurmurs
       files:
-        - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P1-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P2-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P3-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P4-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P5-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P6-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P7-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P8-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P9-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_SM-P0-100000/0/CREDIT_NETWORK-SM-P0-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P1-100000/0/CREDIT_NETWORK-SM-P1-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P2-100000/0/CREDIT_NETWORK-SM-P2-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P3-100000/0/CREDIT_NETWORK-SM-P3-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P4-100000/0/CREDIT_NETWORK-SM-P4-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P5-100000/0/CREDIT_NETWORK-SM-P5-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P6-100000/0/CREDIT_NETWORK-SM-P6-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P7-100000/0/CREDIT_NETWORK-SM-P7-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P8-100000/0/CREDIT_NETWORK-SM-P8-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P9-100000/0/CREDIT_NETWORK-SM-P9-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
 
-  - line: 25
-      avg-last-50: true
-      merge: true
+  - line:
+      name: 25 threads
       base: data/dynamic-id0-dynamic-variable-concurrent-txs/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-speedymurmurs-3-1-1-lat5ms-concurrent-25/
       algo: speedymurmurs
       files:
-        - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P1-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P2-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P3-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P4-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P5-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P6-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P7-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P8-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P9-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_SM-P0-100000/0/CREDIT_NETWORK-SM-P0-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P1-100000/0/CREDIT_NETWORK-SM-P1-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P2-100000/0/CREDIT_NETWORK-SM-P2-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P3-100000/0/CREDIT_NETWORK-SM-P3-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P4-100000/0/CREDIT_NETWORK-SM-P4-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P5-100000/0/CREDIT_NETWORK-SM-P5-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P6-100000/0/CREDIT_NETWORK-SM-P6-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P7-100000/0/CREDIT_NETWORK-SM-P7-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P8-100000/0/CREDIT_NETWORK-SM-P8-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P9-100000/0/CREDIT_NETWORK-SM-P9-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
 
-  - line: 50
-      avg-last-50: true
-      merge: true
+  - line:
+      name: 50 threads
       base: data/dynamic-id0-dynamic-variable-concurrent-txs/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-speedymurmurs-3-1-1-lat5ms-concurrent-50/
       algo: speedymurmurs
       files:
-        - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P1-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P2-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P3-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P4-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P5-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P6-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P7-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P8-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P9-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_SM-P0-100000/0/CREDIT_NETWORK-SM-P0-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P1-100000/0/CREDIT_NETWORK-SM-P1-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P2-100000/0/CREDIT_NETWORK-SM-P2-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P3-100000/0/CREDIT_NETWORK-SM-P3-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P4-100000/0/CREDIT_NETWORK-SM-P4-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P5-100000/0/CREDIT_NETWORK-SM-P5-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P6-100000/0/CREDIT_NETWORK-SM-P6-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P7-100000/0/CREDIT_NETWORK-SM-P7-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P8-100000/0/CREDIT_NETWORK-SM-P8-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P9-100000/0/CREDIT_NETWORK-SM-P9-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
 
-  - line: 100
+  - line:
+      name: 100 threads
       avg-last-50: true
       merge: true
       base: data/dynamic-id0-dynamic-variable-concurrent-txs/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-speedymurmurs-3-1-1-lat5ms-concurrent-100/
       algo: speedymurmurs
       files:
-        - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P1-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P2-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P3-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P4-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P5-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P6-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P7-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P8-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
-        - READABLE_FILE_M-P9-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_SM-P0-100000/0/CREDIT_NETWORK-SM-P0-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P1-100000/0/CREDIT_NETWORK-SM-P1-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P2-100000/0/CREDIT_NETWORK-SM-P2-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P3-100000/0/CREDIT_NETWORK-SM-P3-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P4-100000/0/CREDIT_NETWORK-SM-P4-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P5-100000/0/CREDIT_NETWORK-SM-P5-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P6-100000/0/CREDIT_NETWORK-SM-P6-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P7-100000/0/CREDIT_NETWORK-SM-P7-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P8-100000/0/CREDIT_NETWORK-SM-P8-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
+        - READABLE_FILE_SM-P9-100000/0/CREDIT_NETWORK-SM-P9-1250.0-TREE_ROUTE_TDRAP-true-false-3-2.5-RANDOM_PARTITIONER-1/cnet-succR.txt
