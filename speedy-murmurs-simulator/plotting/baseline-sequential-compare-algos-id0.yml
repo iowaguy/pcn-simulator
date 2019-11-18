@@ -1,7 +1,9 @@
 xmin: 0
 xmax: 700
 running_avg: 50
-plotname: "Success Ratios Over Time on Synthetic Dataset #1"
+plotname: "Baseline Sequential Transactions Synthetic Dataset #1"
+xlabel: "Time Epochs"
+ylabel: "Success Ratio"
 legend_loc:
   - 0.67
   - 0.75

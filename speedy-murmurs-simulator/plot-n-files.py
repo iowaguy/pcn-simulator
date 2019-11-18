@@ -42,6 +42,8 @@ if __name__ == "__main__":
 
     legendx = config['legend_loc'][0]
     legendy = config['legend_loc'][1]
+    plt.xlabel(config['xlabel'])
+    plt.ylabel(config['ylabel'])
     plt.title(config['plotname'])
     plt.legend(loc=(legendx, legendy), scatterpoints=10)
     plt.savefig(sys.argv[1][:-4]+'.png', dpi=300)

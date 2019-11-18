@@ -1,7 +1,9 @@
 xmin: 0
 xmax: 700
 running_avg: 50
-plotname: "Success Ratios Over Time for SpeedyMurmurs"
+plotname: "Baseline Sequential Transactions for SpeedyMurmurs"
+xlabel: "Time Epochs"
+ylabel: "Success Ratio"
 legend_loc:
   - 0.45
   - 0.75

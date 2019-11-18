@@ -1,7 +1,9 @@
 xmin: 0
 xmax: 700
 running_avg: 50
-plotname: "Success Ratios Over Time for Ford-Fulkerson on Dataset #1 with Variable Thread Counts"
+plotname: "Ford-Fulkerson on Dataset #1"
+xlabel: "Time Epochs"
+ylabel: "Success Ratio"
 legend_loc:
   - 0.67
   - 0.75
@@ -24,7 +26,7 @@ lines:
 
   - line:
       name: 10 threads
-      base: data/dynamic-id0-dynamic-variable-concurrent-txs/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize-3-1-1-lat5ms-concurrent-10/
+      base: data/dynamic-id0-dynamic-variable-concurrent-txs-10/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize-3-1-1-lat5ms-concurrent-10/
       algo: maxflow
       files:
         - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
@@ -40,7 +42,7 @@ lines:
 
   - line:
       name: 25 threads
-      base: data/dynamic-id0-dynamic-variable-concurrent-txs/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize-3-1-1-lat5ms-concurrent-25/
+      base: data/dynamic-id0-dynamic-variable-concurrent-txs-25/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize-3-1-1-lat5ms-concurrent-25/
       algo: maxflow
       files:
         - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
@@ -56,7 +58,7 @@ lines:
 
   - line:
       name: 50 threads
-      base: data/dynamic-id0-dynamic-variable-concurrent-txs/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize-3-1-1-lat5ms-concurrent-50/
+      base: data/dynamic-id0-dynamic-variable-concurrent-txs-50/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize-3-1-1-lat5ms-concurrent-50/
       algo: maxflow
       files:
         - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
@@ -72,7 +74,7 @@ lines:
 
   - line:
       name: 100 threads
-      base: data/dynamic-id0-dynamic-variable-concurrent-txs/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize-3-1-1-lat5ms-concurrent-100/
+      base: data/dynamic-id0-dynamic-variable-concurrent-txs-100/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize-3-1-1-lat5ms-concurrent-100/
       algo: maxflow
       files:
         - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
