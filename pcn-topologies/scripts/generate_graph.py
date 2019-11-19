@@ -54,7 +54,7 @@ class Topology:
         random_edges_per_node=5
         return nx.powerlaw_cluster_graph(nodes, random_edges_per_node, probability_of_triangle)
 
-    def full_knowledge_edge_weight_gen(self, tx_list, routingalgo=nx.shortest_path):
+    def full_knowledge_edge_weight_gen(self, tx_list, routingalgo=nx.shortest_path, value_multiplier=1.0):
         max_weight = {}
         cur_weight = {}
 
@@ -82,6 +82,9 @@ class Topology:
                     cur_weight[(node2, node1)] -= min_weight
                     logging.debug(f"Updated weights: {node1} -> {node2}: {cur_weight[(node1, node2)]}; {node2} -> {node1}: {cur_weight[(node2, node1)]}")
                 max_weight[(node1, node2)] = max(max_weight[(node1, node2)], cur_weight[(node1, node2)])
+
+        for k in max_weight:
+            max_weight[k] = max_weight[k]*value_multiplier
 
         self.__link_weights = max_weight
         return max_weight
@@ -246,9 +249,9 @@ if __name__ == '__main__':
     # print(topo.edges)
 
     txs = txdist.sample(configs[tx_count])
-    # topo.full_knowledge_edge_weight_gen(txs)
+    topo.full_knowledge_edge_weight_gen(txs, value_multiplier=configs['value_multiplier'])
 
-    # convert_topo_to_gtna(topo)
-    # convert_credit_links_to_gtna(topo)
+    convert_topo_to_gtna(topo)
+    convert_credit_links_to_gtna(topo)
     convert_txs_to_gtna(txs)
     # topo.show()
