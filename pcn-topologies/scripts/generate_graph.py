@@ -46,12 +46,12 @@ class Topology:
 
     def __gen_scalefree_topology(self, nodes):
         # number of edges to connect to existing nodes
-        num_new_edges=5
+        num_new_edges=2
         return nx.barabasi_albert_graph(nodes, num_new_edges)
 
     def __gen_hybrid_topology(self, nodes):
         probability_of_triangle=1.0
-        random_edges_per_node=5
+        random_edges_per_node=2
         return nx.powerlaw_cluster_graph(nodes, random_edges_per_node, probability_of_triangle)
 
     def full_knowledge_edge_weight_gen(self, tx_list, routingalgo=nx.shortest_path, value_multiplier=1.0):

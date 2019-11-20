@@ -1,5 +1,5 @@
-name: id6-synthetic-nodes-100k-txs-1m-scalefree-mult-0.5
-node_count: 100000
+name: id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5
+node_count: 10000
 tx_count: 1000000
 tx_value_distribution: powerlaw
 tx_participant_distribution: powerlaw
