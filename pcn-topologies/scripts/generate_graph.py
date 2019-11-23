@@ -89,6 +89,21 @@ class Topology:
         self.__link_weights = max_weight
         return max_weight
 
+    # def uniform_edge_weight_gen(self, tx_list, value_multiplier=1.0):
+    #     sums = 0
+    #     for src, dest, val in tx_list:
+    #         sums += val
+
+    #     link_avg = sums/nx.edges(self.__graph)
+
+    #     weights = {}
+    #     for src, dest, val in tx_list:
+    #         weights[(src, dest)] = link_avg
+
+    #     self.__link_weights = weights
+
+    #     return weights
+    
     @property
     def graph(self):
         return self.__graph
@@ -249,7 +264,11 @@ if __name__ == '__main__':
     # print(topo.edges)
 
     txs = txdist.sample(configs[tx_count])
-    topo.full_knowledge_edge_weight_gen(txs, value_multiplier=configs['value_multiplier'])
+
+    if 'value_multiplier' in configs:
+        topo.full_knowledge_edge_weight_gen(txs, value_multiplier=configs['value_multiplier'])
+    else:
+        topo.full_knowledge_edge_weight_gen(txs)
 
     convert_topo_to_gtna(topo)
     convert_credit_links_to_gtna(topo)
