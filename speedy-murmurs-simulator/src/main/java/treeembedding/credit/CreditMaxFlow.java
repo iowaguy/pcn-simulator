@@ -145,10 +145,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
     this.success_first = this.success_first / (double) transactions.size();
     this.graph = g;
 
-    this.succs = new double[transactionsPerEpoch.length];
-    for (int i = 0; i < transactionsPerEpoch.length; i++) {
-      this.succs[i] = (double) successesPerEpoch[i] / (double) transactionsPerEpoch[i];
-    }
+    calculatePerEpochRatios();
   }
 
   @Override

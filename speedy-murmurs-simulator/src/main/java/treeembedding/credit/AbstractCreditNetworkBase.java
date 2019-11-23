@@ -52,18 +52,20 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   final Attack attack;
   Queue<Edge> zeroEdges;
 
-  public int[] getTransactionsPerEpoch() {
-    return transactionsPerEpoch;
+  int[] getTransactionsPerEpoch() {
+    return perEpochMetrics.get(TRANSACTIONS);
   }
 
-  public int[] getSuccessesPerEpoch() {
-    return successesPerEpoch;
+  int[] getSuccessesPerEpoch() {
+    return perEpochMetrics.get(SUCCESSES);
   }
 
-  int[] transactionsPerEpoch;
-  int[] successesPerEpoch;
+  int[] getPerEpochMetric(String name) {
+    return perEpochMetrics.get(name);
+  }
 
   private Map<String, List<Long>> longMetrics;
+  private Map<String, int[]> perEpochMetrics;
 
   static final String SINGLE_PATHS_DEST_FOUND = "pathSF"; //distribution of single paths, only discovered paths
   static final String SINGLE_PATHS_DEST_NOT_FOUND = "pathSNF"; //distribution of single paths, not found dest
@@ -83,6 +85,8 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   static final String DELAY_SUCCESS = "delSucc"; //distribution of hop delay, successful queries
   static final String DELAY_FAIL = "delFail"; //distribution of hop delay, failed queries
   static final String CREDIT_MAX_FLOW = "CREDIT_MAX_FLOW";
+  static final String SUCCESSES = "SUCCESSES";
+  static final String TRANSACTIONS = "TRANSACTIONS";
 
   private static final Map<String, String> FILE_SUFFIXES;
   static final Map<String, String> SINGLE_NAMES;
@@ -136,7 +140,8 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   double success_first; //fraction of transactions successful in first try
   final int numRoots;
   double[] stab; //stabilization overhead over time (in #messages)
-  double[] succs;
+  double[] successRatePerEpoch;
+  double[] averageSuccessfulPathLengthPerEpoch;
 
   Distribution[] pathsPerTree; //distribution of single paths per tree
   Distribution[] pathsPerTreeFound; //distribution of single paths per tree, only discovered paths
@@ -164,8 +169,10 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     // epochs are zero indexed, and the previous calculation will only tell us which epoch index the
     // last transaction was in
     numEpochs++;
-    this.transactionsPerEpoch = new int[numEpochs];
-    this.successesPerEpoch = new int[numEpochs];
+    perEpochMetrics = new HashMap<>();
+    perEpochMetrics.put(SUCCESSES, new int[numEpochs]);
+    perEpochMetrics.put(TRANSACTIONS, new int[numEpochs]);
+    perEpochMetrics.put(PATH_SUCCESS, new int[numEpochs]);
 
     longMetrics = new ConcurrentHashMap<>(17);
     longMetrics.put(MESSAGES_ALL, new ArrayList<>());
@@ -209,12 +216,11 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     toRetry = new PriorityBlockingQueue<>();
   }
 
-  private synchronized void incrementTransactionCount(int currentEpoch) {
-    transactionsPerEpoch[currentEpoch]++;
-  }
-
-  private synchronized void incrementSuccessfulTransactionCount(int currentEpoch) {
-    successesPerEpoch[currentEpoch]++;
+  private synchronized void addPerEpochValue(String name, double value, int currentEpoch) {
+    perEpochMetrics.compute(name, (k, v) -> {
+      v[currentEpoch] += value;
+      return v;
+    });
   }
 
   boolean areTransactionsAvailable() {
@@ -275,9 +281,10 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   }
 
   synchronized void calculateMetrics(TransactionResults results, Transaction currentTransaction, int currentEpoch) {
-    incrementTransactionCount(currentEpoch);
+    addPerEpochValue(TRANSACTIONS, 1, currentEpoch);
     if (results.isSuccess()) {
-      incrementSuccessfulTransactionCount(currentEpoch);
+      addPerEpochValue(SUCCESSES, 1, currentEpoch);
+      addPerEpochValue(PATH_SUCCESS, results.getSumPathLength(), currentEpoch);
     }
 
     //3 update metrics accordingly
@@ -393,8 +400,11 @@ public abstract class AbstractCreditNetworkBase extends Metric {
       }
     }
 
-    succ &= DataWriter.writeWithIndex(this.succs,
+    succ &= DataWriter.writeWithIndex(this.successRatePerEpoch,
             this.key + "_SUCC_RATIOS", folder);
+
+    succ &= DataWriter.writeWithIndex(this.averageSuccessfulPathLengthPerEpoch,
+            this.key + "_AVG_SUCC_PATH_LENGTH_RATIOS", folder);
 
     if (Config.getBoolean("SERIES_GRAPH_WRITE")) {
       (new GtnaGraphWriter()).writeWithProperties(graph, folder + "graph.txt");
@@ -465,4 +475,14 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   CreditLinks getCreditLinks() {
     return this.edgeweights;
   }
+
+  void calculatePerEpochRatios() {
+    this.successRatePerEpoch = new double[getPerEpochMetric(TRANSACTIONS).length];
+    this.averageSuccessfulPathLengthPerEpoch = new double[getPerEpochMetric(PATH_SUCCESS).length];
+    for (int i = 0; i < getPerEpochMetric(TRANSACTIONS).length; i++) {
+      this.successRatePerEpoch[i] = (double) getPerEpochMetric(SUCCESSES)[i] / (double) getPerEpochMetric(TRANSACTIONS)[i];
+      this.averageSuccessfulPathLengthPerEpoch[i] = (double) getPerEpochMetric(PATH_SUCCESS)[i] / (double) getPerEpochMetric(SUCCESSES)[i];
+    }
+  }
+
 }

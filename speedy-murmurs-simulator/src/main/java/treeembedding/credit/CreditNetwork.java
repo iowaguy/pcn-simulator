@@ -334,10 +334,9 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       stab[i] = stabMes.get(i);
       this.stab_av = this.stab_av + stab[i];
     }
-    this.succs = new double[transactionsPerEpoch.length];
-    for (int i = 0; i < this.succs.length; i++) {
-      this.succs[i] = (double) successesPerEpoch[i] / (double) transactionsPerEpoch[i];
-    }
+
+    calculatePerEpochRatios();
+
     this.stab_av = this.stab_av / (double) stab.length;
     this.passRootAll = this.passRootAll / this.rootPath;
     this.graph = g;
