@@ -36,7 +36,7 @@ class LinkWeightTest {
   }
 
   @Test
-  void testAreFundsAvailable() {
+  void testAreFundsAvailableStrictCollateral() {
     assertFalse(l1.areFundsAvailable(500, RoutingAlgorithm.Collateralization.STRICT));
     assertFalse(l1.areFundsAvailable(-1001, RoutingAlgorithm.Collateralization.STRICT));
     assertTrue(l1.areFundsAvailable(-500, RoutingAlgorithm.Collateralization.STRICT));
@@ -90,6 +90,43 @@ class LinkWeightTest {
     assertFalse(l1.areFundsAvailable(701, RoutingAlgorithm.Collateralization.STRICT));
   }
 
+  @Test
+  void testAreFundsAvailableTotalCollateral() {
+    assertFalse(l1.areFundsAvailable(500, RoutingAlgorithm.Collateralization.TOTAL));
+    assertFalse(l1.areFundsAvailable(-1001, RoutingAlgorithm.Collateralization.TOTAL));
+    assertTrue(l1.areFundsAvailable(-500, RoutingAlgorithm.Collateralization.TOTAL));
+    assertTrue(l1.areFundsAvailable(-1000, RoutingAlgorithm.Collateralization.TOTAL));
+
+    // lock up some funds and make sure calculations are still correct
+    try {
+      l1.prepareUpdateWeight(-500, RoutingAlgorithm.Collateralization.TOTAL);
+    } catch (InsufficientFundsException e) {
+      fail("Prepare failed");
+    }
+    assertFalse(l1.areFundsAvailable(-500, RoutingAlgorithm.Collateralization.TOTAL));
+    assertFalse(l1.areFundsAvailable(-1, RoutingAlgorithm.Collateralization.TOTAL));
+    assertFalse(l1.areFundsAvailable(-501, RoutingAlgorithm.Collateralization.TOTAL));
+    assertFalse(l1.areFundsAvailable(500, RoutingAlgorithm.Collateralization.TOTAL));
+
+    // try to prepare a second valid transaction
+    assertThrows(InsufficientFundsException.class,
+            () -> l1.prepareUpdateWeight(-200, RoutingAlgorithm.Collateralization.TOTAL));
+
+    assertFalse(l1.areFundsAvailable(-1, RoutingAlgorithm.Collateralization.TOTAL));
+
+    // unlock funds and make sure they return to original state
+    try {
+      l1.finalizeUpdateWeight(-500, RoutingAlgorithm.Collateralization.TOTAL);
+    } catch (TransactionFailedException e) {
+      fail("Finalize update failed");
+    }
+
+    assertTrue(l1.areFundsAvailable(-500, RoutingAlgorithm.Collateralization.TOTAL));
+    assertFalse(l1.areFundsAvailable(-501, RoutingAlgorithm.Collateralization.TOTAL));
+    assertTrue(l1.areFundsAvailable(500, RoutingAlgorithm.Collateralization.TOTAL));
+    assertFalse(l1.areFundsAvailable(501, RoutingAlgorithm.Collateralization.TOTAL));
+  }
+  
   @Test
   void prepareUpdateWeight() {
   }

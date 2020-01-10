@@ -1,5 +1,7 @@
 package treeembedding.credit;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -160,8 +162,10 @@ public class LinkWeight {
     this.pendingTransactions.merge(weightChange, 1, Integer::sum);
     if (collateralization == RoutingAlgorithm.Collateralization.STRICT) {
       lockFunds(weightChange);
+    } else if (collateralization == RoutingAlgorithm.Collateralization.TOTAL) {
+      // TODO this is where we'll do total collateralization
+      throw new NotImplementedException();
     }
-    // TODO this is where we'll do total collateralization
   }
 
   synchronized void finalizeUpdateWeight(double weightChange, RoutingAlgorithm.Collateralization collateralization)
@@ -184,8 +188,11 @@ public class LinkWeight {
 
     if (collateralization == RoutingAlgorithm.Collateralization.STRICT) {
       unlockFunds(weightChange);
+    } else if (collateralization == RoutingAlgorithm.Collateralization.TOTAL) {
+      // TODO this is where we'll do total collateralization
+      throw new NotImplementedException();
     }
-    // TODO this is where we'll do total collateralization
+
 
     if (!undo) {
       updateCurrent(weightChange);
