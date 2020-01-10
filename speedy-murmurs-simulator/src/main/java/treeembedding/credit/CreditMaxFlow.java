@@ -93,7 +93,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
     this.byzantineNodes = runConfig.getAttackProperties().generateAttackers(nodes);
 
     edgeweights = (CreditLinks) g.getProperty("CREDIT_LINKS");
-    edgeweights.enableFundLocking(runConfig.getRoutingAlgorithm().isFundLockingEnabled());
+    edgeweights.setCollateralization(runConfig.getRoutingAlgorithm().collateralizationType());
 
     //go over transactions
     toRetry = new LinkedList<>();

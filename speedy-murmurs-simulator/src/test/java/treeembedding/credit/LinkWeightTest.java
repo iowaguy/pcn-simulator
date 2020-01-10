@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import gtna.graph.Edge;
+import treeembedding.RoutingAlgorithm;
 import treeembedding.credit.exceptions.InsufficientFundsException;
 import treeembedding.credit.exceptions.TransactionFailedException;
 
@@ -29,64 +30,64 @@ class LinkWeightTest {
 
   @Test
   void testGetMaxTransactionAmount() {
-    assertEquals(0, l1.getMaxTransactionAmount(true, true));
-    assertEquals(1000, l2.getMaxTransactionAmount(true, true));
-    assertEquals(2000, l2.getMaxTransactionAmount(false, true));
+    assertEquals(0, l1.getMaxTransactionAmount(true, RoutingAlgorithm.Collateralization.STRICT));
+    assertEquals(1000, l2.getMaxTransactionAmount(true, RoutingAlgorithm.Collateralization.STRICT));
+    assertEquals(2000, l2.getMaxTransactionAmount(false, RoutingAlgorithm.Collateralization.STRICT));
   }
 
   @Test
   void testAreFundsAvailable() {
-    assertFalse(l1.areFundsAvailable(500, true));
-    assertFalse(l1.areFundsAvailable(-1001, true));
-    assertTrue(l1.areFundsAvailable(-500, true));
-    assertTrue(l1.areFundsAvailable(-1000, true));
+    assertFalse(l1.areFundsAvailable(500, RoutingAlgorithm.Collateralization.STRICT));
+    assertFalse(l1.areFundsAvailable(-1001, RoutingAlgorithm.Collateralization.STRICT));
+    assertTrue(l1.areFundsAvailable(-500, RoutingAlgorithm.Collateralization.STRICT));
+    assertTrue(l1.areFundsAvailable(-1000, RoutingAlgorithm.Collateralization.STRICT));
 
     // lock up some funds and make sure calculations are still correct
     try {
-      l1.prepareUpdateWeight(-500, true);
+      l1.prepareUpdateWeight(-500, RoutingAlgorithm.Collateralization.STRICT);
     } catch (InsufficientFundsException e) {
       fail("Prepare failed");
     }
-    assertTrue(l1.areFundsAvailable(-500, true));
-    assertFalse(l1.areFundsAvailable(-501, true));
-    assertFalse(l1.areFundsAvailable(500, true));
+    assertTrue(l1.areFundsAvailable(-500, RoutingAlgorithm.Collateralization.STRICT));
+    assertFalse(l1.areFundsAvailable(-501, RoutingAlgorithm.Collateralization.STRICT));
+    assertFalse(l1.areFundsAvailable(500, RoutingAlgorithm.Collateralization.STRICT));
 
     // try to prepare a second valid transaction
     try {
-      l1.prepareUpdateWeight(-200, true);
+      l1.prepareUpdateWeight(-200, RoutingAlgorithm.Collateralization.STRICT);
     } catch (InsufficientFundsException e) {
       fail("Prepare failed");
     }
 
-    assertTrue(l1.areFundsAvailable(-300, true));
-    assertFalse(l1.areFundsAvailable(-301, true));
-    assertFalse(l1.areFundsAvailable(500, true));
+    assertTrue(l1.areFundsAvailable(-300, RoutingAlgorithm.Collateralization.STRICT));
+    assertFalse(l1.areFundsAvailable(-301, RoutingAlgorithm.Collateralization.STRICT));
+    assertFalse(l1.areFundsAvailable(500, RoutingAlgorithm.Collateralization.STRICT));
 
     // try to prepare a transaction that doesn't have enough funds
     assertThrows(InsufficientFundsException.class,
-            () -> l1.prepareUpdateWeight(-500, true));
+            () -> l1.prepareUpdateWeight(-500, RoutingAlgorithm.Collateralization.STRICT));
 
     // unlock funds and make sure they return to original state
     try {
-      l1.finalizeUpdateWeight(-500, true);
+      l1.finalizeUpdateWeight(-500, RoutingAlgorithm.Collateralization.STRICT);
     } catch (TransactionFailedException e) {
       fail("Finalize update failed");
     }
 
-    assertTrue(l1.areFundsAvailable(-300, true));
-    assertFalse(l1.areFundsAvailable(-301, true));
-    assertTrue(l1.areFundsAvailable(500, true));
-    assertFalse(l1.areFundsAvailable(501, true));
+    assertTrue(l1.areFundsAvailable(-300, RoutingAlgorithm.Collateralization.STRICT));
+    assertFalse(l1.areFundsAvailable(-301, RoutingAlgorithm.Collateralization.STRICT));
+    assertTrue(l1.areFundsAvailable(500, RoutingAlgorithm.Collateralization.STRICT));
+    assertFalse(l1.areFundsAvailable(501, RoutingAlgorithm.Collateralization.STRICT));
 
     try {
-      l1.finalizeUpdateWeight(-200, true);
+      l1.finalizeUpdateWeight(-200, RoutingAlgorithm.Collateralization.STRICT);
     } catch (TransactionFailedException e) {
       fail("Finalize update failed");
     }
-    assertTrue(l1.areFundsAvailable(-300, true));
-    assertFalse(l1.areFundsAvailable(-301, true));
-    assertTrue(l1.areFundsAvailable(700, true));
-    assertFalse(l1.areFundsAvailable(701, true));
+    assertTrue(l1.areFundsAvailable(-300, RoutingAlgorithm.Collateralization.STRICT));
+    assertFalse(l1.areFundsAvailable(-301, RoutingAlgorithm.Collateralization.STRICT));
+    assertTrue(l1.areFundsAvailable(700, RoutingAlgorithm.Collateralization.STRICT));
+    assertFalse(l1.areFundsAvailable(701, RoutingAlgorithm.Collateralization.STRICT));
   }
 
   @Test

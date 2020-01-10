@@ -10,6 +10,7 @@ import gtna.graph.Edge;
 import gtna.graph.GraphProperty;
 import gtna.io.Filereader;
 import gtna.io.Filewriter;
+import treeembedding.RoutingAlgorithm;
 import treeembedding.credit.exceptions.InsufficientFundsException;
 import treeembedding.credit.exceptions.TransactionFailedException;
 
@@ -19,7 +20,7 @@ public class CreditLinks extends GraphProperty {
   // this order: minimum possible weight, current weight, maximum possible weight
   private Map<Edge, LinkWeight> weights;
 
-  private boolean isFundLockingEnabled;
+  private RoutingAlgorithm.Collateralization collateralization;
 
   public CreditLinks() {
     this.weights = new ConcurrentHashMap<>();
@@ -29,8 +30,8 @@ public class CreditLinks extends GraphProperty {
     return src < dst ? new Edge(src, dst) : new Edge(dst, src);
   }
 
-  void enableFundLocking(boolean fundLocking) {
-    this.isFundLockingEnabled = fundLocking;
+  void setCollateralization(RoutingAlgorithm.Collateralization c) {
+    this.collateralization = c;
   }
 
   boolean isZero(int src, int dst) {
@@ -61,7 +62,7 @@ public class CreditLinks extends GraphProperty {
 
   public double getMaxTransactionAmount(int src, int dst) {
     LinkWeight weights = this.getWeights(makeEdge(src, dst));
-    return weights.getMaxTransactionAmount(src < dst, isFundLockingEnabled);
+    return weights.getMaxTransactionAmount(src < dst, this.collateralization);
   }
 
   public Set<Entry<Edge, LinkWeight>> getWeights() {
@@ -82,8 +83,8 @@ public class CreditLinks extends GraphProperty {
       weightChange *= -1;
     }
     LinkWeight weights = getWeights(src, dst);
-    if (weights.areFundsAvailable(weightChange, isFundLockingEnabled)) {
-      weights.prepareUpdateWeight(weightChange, isFundLockingEnabled);
+    if (weights.areFundsAvailable(weightChange, this.collateralization)) {
+      weights.prepareUpdateWeight(weightChange, this.collateralization);
       setWeight(makeEdge(src, dst), weights);
     } else {
       throw new InsufficientFundsException();
@@ -92,7 +93,7 @@ public class CreditLinks extends GraphProperty {
 
   synchronized void undoUpdateWeight(int src, int dst, double weightChange) throws TransactionFailedException {
     LinkWeight weights = getWeights(src, dst);
-    weights.undoUpdateWeight(weightChange);
+    weights.undoUpdateWeight(weightChange, this.collateralization);
   }
 
   synchronized void finalizeUpdateWeight(int src, int dst, double weightChange)
@@ -101,7 +102,7 @@ public class CreditLinks extends GraphProperty {
       weightChange *= -1;
     }
     LinkWeight weights = getWeights(src, dst);
-    weights.finalizeUpdateWeight(weightChange, isFundLockingEnabled);
+    weights.finalizeUpdateWeight(weightChange, this.collateralization);
     setWeight(makeEdge(src, dst), weights);
   }
 

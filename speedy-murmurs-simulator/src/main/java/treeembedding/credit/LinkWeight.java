@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import gtna.graph.Edge;
+import treeembedding.RoutingAlgorithm;
 import treeembedding.credit.exceptions.InsufficientFundsException;
 import treeembedding.credit.exceptions.TransactionFailedException;
 
@@ -45,8 +46,9 @@ public class LinkWeight {
             ((current - min < EPSILON) && (current - min > -EPSILON));
   }
 
-  void undoUpdateWeight(double weightChange) throws TransactionFailedException {
-    finalizeUpdateWeight(weightChange, true, true);
+  void undoUpdateWeight(double weightChange, RoutingAlgorithm.Collateralization collateralization)
+          throws TransactionFailedException {
+    finalizeUpdateWeight(weightChange, collateralization, true);
   }
 
   public double getMin() {
@@ -113,16 +115,18 @@ public class LinkWeight {
     }
   }
 
-  private double getEffectiveMax(boolean isFundLockingEnabled) {
-    if (isFundLockingEnabled) {
+  private double getEffectiveMax(RoutingAlgorithm.Collateralization collateralization) {
+    if (collateralization == RoutingAlgorithm.Collateralization.STRICT ||
+            collateralization == RoutingAlgorithm.Collateralization.TOTAL) {
       return getUnlockedMax();
     } else {
       return getMax();
     }
   }
 
-  private double getEffectiveMin(boolean isFundLockingEnabled) {
-    if (isFundLockingEnabled) {
+  private double getEffectiveMin(RoutingAlgorithm.Collateralization collateralization) {
+    if (collateralization == RoutingAlgorithm.Collateralization.STRICT ||
+            collateralization == RoutingAlgorithm.Collateralization.TOTAL) {
       return getUnlockedMin();
     } else {
       return getMin();
@@ -131,47 +135,42 @@ public class LinkWeight {
 
   // if funds are being sent from a lower numbered node to a higher numbered node, the transaction
   // is considered "forward"
-  double getMaxTransactionAmount(boolean isForward, boolean isFundLockingEnabled) {
+  double getMaxTransactionAmount(boolean isForward, RoutingAlgorithm.Collateralization collateralizationType) {
     if (isForward) {
-      return getCurrent() - getEffectiveMin(isFundLockingEnabled);
+      return getCurrent() - getEffectiveMin(collateralizationType);
     } else {
-      return getEffectiveMax(isFundLockingEnabled) - getCurrent();
+      return getEffectiveMax(collateralizationType) - getCurrent();
     }
   }
 
-  boolean areFundsAvailable(double weightChange, boolean isFundLockingEnabled) {
+  boolean areFundsAvailable(double weightChange, RoutingAlgorithm.Collateralization collateralization) {
     double newPotentialWeight = getCurrent() - weightChange;
 
-    return newPotentialWeight <= getEffectiveMax(isFundLockingEnabled) &&
-            newPotentialWeight >= getEffectiveMin(isFundLockingEnabled);
+    return newPotentialWeight <= getEffectiveMax(collateralization) &&
+            newPotentialWeight >= getEffectiveMin(collateralization);
   }
 
-  synchronized void prepareUpdateWeight(double weightChange, boolean lockFunds)
+  synchronized void prepareUpdateWeight(double weightChange, RoutingAlgorithm.Collateralization collateralization)
           throws InsufficientFundsException {
-    if (!areFundsAvailable(weightChange, lockFunds)) {
+    if (!areFundsAvailable(weightChange, collateralization)) {
       throw new InsufficientFundsException();
     }
 
     // if key is not in map, put 1 as value, otherwise sum 1 to the current value
     this.pendingTransactions.merge(weightChange, 1, Integer::sum);
-    if (lockFunds) {
+    if (collateralization == RoutingAlgorithm.Collateralization.STRICT) {
       lockFunds(weightChange);
     }
+    // TODO this is where we'll do total collateralization
   }
 
-  synchronized void finalizeUpdateWeight(double weightChange, boolean isFundLockingEnabled)
+  synchronized void finalizeUpdateWeight(double weightChange, RoutingAlgorithm.Collateralization collateralization)
           throws TransactionFailedException {
-    finalizeUpdateWeight(weightChange, isFundLockingEnabled, false);
+    finalizeUpdateWeight(weightChange, collateralization, false);
   }
 
-  private synchronized void finalizeUpdateWeight(double weightChange, boolean isFundLockingEnabled, boolean undo)
+  private synchronized void finalizeUpdateWeight(double weightChange, RoutingAlgorithm.Collateralization collateralization, boolean undo)
           throws TransactionFailedException {
-    // remove from pending transactions
-//    double sum = 0;
-//    for (Map.Entry<Double, Integer> tx : pendingTransactions.entrySet()) {
-//      sum += tx.getKey();
-//    }
-
     if (this.pendingTransactions.containsKey(weightChange)) {
       int num = this.pendingTransactions.get(weightChange);
       if (num > 1) {
@@ -183,9 +182,10 @@ public class LinkWeight {
       throw new TransactionFailedException("Cannot finalize a transaction that wasn't prepared");
     }
 
-    if (isFundLockingEnabled) {
+    if (collateralization == RoutingAlgorithm.Collateralization.STRICT) {
       unlockFunds(weightChange);
     }
+    // TODO this is where we'll do total collateralization
 
     if (!undo) {
       updateCurrent(weightChange);

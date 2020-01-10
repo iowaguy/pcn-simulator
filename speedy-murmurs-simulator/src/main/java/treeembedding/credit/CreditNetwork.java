@@ -181,9 +181,10 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
   private CreditLinks generateCreditLinks(Graph g) {
     CreditLinks edgeweights = (CreditLinks) g.getProperty("CREDIT_LINKS");
-    edgeweights.enableFundLocking(algo.isFundLockingEnabled());
+    edgeweights.setCollateralization(algo.collateralizationType());
     return edgeweights;
   }
+
   @Override
   public void computeData(Graph g, Network n, HashMap<String, Metric> m) {
     this.graph = g;
@@ -210,7 +211,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     Queue<Future<TransactionResults>> pendingTransactions = new LinkedList<>();
 
     edgeweights = generateCreditLinks(g);
-    edgeweights.enableFundLocking(algo.isFundLockingEnabled());
+    edgeweights.setCollateralization(algo.collateralizationType());
 
     while (areTransactionsAvailable()) {
       Transaction currentTransaction = getNextTransaction();

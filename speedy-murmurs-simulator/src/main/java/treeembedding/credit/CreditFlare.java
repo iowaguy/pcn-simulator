@@ -480,7 +480,7 @@ public class CreditFlare extends Metric {
   private int[] route(Transaction cur, Graph g, Node[] nodes, boolean[] exclude) {
     int rec = cur.dst;
     CreditLinks edgeweights = (CreditLinks) g.getProperty("CREDIT_LINKS");
-    edgeweights.enableFundLocking(false);
+    edgeweights.setCollateralization(null);
 
     Vector<int[]> rtc = this.generateRT(nodes, cur.src, edgeweights);
     int seen = 0;
