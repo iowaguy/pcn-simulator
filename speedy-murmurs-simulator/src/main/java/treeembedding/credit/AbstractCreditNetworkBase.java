@@ -315,8 +315,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
         index = 1;
       }
       int pathLength = Math.abs(results.getPathLengths()[j]);
-      if (runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW &&
-              runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW_COLLATERALIZE) {
+      if (!isMaxFlow()) {
         incrementIntegerCount(cPerPath.get(j), index);
         incrementIntegerCount(cAllPath, index);
         incrementCount(pathSs.get(j), pathLength);
@@ -326,18 +325,22 @@ public abstract class AbstractCreditNetworkBase extends Metric {
 
       if (index == 0) {
         incrementCount(SINGLE_PATHS_DEST_FOUND, pathLength);
-        if (runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW &&
-                runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW_COLLATERALIZE) {
+        if (!isMaxFlow()) {
           incrementCount(pathSsF.get(j), pathLength);
         }
       } else {
         incrementCount(SINGLE_PATHS_DEST_NOT_FOUND, pathLength);
-        if (runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW &&
-                runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW_COLLATERALIZE) {
+        if (!isMaxFlow()) {
           incrementCount(pathSsNF.get(j), pathLength);
         }
       }
     }
+  }
+
+  private boolean isMaxFlow() {
+    return runConfig.getRoutingAlgorithm() == RoutingAlgorithm.MAXFLOW ||
+            runConfig.getRoutingAlgorithm() == RoutingAlgorithm.MAXFLOW_COLLATERALIZE ||
+            runConfig.getRoutingAlgorithm() == RoutingAlgorithm.MAXFLOW_TOTAL_COLLATERALIZE;
   }
 
   int calculateEpoch(Transaction t) {

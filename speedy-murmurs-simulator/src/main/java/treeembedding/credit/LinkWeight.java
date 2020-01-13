@@ -1,7 +1,5 @@
 package treeembedding.credit;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -97,7 +95,7 @@ public class LinkWeight {
     this.unlockedMax = unlockedMax;
   }
 
-  private synchronized void lockFunds(double lockAmount) {
+  private synchronized void strictlyCollateralizeFunds(double lockAmount) {
     if (lockAmount < 0) {
       // increase unlocked min by -lockAmount
       setUnlockedMax(getUnlockedMax() + lockAmount);
@@ -107,14 +105,24 @@ public class LinkWeight {
     }
   }
 
-  private synchronized void unlockFunds(double unlockAmount) {
+  private synchronized void strictlyDecollateralizeFunds(double unlockAmount) {
     if (unlockAmount < 0) {
-      // decrease unlocked min by lockAmount
+      // decrease unlocked max by lockAmount
       setUnlockedMax(getUnlockedMax() - unlockAmount);
     } else {
-      // increase unlocked max by lockAmount
+      // decrease unlocked min by lockAmount
       setUnlockedMin(getUnlockedMin() - unlockAmount);
     }
+  }
+
+  private synchronized void totallyCollateralizeFunds() {
+    setUnlockedMin(getCurrent());
+    setUnlockedMax(getCurrent());
+  }
+
+  private synchronized void totallyDecollateralizeFunds() {
+    setUnlockedMin(getMin());
+    setUnlockedMax(getMax());
   }
 
   private double getEffectiveMax(RoutingAlgorithm.Collateralization collateralization) {
@@ -161,10 +169,9 @@ public class LinkWeight {
     // if key is not in map, put 1 as value, otherwise sum 1 to the current value
     this.pendingTransactions.merge(weightChange, 1, Integer::sum);
     if (collateralization == RoutingAlgorithm.Collateralization.STRICT) {
-      lockFunds(weightChange);
+      strictlyCollateralizeFunds(weightChange);
     } else if (collateralization == RoutingAlgorithm.Collateralization.TOTAL) {
-      // TODO this is where we'll do total collateralization
-      throw new NotImplementedException();
+      totallyCollateralizeFunds();
     }
   }
 
@@ -187,10 +194,9 @@ public class LinkWeight {
     }
 
     if (collateralization == RoutingAlgorithm.Collateralization.STRICT) {
-      unlockFunds(weightChange);
+      strictlyDecollateralizeFunds(weightChange);
     } else if (collateralization == RoutingAlgorithm.Collateralization.TOTAL) {
-      // TODO this is where we'll do total collateralization
-      throw new NotImplementedException();
+      totallyDecollateralizeFunds();
     }
 
 

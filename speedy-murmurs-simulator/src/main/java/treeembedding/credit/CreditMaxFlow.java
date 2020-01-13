@@ -27,7 +27,6 @@ import gtna.util.Distribution;
 import gtna.util.parameter.DoubleParameter;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
-import treeembedding.RoutingAlgorithm;
 import treeembedding.RunConfig;
 import treeembedding.byzantine.AttackType;
 import treeembedding.credit.exceptions.InsufficientFundsException;
@@ -323,10 +322,6 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
             edgeModifications.get(edge).remove(transactionVals.get(pathIndex));
           }
 
-          if ((runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW && runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW_COLLATERALIZE) &&
-                  edgeweights.isZero(currentNodeIndex, nextNodeIndex)) {
-            this.zeroEdges.add(edge);
-          }
           currentNodeIndex = nextNodeIndex;
 
         }

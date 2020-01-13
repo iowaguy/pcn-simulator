@@ -264,6 +264,7 @@ class LinkWeightTest {
             () -> l2.prepareUpdateWeight(-200, RoutingAlgorithm.Collateralization.TOTAL));
 
     assertFalse(l2.areFundsAvailable(-1, RoutingAlgorithm.Collateralization.TOTAL));
+    assertFalse(l2.areFundsAvailable(1, RoutingAlgorithm.Collateralization.TOTAL));
 
     // unlock funds and make sure they return to original state
     try {
@@ -272,10 +273,10 @@ class LinkWeightTest {
       fail("Finalize update failed");
     }
 
-    assertTrue(l2.areFundsAvailable(1500, RoutingAlgorithm.Collateralization.TOTAL));
-    assertTrue(l2.areFundsAvailable(-1500, RoutingAlgorithm.Collateralization.TOTAL));
-    assertFalse(l2.areFundsAvailable(1501, RoutingAlgorithm.Collateralization.TOTAL));
-    assertFalse(l2.areFundsAvailable(-1501, RoutingAlgorithm.Collateralization.TOTAL));
+    assertTrue(l2.areFundsAvailable(500, RoutingAlgorithm.Collateralization.TOTAL));
+    assertTrue(l2.areFundsAvailable(-2500, RoutingAlgorithm.Collateralization.TOTAL));
+    assertFalse(l2.areFundsAvailable(501, RoutingAlgorithm.Collateralization.TOTAL));
+    assertFalse(l2.areFundsAvailable(-2501, RoutingAlgorithm.Collateralization.TOTAL));
 
   }
   
