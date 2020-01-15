@@ -4,6 +4,7 @@ package treeembedding.treerouting;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 
@@ -31,6 +32,7 @@ public abstract class Treeroute extends Metric {
   SpanningTree sp;
   int trees;
   int t;
+  private int blockedLinks = 0;
 
   public Treeroute(String key, int trials, int trees, int t) {
     super(key);
@@ -68,7 +70,9 @@ public abstract class Treeroute extends Metric {
       int[] l = Util.getkOfN(trees, t, rand);
       int h = Integer.MAX_VALUE;
       for (int j = 0; j < l.length; j++) {
-        int[] path = this.getRoute(src, dest, l[j], g, nodes);
+        NextHopPlusMetrics nextHopPlusMetrics = this.getRoute(src, dest, l[j], g, nodes);
+        int[] path = nextHopPlusMetrics.getPath();
+        this.blockedLinks += nextHopPlusMetrics.getBlockedLinks();
         int root = this.sp.getSrc();
         for (int s = 0; s < path.length; s++) {
           traffic[path[s]]++;
@@ -113,47 +117,56 @@ public abstract class Treeroute extends Metric {
     }
   }
 
-  private int[] getRoute(int src, int dest, int r, Graph g, Node[] nodes) {
+  private NextHopPlusMetrics getRoute(int src, int dest, int r, Graph g, Node[] nodes) {
     coords = ((TreeCoordinates) g.getProperty("TREE_COORDINATES_" + r)).coords;
     sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + r);
     int root = sp.getSrc();
     long[] destC = this.coords[dest];
     Vector<Integer> route = new Vector<Integer>();
     route.add(src);
+    int blockedLinks = 0;
     initRoute();
     while (src != dest) {
-      src = this.nextHop(src, nodes, destC, dest);
+      NextHopPlusMetrics n = this.nextHop(src, nodes, destC, dest);
+      src = n.getIndex();
       route.add(src);
+      blockedLinks += n.getBlockedLinks();
     }
     int[] path = new int[route.size()];
     for (int i = 0; i < route.size(); i++) {
       path[i] = route.get(i);
     }
-    return path;
+
+    return new NextHopPlusMetrics(path, blockedLinks);
   }
 
-  public int[] getRoute(int src, int dest, int r, Graph g, Node[] nodes, boolean[] exclude) {
+  public NextHopPlusMetrics getRoute(int src, int dest, int r, Graph g, Node[] nodes, boolean[] exclude) {
     return getRoute(src, dest, r, g, nodes, exclude, null, 0);
   }
 
-  public synchronized int[] getRoute(int src, int dest, int r, Graph g, Node[] nodes, boolean[] exclude,
-                                     CreditLinks edgeweights, double weight) {
+  public synchronized NextHopPlusMetrics getRoute(int src, int dest, int r, Graph g, Node[] nodes, boolean[] exclude,
+                                                  CreditLinks edgeweights, double weight) {
     coords = ((TreeCoordinates) g.getProperty("TREE_COORDINATES_" + r)).coords;
     sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + r);
     int root = sp.getSrc();
     long[] destC = this.coords[dest];
     Vector<Integer> route = new Vector<>();
     route.add(src);
+    int blockedLinks = 0;
     initRoute();
     int previousHop = -1;
     boolean done = false;
     while (!done) {
       int next;
+      NextHopPlusMetrics n;
       if (edgeweights == null) {
-        next = this.nextHop(src, nodes, destC, dest, exclude, previousHop, weight, edgeweights);
+        n = this.nextHop(src, nodes, destC, dest, exclude, previousHop, weight, edgeweights);
       } else {
-        next = this.nextHopWeight(edgeweights, src, nodes, destC, dest, exclude, previousHop, weight);
+        n = this.nextHopWeight(edgeweights, src, nodes, destC, dest, exclude, previousHop, weight);
       }
+      next = n.getIndex();
+      blockedLinks += n.getBlockedLinks();
+
       route.add(next);
       previousHop = src;
       src = next;
@@ -171,10 +184,10 @@ public abstract class Treeroute extends Metric {
     for (int i = 0; i < route.size(); i++) {
       path[i] = route.get(i);
     }
-    return path;
+    return new NextHopPlusMetrics(path, blockedLinks);
   }
 
-  public int[] getRouteBacktrack(int src, int dest, int r, Graph g, Node[] nodes, boolean[] exclude) {
+  public NextHopPlusMetrics getRouteBacktrack(int src, int dest, int r, Graph g, Node[] nodes, boolean[] exclude) {
     coords = ((TreeCoordinates) g.getProperty("TREE_COORDINATES_" + r)).coords;
     sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + r);
     int root = sp.getSrc();
@@ -182,20 +195,23 @@ public abstract class Treeroute extends Metric {
     Vector<Integer> route = new Vector<Integer>();
     route.add(src);
     int pre = -1;
-    HashMap<Integer, LinkedList<Integer>> nexts = new HashMap<Integer, LinkedList<Integer>>();
+    HashMap<Integer, List<Integer>> nexts = new HashMap<>();
     HashMap<Integer, Integer> pres = new HashMap<Integer, Integer>();
     boolean newNode = true;
+    int blockedLinks = 0;
     initRoute();
     while (src != dest && src != -1) {
       if (newNode) {
-        LinkedList<Integer> nextL = this.nextHops(src, nodes, destC, dest, exclude, pre, null);
+        NextHopPlusMetrics n = this.nextHops(src, nodes, destC, dest, exclude, pre, null);
+        List<Integer> nextL = n.getNextHops();
+        blockedLinks += n.getBlockedLinks();
         if (nextL.size() > 0) nexts.put(src, nextL);
         pres.put(src, pre);
       }
       Integer next;
-      LinkedList<Integer> nextL = nexts.get(src);
+      List<Integer> nextL = nexts.get(src);
       if (nextL != null) {
-        next = nextL.removeFirst();
+        next = nextL.remove(0);
         if (nextL.size() == 0) nexts.remove(src);
         if (pres.containsKey(next)) {
           route.add(next);
@@ -223,60 +239,7 @@ public abstract class Treeroute extends Metric {
     for (int i = 0; i < route.size(); i++) {
       path[i] = route.get(i);
     }
-    return path;
-  }
-
-  public int[] getRouteBacktrack(int src, int dest, int r, Graph g, Node[] nodes, boolean[] exclude,
-                                 CreditLinks edgeweights, double weight) {
-    coords = ((TreeCoordinates) g.getProperty("TREE_COORDINATES_" + r)).coords;
-    sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + r);
-    int root = sp.getSrc();
-    long[] destC = this.coords[dest];
-    Vector<Integer> route = new Vector<Integer>();
-    route.add(src);
-    int pre = -1;
-    HashMap<Integer, LinkedList<Integer>> nexts = new HashMap<Integer, LinkedList<Integer>>();
-    HashMap<Integer, Integer> pres = new HashMap<Integer, Integer>();
-    boolean newNode = true;
-    initRoute();
-    while (src != dest && src != -1) {
-      if (newNode) {
-        LinkedList<Integer> nextL = this.nextHopsWeight(edgeweights, src, nodes, destC, dest, exclude, pre, weight);
-        if (nextL.size() > 0) nexts.put(src, nextL);
-        pres.put(src, pre);
-      }
-      Integer next;
-      LinkedList<Integer> nextL = nexts.get(src);
-      if (nextL != null) {
-        next = nextL.removeFirst();
-        if (nextL.size() == 0) nexts.remove(src);
-        if (pres.containsKey(next)) {
-          route.add(next);
-          next = src;
-          newNode = false;
-        } else {
-          newNode = true;
-        }
-      } else {
-        next = pres.get(src);
-        newNode = false;
-        if (next == null) {
-          next = -1;
-        }
-      }
-
-      pre = src;
-      src = next;
-      if (root == src) {
-        this.fraction_root++;
-      }
-      route.add(next);
-    }
-    int[] path = new int[route.size()];
-    for (int i = 0; i < route.size(); i++) {
-      path[i] = route.get(i);
-    }
-    return path;
+    return new NextHopPlusMetrics(path, blockedLinks);
   }
 
   /**
@@ -337,51 +300,68 @@ public abstract class Treeroute extends Metric {
     }
   }
 
-  protected abstract int nextHop(int cur, Node[] nodes, long[] destID, int dest);
+  protected abstract NextHopPlusMetrics nextHop(int cur, Node[] nodes, long[] destID, int dest);
 
-  protected abstract int nextHop(int cur, Node[] nodes, long[] destID, int dest, boolean[] exclude, int pre, double weight, CreditLinks edgeweights);
+  protected abstract NextHopPlusMetrics nextHop(int cur, Node[] nodes, long[] destID, int dest, boolean[] exclude, int pre, double weight, CreditLinks edgeweights);
 
   protected abstract void initRoute();
 
-  private LinkedList<Integer> nextHops(int cur, Node[] nodes, long[] destID, int dest, boolean[] exclude, int pre, CreditLinks edgeweights) {
+  private NextHopPlusMetrics nextHops(int cur, Node[] nodes, long[] destID, int dest, boolean[] exclude, int pre, CreditLinks edgeweights) {
     LinkedList<Integer> list = new LinkedList<Integer>();
-    int add = this.nextHop(cur, nodes, destID, dest, exclude, pre, 0.0, edgeweights);
+    NextHopPlusMetrics n = this.nextHop(cur, nodes, destID, dest, exclude, pre, 0.0, edgeweights);
+    int blockedLinks = n.getBlockedLinks();
+    int add = n.getIndex();
     while (add != -1) {
       list.add(add);
       exclude[add] = true;
-      add = this.nextHop(cur, nodes, destID, dest, exclude, pre, 0.0, edgeweights);
+      n = this.nextHop(cur, nodes, destID, dest, exclude, pre, 0.0, edgeweights);
+      add = n.getIndex();
+      blockedLinks += n.getBlockedLinks();
     }
     for (int i = 0; i < list.size(); i++) {
       exclude[list.get(i)] = false;
     }
-    return list;
+    return new NextHopPlusMetrics(list, blockedLinks);
   }
 
   // method is synchronized to prevent concurrent modification of exclude array
-  private synchronized LinkedList<Integer> nextHopsWeight(CreditLinks edgeWeights, int cur, Node[] nodes, long[] destID, int dest, boolean[] exclude, int previousHop, double weight) {
+  private synchronized NextHopPlusMetrics nextHopsWeight(CreditLinks edgeWeights, int cur,
+                                                         Node[] nodes, long[] destID, int dest,
+                                                         boolean[] exclude, int previousHop,
+                                                         double weight) {
     LinkedList<Integer> confirmedNextHops = new LinkedList<>();
     LinkedList<Integer> inspectedNextHops = new LinkedList<>();
-    int add = this.nextHop(cur, nodes, destID, dest, exclude, previousHop, weight, edgeWeights);
+    NextHopPlusMetrics n = this.nextHop(cur, nodes, destID, dest, exclude, previousHop, weight,
+            edgeWeights);
+    int add = n.getIndex();
+    int blockedLinks = n.getBlockedLinks();
     while (add != -1) {
       if (edgeWeights.getMaxTransactionAmount(cur, add) >= weight - MIN_TRANSACTION) {
         confirmedNextHops.add(add);
       }
       inspectedNextHops.add(add);
       exclude[add] = true;
-      add = this.nextHop(cur, nodes, destID, dest, exclude, previousHop, weight, edgeWeights);
+      n = this.nextHop(cur, nodes, destID, dest, exclude, previousHop, weight, edgeWeights);
+      add = n.getIndex();
+      blockedLinks += n.getBlockedLinks();
     }
     for (Integer checkedNextHop : inspectedNextHops) {
       exclude[checkedNextHop] = false;
     }
-    return confirmedNextHops;
+    return new NextHopPlusMetrics(confirmedNextHops, blockedLinks);
   }
 
-  private int nextHopWeight(CreditLinks edgeWeights, int cur, Node[] nodes, long[] destID, int dest, boolean[] exclude, int previousHop, double weight) {
-    LinkedList<Integer> list = this.nextHopsWeight(edgeWeights, cur, nodes, destID, dest, exclude, previousHop, weight);
+  private NextHopPlusMetrics nextHopWeight(CreditLinks edgeWeights, int cur, Node[] nodes,
+                                           long[] destID, int dest, boolean[] exclude,
+                                           int previousHop, double weight) {
+    NextHopPlusMetrics n = this.nextHopsWeight(edgeWeights, cur, nodes, destID, dest, exclude,
+            previousHop, weight);
+    List<Integer> list = n.getNextHops();
+    int blockedLinks = n.getBlockedLinks();
     if (list.isEmpty()) {
-      return -1;
+      return new NextHopPlusMetrics(-1, blockedLinks);
     } else {
-      return list.poll();
+      return new NextHopPlusMetrics(list.remove(0), blockedLinks);
     }
   }
 

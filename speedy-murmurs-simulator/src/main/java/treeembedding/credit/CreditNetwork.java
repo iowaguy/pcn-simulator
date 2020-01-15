@@ -41,6 +41,7 @@ import treeembedding.byzantine.AttackType;
 import treeembedding.credit.exceptions.InsufficientFundsException;
 import treeembedding.credit.exceptions.TransactionFailedException;
 import treeembedding.credit.partioner.Partitioner;
+import treeembedding.treerouting.NextHopPlusMetrics;
 import treeembedding.treerouting.TreeCoordinates;
 import treeembedding.treerouting.Treeroute;
 import treeembedding.treerouting.TreerouteSilentW;
@@ -542,7 +543,9 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     //compute paths and minimum credit along the paths
     double[] mins = new double[roots.length];
     for (int treeIndex = 0; treeIndex < mins.length; treeIndex++) {
-      paths[treeIndex] = ra.getRoute(src, dest, treeIndex, g, nodes, exclude);
+      NextHopPlusMetrics n = ra.getRoute(src, dest, treeIndex, g, nodes, exclude);
+      paths[treeIndex] = n.getPath();
+      addPerEpochValue(BLOCKED_LINKS, (double) n.getBlockedLinks(), calculateEpoch(cur));
 
       if (paths[treeIndex][paths[treeIndex].length - 1] == dest) {
         int currentNodeIndex = src;
@@ -673,7 +676,9 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
           s = dest;
           d = src;
         }
-        paths[treeIndex] = this.ra.getRoute(s, d, treeIndex, g, nodes, exclude, edgeweights, vals[treeIndex]);
+        NextHopPlusMetrics n = this.ra.getRoute(s, d, treeIndex, g, nodes, exclude, edgeweights, vals[treeIndex]);
+        paths[treeIndex] = n.getPath();
+        addPerEpochValue(BLOCKED_LINKS, n.getBlockedLinks(), calculateEpoch(cur));
       }
     }
     //check if transaction works

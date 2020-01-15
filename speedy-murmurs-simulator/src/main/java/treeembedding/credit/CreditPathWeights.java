@@ -4,6 +4,7 @@ import gtna.graph.Edge;
 import gtna.graph.Graph;
 import gtna.graph.Node;
 import gtna.graph.weights.EdgeWeights;
+import treeembedding.treerouting.NextHopPlusMetrics;
 import treeembedding.treerouting.Treeroute;
 
 public class CreditPathWeights {
@@ -21,7 +22,8 @@ public class CreditPathWeights {
     }
     double[] mins = new double[trees];
     for (int j = 0; j < mins.length; j++) {
-      int[] path = ra.getRouteBacktrack(src, dest, j, g, nodes, exclude);
+      NextHopPlusMetrics n = ra.getRouteBacktrack(src, dest, j, g, nodes, exclude);
+      int[] path = n.getPath();
       if (path[path.length - 1] == dest) {
         int a = src;
         int i = 1;

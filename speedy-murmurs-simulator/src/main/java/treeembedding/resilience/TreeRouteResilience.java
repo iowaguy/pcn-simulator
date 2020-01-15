@@ -13,6 +13,7 @@ import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 import gtna.util.parameter.StringParameter;
 import treeembedding.Util;
+import treeembedding.treerouting.NextHopPlusMetrics;
 import treeembedding.treerouting.Treeroute;
 
 public class TreeRouteResilience extends RoutingResilience {
@@ -48,7 +49,6 @@ public class TreeRouteResilience extends RoutingResilience {
     boolean done = false;
     boolean[] tried = new boolean[this.t];
     HashSet<Integer> contained = new HashSet<Integer>();
-    ;
     while (!done) {
       int[] s = Util.getkOfN(this.t, this.tr, rand, tried);
       for (int l = 0; l < s.length; l++) {
@@ -60,10 +60,13 @@ public class TreeRouteResilience extends RoutingResilience {
       for (int i = 0; i < s.length; i++) {
         HashSet<Integer> containedCur = new HashSet<Integer>();
         int[] route;
+        NextHopPlusMetrics n;
         if (this.backtrack) {
-          route = ra.getRouteBacktrack(src, dest, s[i], g, g.getNodes(), exclude);
+          n = ra.getRouteBacktrack(src, dest, s[i], g, g.getNodes(), exclude);
+          route = n.getPath();
         } else {
-          route = ra.getRoute(src, dest, s[i], g, g.getNodes(), exclude);
+          n = ra.getRoute(src, dest, s[i], g, g.getNodes(), exclude);
+          route = n.getPath();
         }
         if (route[route.length - 1] == -1) {
           //failed

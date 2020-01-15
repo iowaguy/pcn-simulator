@@ -208,7 +208,8 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
       int[] residualPath = residualPaths[0];
       paths.add(residualPath);
       for (int i = 0; i < residualPath.length - 1; i++) {
-        double maxTransactionAmount = edgeweights.getMaxTransactionAmount(residualPath[i], residualPath[i + 1]);
+        double maxTransactionAmount = edgeweights.getMaxTransactionAmount(residualPath[i],
+                residualPath[i + 1], this, calculateEpoch(currentTransaction));
         if (maxTransactionAmount < minAlongPath) {
           minAlongPath = maxTransactionAmount;
         }
@@ -235,7 +236,6 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
         }
 
         Edge edge = CreditLinks.makeEdge(currentNodeId, nextNodeId);
-//        LinkWeight w = edgeweights.getWeights(edge);
 
         try {
           if (log.isInfoEnabled()) {
@@ -355,7 +355,8 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
       for (int neighbor : allOutgoingNeighbors) {
 
         // if the neighbor has not been inspected yet, and has some outgoing credit available
-        if (previousHops[neighbor][0] == -1 && edgeweights.getMaxTransactionAmount(currentNode, neighbor) > 0) {
+        if (previousHops[neighbor][0] == -1 && edgeweights.getMaxTransactionAmount(currentNode,
+                neighbor, this, calculateEpoch(currentTransaction)) > 0) {
 
           // set previous hop
           previousHops[neighbor][0] = currentNode;

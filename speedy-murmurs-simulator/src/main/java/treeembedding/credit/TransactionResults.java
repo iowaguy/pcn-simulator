@@ -40,12 +40,25 @@ public class TransactionResults {
 
   private Map<Edge, LinkWeight> modifiedEdges;
 
+  // This is the number of links that we tried to take, but could not because they do not have
+  // enough guaranteed credit.
+  private int blockedLinks;
+
   TransactionResults() {
     this.pathLengths = new ArrayList<>();
     this.sumPathLength = 0;
     this.maxPathLength = 0;
     this.sumMessages = 0;
     this.success = false;
+    this.blockedLinks = 0;
+  }
+
+  void incrementBlockedLinks() {
+    this.blockedLinks++;
+  }
+
+  int getBlockedLinks() {
+    return this.blockedLinks;
   }
 
   void addSumMessages(int mes) {

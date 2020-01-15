@@ -41,6 +41,12 @@ public class LinkWeight {
     this.pendingTransactions = new ConcurrentHashMap<>();
   }
 
+  public boolean isLiquidityExhausted(double weight) {
+    // for weight, would link have had enough credit to support tx if it wasn't collateralized
+    return (weight <= this.max && weight > this.unlockedMax) ||
+            (weight >= this.min && weight < this.unlockedMin);
+  }
+
   boolean isZero() {
     return ((max - current < EPSILON) && (max - current > -EPSILON)) ||
             ((current - min < EPSILON) && (current - min > -EPSILON));
@@ -145,12 +151,37 @@ public class LinkWeight {
 
   // if funds are being sent from a lower numbered node to a higher numbered node, the transaction
   // is considered "forward"
-  double getMaxTransactionAmount(boolean isForward, RoutingAlgorithm.Collateralization collateralizationType) {
+  double getMaxTransactionAmount(boolean isForward, RoutingAlgorithm.Collateralization collateralizationType,
+                                 CreditMaxFlow maxFlowCN, int currentEpoch) {
+    double mta;
     if (isForward) {
-      return getCurrent() - getEffectiveMin(collateralizationType);
+      mta = getCurrent() - getEffectiveMin(collateralizationType);
+      // check if max transaction size is zero
+      if (maxFlowCN != null &&
+              (mta < EPSILON || mta < -EPSILON) &&
+              // if the effective min is non-zero and the maximum transaction size is zero, this
+              // means that the transaction will be blocked due to liquidity exhaustion. Update
+              // metric accordingly. This segment only applies to maxflow, because in maxflow *any*
+              // amount of collateralization on the link will cause the routing to be different.
+              (getEffectiveMin(collateralizationType) > EPSILON ||
+                      getEffectiveMin(collateralizationType) < -EPSILON)) {
+        maxFlowCN.incrementPerEpochValue(AbstractCreditNetworkBase.BLOCKED_LINKS, currentEpoch);
+      }
     } else {
-      return getEffectiveMax(collateralizationType) - getCurrent();
+      mta = getEffectiveMax(collateralizationType) - getCurrent();
+      // check if max transaction size is zero
+      if (maxFlowCN != null &&
+              (mta < EPSILON || mta < -EPSILON) &&
+              // if the effective max is non-zero and the maximum transaction size is zero, this
+              // means that the transaction will be blocked due to liquidity exhaustion. Update
+              // metric accordingly. This segment only applies to maxflow, because in maxflow *any*
+              // amount of collateralization on the link will cause the routing to be different.
+              (getEffectiveMax(collateralizationType) > EPSILON ||
+                      getEffectiveMax(collateralizationType) < -EPSILON)) {
+        maxFlowCN.incrementPerEpochValue(AbstractCreditNetworkBase.BLOCKED_LINKS, currentEpoch);
+      }
     }
+    return mta;
   }
 
   boolean areFundsAvailable(double weightChange, RoutingAlgorithm.Collateralization collateralization) {
@@ -166,7 +197,7 @@ public class LinkWeight {
       throw new InsufficientFundsException();
     }
 
-    // if key is not in map, put 1 as value, otherwise sum 1 to the current value
+    // if key is not in map, put 1 as value, otherwise add 1 to the current value
     this.pendingTransactions.merge(weightChange, 1, Integer::sum);
     if (collateralization == RoutingAlgorithm.Collateralization.STRICT) {
       strictlyCollateralizeFunds(weightChange);

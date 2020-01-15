@@ -38,7 +38,7 @@ public class CreditLinks extends GraphProperty {
     return getWeights(src, dst).isZero();
   }
 
-  LinkWeight getWeights(int src, int dst) {
+  public LinkWeight getWeights(int src, int dst) {
     return this.getWeights(makeEdge(src, dst));
   }
 
@@ -61,8 +61,14 @@ public class CreditLinks extends GraphProperty {
   }
 
   public double getMaxTransactionAmount(int src, int dst) {
+    return getMaxTransactionAmount(src, dst, null, 0);
+  }
+
+  public double getMaxTransactionAmount(int src, int dst, CreditMaxFlow maxFlowCN,
+                                        int currentEpoch) {
     LinkWeight weights = this.getWeights(makeEdge(src, dst));
-    return weights.getMaxTransactionAmount(src < dst, this.collateralization);
+    return weights.getMaxTransactionAmount(src < dst, this.collateralization,
+            maxFlowCN, currentEpoch);
   }
 
   public Set<Entry<Edge, LinkWeight>> getWeights() {

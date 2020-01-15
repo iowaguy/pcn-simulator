@@ -18,7 +18,7 @@ public class TreerouteOnly extends Treeroute {
   }
 
   @Override
-  protected int nextHop(int cur, Node[] nodes, long[] dest, int destN) {
+  protected NextHopPlusMetrics nextHop(int cur, Node[] nodes, long[] dest, int destN) {
     int dbest = this.getCPL(dest, this.coords[cur]);
     int index = -1;
     int[] out = sp.getChildren(cur);
@@ -33,7 +33,7 @@ public class TreerouteOnly extends Treeroute {
     if (index == -1) {
       index = sp.getParent(cur);
     }
-    return index;
+    return new NextHopPlusMetrics(index, 0);
   }
 
   private int getCPL(long[] a, long[] b) {
@@ -45,8 +45,8 @@ public class TreerouteOnly extends Treeroute {
   }
 
   @Override
-  protected int nextHop(int cur, Node[] nodes, long[] dest, int destN,
-                        boolean[] exclude, int pre, double weight, CreditLinks edgeweights) {
+  protected NextHopPlusMetrics nextHop(int cur, Node[] nodes, long[] dest, int destN,
+                                       boolean[] exclude, int pre, double weight, CreditLinks edgeweights) {
     int dbest = this.getCPL(dest, this.coords[cur]);
     int index = -1;
     int[] out = sp.getChildren(cur);
@@ -66,7 +66,7 @@ public class TreerouteOnly extends Treeroute {
         index = -1;
       }
     }
-    return index;
+    return new NextHopPlusMetrics(index, 0);
   }
 
   @Override

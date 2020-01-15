@@ -30,9 +30,9 @@ class LinkWeightTest {
 
   @Test
   void testGetMaxTransactionAmount() {
-    assertEquals(0, l1.getMaxTransactionAmount(true, RoutingAlgorithm.Collateralization.STRICT));
-    assertEquals(1000, l2.getMaxTransactionAmount(true, RoutingAlgorithm.Collateralization.STRICT));
-    assertEquals(2000, l2.getMaxTransactionAmount(false, RoutingAlgorithm.Collateralization.STRICT));
+    assertEquals(0, l1.getMaxTransactionAmount(true, RoutingAlgorithm.Collateralization.STRICT, null, 0));
+    assertEquals(1000, l2.getMaxTransactionAmount(true, RoutingAlgorithm.Collateralization.STRICT, null, 0));
+    assertEquals(2000, l2.getMaxTransactionAmount(false, RoutingAlgorithm.Collateralization.STRICT, null, 0));
   }
 
   @Test
