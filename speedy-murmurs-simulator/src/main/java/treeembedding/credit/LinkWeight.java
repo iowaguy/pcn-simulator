@@ -158,26 +158,26 @@ public class LinkWeight {
       mta = getCurrent() - getEffectiveMin(collateralizationType);
       // check if max transaction size is zero
       if (maxFlowCN != null &&
-              (mta < EPSILON || mta < -EPSILON) &&
+              (mta < EPSILON && mta > -EPSILON) &&
               // if the effective min is non-zero and the maximum transaction size is zero, this
               // means that the transaction will be blocked due to liquidity exhaustion. Update
               // metric accordingly. This segment only applies to maxflow, because in maxflow *any*
               // amount of collateralization on the link will cause the routing to be different.
-              (getEffectiveMin(collateralizationType) > EPSILON ||
-                      getEffectiveMin(collateralizationType) < -EPSILON)) {
+              // INVARIANT: min will always be less than or equal to unlockedMin
+              (this.min - this.unlockedMin < EPSILON)) {
         maxFlowCN.incrementPerEpochValue(AbstractCreditNetworkBase.BLOCKED_LINKS, currentEpoch);
       }
     } else {
       mta = getEffectiveMax(collateralizationType) - getCurrent();
       // check if max transaction size is zero
       if (maxFlowCN != null &&
-              (mta < EPSILON || mta < -EPSILON) &&
-              // if the effective max is non-zero and the maximum transaction size is zero, this
-              // means that the transaction will be blocked due to liquidity exhaustion. Update
+              (mta < EPSILON && mta > -EPSILON) &&
+              // if there is some collateral locked up and the maximum transaction size is zero,
+              // this means that the transaction will be blocked due to liquidity exhaustion. Update
               // metric accordingly. This segment only applies to maxflow, because in maxflow *any*
               // amount of collateralization on the link will cause the routing to be different.
-              (getEffectiveMax(collateralizationType) > EPSILON ||
-                      getEffectiveMax(collateralizationType) < -EPSILON)) {
+              // INVARIANT: max will always be greater or equal to unlockedMax
+              (this.max - this.unlockedMax > EPSILON)) {
         maxFlowCN.incrementPerEpochValue(AbstractCreditNetworkBase.BLOCKED_LINKS, currentEpoch);
       }
     }

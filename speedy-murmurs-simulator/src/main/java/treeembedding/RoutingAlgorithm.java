@@ -21,8 +21,8 @@ public enum RoutingAlgorithm {
   TREE_ONLY_DYN_NO_MCP(9, "TO_DYN_NO_MPC", false, true, new TreerouteOnly(), Collateralization.STRICT),
 
   MAXFLOW(10, "M", false, false, null, Collateralization.NONE),
-  MAXFLOW_COLLATERALIZE(10, "M", false, false, null, Collateralization.STRICT),
-  MAXFLOW_TOTAL_COLLATERALIZE(10, "M", false, false, null, Collateralization.TOTAL);
+  MAXFLOW_COLLATERALIZE(10, "MC", false, false, null, Collateralization.STRICT),
+  MAXFLOW_TOTAL_COLLATERALIZE(10, "MTC", false, false, null, Collateralization.TOTAL);
 
   private int id;
   private String shortName;
@@ -75,5 +75,10 @@ public enum RoutingAlgorithm {
 
   public Treeroute getTreeroute() {
     return treeroute;
+  }
+
+  @Override
+  public String toString() {
+    return shortName;
   }
 }

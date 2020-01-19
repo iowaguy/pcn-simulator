@@ -568,8 +568,10 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
     //check if transaction works
     Map<Edge, LinkWeight> modifiedEdges = new HashMap<>();
-    Map<Edge, List<Double>> edgeModifications = stepThroughTransaction(vals, paths, edgeweights, modifiedEdges);
-    if (edgeModifications != null) {
+    TransactionStepResult transactionStepResult = stepThroughTransaction(cur, vals, nodes, g, exclude, edgeweights, modifiedEdges);
+
+    if (transactionStepResult != null) {
+      Map<Edge, List<Double>> edgeModifications = transactionStepResult.getEdgeModifications();
       finalizeTransaction(vals, paths, edgeweights, edgeModifications);
     }
 
@@ -577,7 +579,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     TransactionResults res = new TransactionResults();
 
     //success
-    res.setSuccess(edgeModifications != null);
+    res.setSuccess(transactionStepResult != null);
 
     res.setModifiedEdges(modifiedEdges);
 
@@ -668,37 +670,47 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     double[] vals = this.part.partition(g, src, dest, cur.val, roots.length);
 
     // build paths
-    for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
-      if (vals[treeIndex] != 0) {
-        int s = src;
-        int d = dest;
-        if (vals[treeIndex] < 0) {
-          s = dest;
-          d = src;
-        }
-        NextHopPlusMetrics n = this.ra.getRoute(s, d, treeIndex, g, nodes, exclude, edgeweights, vals[treeIndex]);
-        paths[treeIndex] = n.getPath();
-        addPerEpochValue(BLOCKED_LINKS, n.getBlockedLinks(), calculateEpoch(cur));
-      }
-    }
+//    for (int pathIndex = 0; pathIndex < paths.length; pathIndex++) {
+//      if (vals[pathIndex] != 0) {
+//        int s = src;
+//        int d = dest;
+//        if (vals[pathIndex] < 0) {
+//          s = dest;
+//          d = src;
+//        }
+//        NextHopPlusMetrics n = this.ra.getRoute(s, d, pathIndex, g, nodes, exclude, edgeweights, vals[pathIndex]);
+//        paths[pathIndex] = n.getPath();
+//        addPerEpochValue(BLOCKED_LINKS, n.getBlockedLinks(), calculateEpoch(cur));
+//      }
+//    }
     //check if transaction works
     Map<Edge, LinkWeight> modifiedEdges = new HashMap<>();
-    Map<Edge, List<Double>> edgeModifications = stepThroughTransaction(vals, paths, edgeweights, modifiedEdges);
-    if (edgeModifications != null) {
+
+    // TODO stepThroughTransaction for each tree
+    // TODO find next hop within stepThroughTransaction
+    // TODO count blocks and collateralize within stepThroughTransaction
+    TransactionStepResult transactionStepResult = stepThroughTransaction(cur, vals, nodes, g, exclude, edgeweights, modifiedEdges);
+
+
+    // TODO only finalize when all paths are found, or tx fails
+    // TODO if tx fails, rollback collateral
+    if (transactionStepResult != null) {
+      paths = transactionStepResult.getPaths();
+      Map<Edge, List<Double>> edgeModifications = transactionStepResult.getEdgeModifications();
       // will only enter here if transaction was successful
-      finalizeTransaction(vals, paths, edgeweights, edgeModifications);
+      finalizeTransaction(vals, transactionStepResult.getPaths(), edgeweights, edgeModifications);
     }
 
     //compute metrics
     TransactionResults res = new TransactionResults();
 
     //success
-    res.setSuccess(edgeModifications != null);
+    res.setSuccess(transactionStepResult != null);
 
     res.setModifiedEdges(modifiedEdges);
 
     //path length
-    for (int j = 0; j < paths.length; j++) {
+    for (int j = 0; paths != null && j < paths.length; j++) {
       if (paths[j][paths[j].length - 1] == dest) {
         res.addSumPathLength(paths[j].length - 1);
         res.addPathLength(j, paths[j].length - 1);
@@ -715,7 +727,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     }
     //max path length
     int max = 0;
-    for (int j = 0; j < paths.length; j++) {
+    for (int j = 0; paths != null && j < paths.length; j++) {
       if (vals[j] > 0) {
         if (paths[j][paths[j].length - 1] == dest) {
           if (paths[j].length > max) {
@@ -730,7 +742,9 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     }
 
     res.setMaxPathLength(2 * max);
-    this.setRoots(paths);
+    if (paths != null) {
+      this.setRoots(paths);
+    }
     return res;
   }
 
@@ -746,48 +760,63 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
    * @return a map of lists of all the weight changes, and the edges they correspond to. A single
    *         edge can have multiple weight changes.
    */
-  private Map<Edge, List<Double>> stepThroughTransaction(double[] vals, int[][] paths, CreditLinks edgeweights, Map<Edge, LinkWeight> modifiedEdges) {
+  private TransactionStepResult stepThroughTransaction(Transaction cur, double[] vals,
+                                                       Node[] nodes, Graph g, boolean[] exclude,
+                                                       CreditLinks edgeweights, Map<Edge, LinkWeight> modifiedEdges) {
     Map<Edge, List<Double>> edgeModifications = new HashMap<>();
     if (vals == null) {
       transactionFailed(edgeweights, edgeModifications);
       return null;
     }
 
-    for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
-      if (vals[treeIndex] != 0) {
-        if (paths[treeIndex][paths[treeIndex].length - 1] == -1) {
+    int[][] paths = new int[roots.length][];
+    for (int pathIndex = 0; pathIndex < roots.length; pathIndex++) {
+      if (vals[pathIndex] != 0) {
+        int s = cur.src;
+        int d = cur.dst;
+        if (vals[pathIndex] < 0) {
+          s = cur.dst;
+          d = cur.src;
+        }
+        NextHopPlusMetrics n = this.ra.getRoute(s, d, pathIndex, g, nodes, exclude, edgeweights, vals[pathIndex]);
+        paths[pathIndex] = n.getPath();
+        addPerEpochValue(BLOCKED_LINKS, n.getBlockedLinks(), calculateEpoch(cur));
+
+        if (paths[pathIndex][paths[pathIndex].length - 1] == -1) {
           // could not find a path
           transactionFailed(edgeweights, edgeModifications);
           return null;
         }
-        int currentNodeId = paths[treeIndex][0];
-        for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
+
+        // simulate routing
+        int currentNodeId = paths[pathIndex][0];
+        for (int nodeIndex = 1; nodeIndex < paths[pathIndex].length; nodeIndex++) {
           simulateNetworkLatency();
 
           // Attack logic
           if (attack != null && attack.getType() == AttackType.DROP_ALL) {
-            if (this.byzantineNodes.contains(paths[treeIndex][nodeIndex])) {
+            if (this.byzantineNodes.contains(paths[pathIndex][nodeIndex])) {
               // do byzantine action
               transactionFailed(edgeweights, edgeModifications);
               return null;
             }
           }
 
-          int nextNodeId = paths[treeIndex][nodeIndex];
+          int nextNodeId = paths[pathIndex][nodeIndex];
           Edge edge = CreditLinks.makeEdge(currentNodeId, nextNodeId);
           LinkWeight weights = edgeweights.getWeights(edge);
 
           try {
             if (log.isInfoEnabled()) {
-              log.info("Prepare: cur=" + currentNodeId + "; next=" + nextNodeId + "; val=" + vals[treeIndex]);
+              log.info("Prepare: cur=" + currentNodeId + "; next=" + nextNodeId + "; val=" + vals[pathIndex]);
             }
-            edgeweights.prepareUpdateWeight(currentNodeId, nextNodeId, vals[treeIndex]);
+            edgeweights.prepareUpdateWeight(currentNodeId, nextNodeId, vals[pathIndex]);
 
             if (!modifiedEdges.containsKey(edge)) {
               modifiedEdges.put(edge, weights);
             }
 
-            double currentVal = vals[treeIndex];
+            double currentVal = vals[pathIndex];
             List<Double> base = new LinkedList<>();
             if (currentNodeId > nextNodeId) {
               base.add(-currentVal);
@@ -814,7 +843,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       }
     }
 
-    return edgeModifications;
+    return new TransactionStepResult(paths, edgeModifications);
   }
 
   private void finalizeTransaction(double[] vals, int[][] paths, CreditLinks edgeweights, Map<Edge, List<Double>> edgeModifications)
@@ -961,5 +990,23 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     succ &= writeDataCommon(folder);
 
     return succ;
+  }
+
+  private class TransactionStepResult {
+    int[][] paths;
+    Map<Edge, List<Double>> edgeModifications;
+
+    TransactionStepResult(int[][] paths, Map<Edge, List<Double>> edgeModifications) {
+      this.paths = paths;
+      this.edgeModifications = edgeModifications;
+    }
+
+    int[][] getPaths() {
+      return paths;
+    }
+
+    Map<Edge, List<Double>> getEdgeModifications() {
+      return edgeModifications;
+    }
   }
 }

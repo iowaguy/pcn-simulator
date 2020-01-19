@@ -353,6 +353,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
 
       int[] allOutgoingNeighbors = nodes[currentNode].getOutgoingEdges();
       for (int neighbor : allOutgoingNeighbors) {
+        if (previousHops[currentNode][0] == neighbor) continue;
 
         // if the neighbor has not been inspected yet, and has some outgoing credit available
         if (previousHops[neighbor][0] == -1 && edgeweights.getMaxTransactionAmount(currentNode,

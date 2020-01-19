@@ -99,6 +99,7 @@ class CreditNetworkTest {
       CreditLinks edgeweights = abc.getCreditLinks();
       assertEquals(1, abc.getSuccessesPerEpoch()[0]);
       assertEquals(1, abc.getTransactionsPerEpoch()[0]);
+      assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
       assertEquals(90.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
       assertEquals(90.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
       assertEquals(90.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
@@ -114,6 +115,8 @@ class CreditNetworkTest {
       CreditLinks edgeweights = abc.getCreditLinks();
       assertEquals(2, abc.getSuccessesPerEpoch()[0]);
       assertEquals(2, abc.getTransactionsPerEpoch()[0]);
+      assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
+
       assertEquals(70.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
       assertEquals(70.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
       assertEquals(70.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
@@ -129,6 +132,7 @@ class CreditNetworkTest {
     CreditLinks edgeweights = abc.getCreditLinks();
     assertEquals(76, abc.getSuccessesPerEpoch()[0]);
     assertEquals(76, abc.getTransactionsPerEpoch()[0]);
+    assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
 
     assertEquals(24.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
@@ -158,6 +162,7 @@ class CreditNetworkTest {
     CreditLinks edgeweights = abc.getCreditLinks();
     assertEquals(76, abc.getSuccessesPerEpoch()[0]);
     assertEquals(76, abc.getTransactionsPerEpoch()[0]);
+    assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
 
     assertEquals(24.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(24.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
@@ -174,6 +179,7 @@ class CreditNetworkTest {
       CreditLinks edgeweights = abc.getCreditLinks();
       assertEquals(2, abc.getSuccessesPerEpoch()[0]);
       assertEquals(2, abc.getTransactionsPerEpoch()[0]);
+      assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
 
       assertEquals(90.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
       assertEquals(70.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
@@ -192,6 +198,7 @@ class CreditNetworkTest {
       CreditLinks edgeweights = abc.getCreditLinks();
       assertEquals(2, abc.getSuccessesPerEpoch()[0]);
       assertEquals(2, abc.getTransactionsPerEpoch()[0]);
+      assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
 
       assertEquals(110.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
       assertEquals(110.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
@@ -219,6 +226,8 @@ class CreditNetworkTest {
     CreditLinks edgeweights = abc.getCreditLinks();
     assertEquals(0, abc.getSuccessesPerEpoch()[0]);
     assertEquals(1, abc.getTransactionsPerEpoch()[0]);
+    assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
+
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(100.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
     assertEquals(100.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
@@ -244,6 +253,8 @@ class CreditNetworkTest {
     CreditLinks edgeweights = abc.getCreditLinks();
     assertEquals(0, abc.getSuccessesPerEpoch()[0]);
     assertEquals(1, abc.getTransactionsPerEpoch()[0]);
+    assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
+
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(100.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
     assertEquals(100.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
@@ -261,6 +272,7 @@ class CreditNetworkTest {
     Attack attack = new Attack();
     attack.setNumAttackers(1);
     attack.setReceiverDelayMs(2000);
+    //attack.setReceiverDelayMs(2000000000);
     attack.setType(AttackType.GRIEFING);
     attack.setSelection(AttackerSelection.SELECTED);
     Set<Integer> selectedByzantineNodes = new HashSet<>();
@@ -274,6 +286,7 @@ class CreditNetworkTest {
     CreditLinks edgeweights = abc.getCreditLinks();
     assertEquals(0, abc.getSuccessesPerEpoch()[0]);
     assertEquals(2, abc.getTransactionsPerEpoch()[0]);
+    assertEquals(1, abc.getBlockedLinksPerEpoch()[0]);
 
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
@@ -321,6 +334,7 @@ class CreditNetworkTest {
     CreditLinks edgeweights = abc.getCreditLinks();
     assertEquals(0, abc.getSuccessesPerEpoch()[0]);
     assertEquals(2, abc.getTransactionsPerEpoch()[0]);
+    assertEquals(1, abc.getBlockedLinksPerEpoch()[0]);
 
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
@@ -365,6 +379,7 @@ class CreditNetworkTest {
     CreditLinks edgeweights = abc.getCreditLinks();
     assertEquals(0, abc.getSuccessesPerEpoch()[0]);
     assertEquals(2, abc.getTransactionsPerEpoch()[0]);
+    assertEquals(2, abc.getBlockedLinksPerEpoch()[0]);
 
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
@@ -406,6 +421,7 @@ class CreditNetworkTest {
     CreditLinks edgeweights = abc.getCreditLinks();
     assertEquals(1, abc.getSuccessesPerEpoch()[0]);
     assertEquals(2, abc.getTransactionsPerEpoch()[0]);
+    assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
 
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(20.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
@@ -449,6 +465,7 @@ class CreditNetworkTest {
 
     assertEquals(1, abc.getSuccessesPerEpoch()[0]);
     assertEquals(1, abc.getTransactionsPerEpoch()[0]);
+    assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
 
     assertEquals(9.0, edgeweights.getWeight(0, 1), ACCEPTABLE_ERROR);
     assertEquals(5.0, edgeweights.getWeight(0, 4), ACCEPTABLE_ERROR);
@@ -487,6 +504,7 @@ class CreditNetworkTest {
 
     assertEquals(2, abc.getSuccessesPerEpoch()[0]);
     assertEquals(2, abc.getTransactionsPerEpoch()[0]);
+    assertEquals(1, abc.getBlockedLinksPerEpoch()[0]);
 
     assertEquals(9.0, edgeweights.getWeight(0, 1), ACCEPTABLE_ERROR);
     assertEquals(5.0, edgeweights.getWeight(0, 4), ACCEPTABLE_ERROR);

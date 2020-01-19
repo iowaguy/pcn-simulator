@@ -60,12 +60,16 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     return perEpochMetrics.get(SUCCESSES);
   }
 
-  int[] getPerEpochMetric(String name) {
+  int[] getBlockedLinksPerEpoch() {
+    return perEpochMetrics.get(BLOCKED_LINKS);
+  }
+
+  private int[] getPerEpochMetric(String name) {
     return perEpochMetrics.get(name);
   }
 
   private Map<String, List<Long>> longMetrics;
-  Map<String, int[]> perEpochMetrics;
+  private Map<String, int[]> perEpochMetrics;
 
   static final String SINGLE_PATHS_DEST_FOUND = "pathSF"; //distribution of single paths, only discovered paths
   static final String SINGLE_PATHS_DEST_NOT_FOUND = "pathSNF"; //distribution of single paths, not found dest
@@ -220,12 +224,12 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     toRetry = new PriorityBlockingQueue<>();
   }
 
-  public synchronized void incrementPerEpochValue(String name, int currentEpoch) {
+  synchronized void incrementPerEpochValue(String name, int currentEpoch) {
     addPerEpochValue(name, 1, currentEpoch);
   }
 
   synchronized void addPerEpochValue(String name, double value, int currentEpoch) {
-    perEpochMetrics.compute(name, (k, v) -> {
+    perEpochMetrics.computeIfPresent(name, (k, v) -> {
       v[currentEpoch] += value;
       return v;
     });
@@ -236,6 +240,8 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   }
 
   Transaction getNextTransaction() {
+
+    // this code is used to delay transaction start times. useful for testing.
     try {
       if (runConfig.getTransactionDelayMs() > 0) {
         Thread.sleep(runConfig.getTransactionDelayMs());
