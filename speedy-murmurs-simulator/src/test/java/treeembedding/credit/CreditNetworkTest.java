@@ -23,7 +23,7 @@ import treeembedding.credit.partioner.RandomPartitioner;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CreditNetworkTest {
-  private static final String TEST_DATA_BASE = "../test-data/finalSets/dynamic";
+  private static final String TEST_DATA_BASE = "src/test/resources/test-data/finalSets/dynamic";
   private RunConfig runConfig;
   private static final int EPOCH = 100;
   private static final double ACCEPTABLE_ERROR = 0.0001;
