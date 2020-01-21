@@ -310,6 +310,52 @@ class CreditNetworkTest {
   }
 
   /**
+   * The non-griefed transaction should succeed
+   */
+  @Test
+  void concurrentTransactionsWithGriefingSpeedyMurmursNoCollateralization() {
+    String testDir = "/partially-disjoint-concurrent-transactions-test-with-contention";
+    Attack attack = new Attack();
+    attack.setNumAttackers(1);
+    attack.setReceiverDelayMs(2000);
+    attack.setType(AttackType.GRIEFING);
+    attack.setSelection(AttackerSelection.SELECTED);
+    Set<Integer> selectedByzantineNodes = new HashSet<>();
+    selectedByzantineNodes.add(5);
+    attack.setSelectedByzantineNodes(selectedByzantineNodes);
+
+    // this is to guarantee that the griefed transaction starts first
+    runConfig.setTransactionDelayMs(500);
+
+    AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS_NO_COLLATERALIZATION, testDir, attack);
+    CreditLinks edgeweights = abc.getCreditLinks();
+    assertEquals(1, abc.getSuccessesPerEpoch()[0]);
+    assertEquals(2, abc.getTransactionsPerEpoch()[0]);
+    assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
+
+    assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(0, 2).getUnlockedMin(), ACCEPTABLE_ERROR);
+
+    assertEquals(20.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(2, 3).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(2, 3).getUnlockedMin(), ACCEPTABLE_ERROR);
+
+    assertEquals(100.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(3, 5).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(3, 5).getUnlockedMin(), ACCEPTABLE_ERROR);
+
+    assertEquals(20.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(3, 4).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(3, 4).getUnlockedMin(), ACCEPTABLE_ERROR);
+
+    assertEquals(20.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(1, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(1, 2).getUnlockedMin(), ACCEPTABLE_ERROR);
+
+  }
+
+  /**
    * Both transactions should fail because one transaction will hold the funds so there is not
    * enough liquidity for the other to complete, then the first transaction will fail because the
    * attacker will not approve it.

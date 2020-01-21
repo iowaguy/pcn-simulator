@@ -16,7 +16,8 @@ public enum RoutingAlgorithm {
   VOUTE_NO_DYN(5, "V_NO_DYN", false, false, new TreerouteTDRAP(), Collateralization.STRICT),
   VOUTE_MPC(6, "V_MPC", true, true, new TreerouteTDRAP(), Collateralization.STRICT),
   SPEEDYMURMURS(7, "SM", false, true, new TreerouteTDRAP(), Collateralization.STRICT),
-  SPEEDYMURMURS_TOTAL_COLLATERALIZATION(7, "SM", false, true, new TreerouteTDRAP(), Collateralization.TOTAL),
+  SPEEDYMURMURS_NO_COLLATERALIZATION(7, "SM_NO_COLL", false, true, new TreerouteTDRAP(), Collateralization.NONE),
+  SPEEDYMURMURS_TOTAL_COLLATERALIZATION(7, "SM_TOT_COL", false, true, new TreerouteTDRAP(), Collateralization.TOTAL),
   TREE_ONLY_MCP_NO_DYN(8, "TO_MPC_NO_DYN", true, false, new TreerouteOnly(), Collateralization.STRICT),
   TREE_ONLY_DYN_NO_MCP(9, "TO_DYN_NO_MPC", false, true, new TreerouteOnly(), Collateralization.STRICT),
 
@@ -35,12 +36,6 @@ public enum RoutingAlgorithm {
     NONE,   // no funds are collateralized
     STRICT, // each transaction only collateralizes the exact amount of the transaction for any link it uses
     TOTAL   // total value of funds on link are collateralized for each transaction
-
-//    private boolean isCollateralized;
-//    private boolean
-//    public Collateralization(boolean collateralize, boolean total) {
-//
-//    }
   }
 
   RoutingAlgorithm(int id, String shortName, boolean usesMPC, boolean doesDynamicRepair,
