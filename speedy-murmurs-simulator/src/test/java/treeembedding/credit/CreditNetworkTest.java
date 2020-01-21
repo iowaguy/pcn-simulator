@@ -27,9 +27,12 @@ class CreditNetworkTest {
   private RunConfig runConfig;
   private static final int EPOCH = 100;
   private static final double ACCEPTABLE_ERROR = 0.0001;
-  private RoutingAlgorithm[] algos = new RoutingAlgorithm[]{RoutingAlgorithm.SILENTWHISPERS,
-          RoutingAlgorithm.SPEEDYMURMURS, RoutingAlgorithm.MAXFLOW,
-          RoutingAlgorithm.MAXFLOW_COLLATERALIZE};
+  private RoutingAlgorithm[] algos = new RoutingAlgorithm[]{
+          RoutingAlgorithm.SILENTWHISPERS,
+          RoutingAlgorithm.SPEEDYMURMURS,
+          RoutingAlgorithm.MAXFLOW,
+          RoutingAlgorithm.MAXFLOW_COLLATERALIZE
+  };
 
   @BeforeEach
   void setup() {

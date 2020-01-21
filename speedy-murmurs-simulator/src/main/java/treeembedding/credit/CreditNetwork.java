@@ -568,7 +568,8 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
     //check if transaction works
     Map<Edge, LinkWeight> modifiedEdges = new HashMap<>();
-    TransactionStepResult transactionStepResult = stepThroughTransaction(cur, vals, nodes, g, exclude, edgeweights, modifiedEdges);
+    TransactionStepResult transactionStepResult = stepThroughTransaction(cur, vals, nodes, g,
+            exclude, edgeweights, modifiedEdges);
 
     if (transactionStepResult != null) {
       Map<Edge, List<Double>> edgeModifications = transactionStepResult.getEdgeModifications();
@@ -663,7 +664,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
   private TransactionResults routeAdhoc(Transaction cur, Graph g, Node[] nodes, boolean[] exclude,
                                         CreditLinks edgeweights) throws TransactionFailedException {
-    int[][] paths = null; // = new int[roots.length][];
+    int[][] paths = null;
     int src = cur.src;
     int dest = cur.dst;
     //distribute values on paths
@@ -671,15 +672,9 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
     //check if transaction works
     Map<Edge, LinkWeight> modifiedEdges = new HashMap<>();
+    TransactionStepResult transactionStepResult = stepThroughTransaction(cur, vals, nodes, g,
+            exclude, edgeweights, modifiedEdges);
 
-    // TODO stepThroughTransaction for each tree
-    // TODO find next hop within stepThroughTransaction
-    // TODO count blocks and collateralize within stepThroughTransaction
-    TransactionStepResult transactionStepResult = stepThroughTransaction(cur, vals, nodes, g, exclude, edgeweights, modifiedEdges);
-
-
-    // TODO only finalize when all paths are found, or tx fails
-    // TODO if tx fails, rollback collateral
     if (transactionStepResult != null) {
       paths = transactionStepResult.getPaths();
       Map<Edge, List<Double>> edgeModifications = transactionStepResult.getEdgeModifications();
