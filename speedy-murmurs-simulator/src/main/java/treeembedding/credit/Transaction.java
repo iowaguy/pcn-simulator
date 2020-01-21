@@ -6,7 +6,7 @@ class Transaction implements Comparable<Transaction> {
   int dst;
   double val;
   double time;
-  int requeue = 0;
+  int timesRequeued = 0;
   int mes = 0;
   int path = 0;
 
@@ -18,7 +18,7 @@ class Transaction implements Comparable<Transaction> {
   }
 
   void incRequeue(double nexttime) {
-    this.requeue++;
+    this.timesRequeued++;
     this.time = nexttime;
   }
 

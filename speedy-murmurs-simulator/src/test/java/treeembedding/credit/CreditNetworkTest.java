@@ -272,7 +272,6 @@ class CreditNetworkTest {
     Attack attack = new Attack();
     attack.setNumAttackers(1);
     attack.setReceiverDelayMs(2000);
-    //attack.setReceiverDelayMs(2000000000);
     attack.setType(AttackType.GRIEFING);
     attack.setSelection(AttackerSelection.SELECTED);
     Set<Integer> selectedByzantineNodes = new HashSet<>();
@@ -287,6 +286,54 @@ class CreditNetworkTest {
     assertEquals(0, abc.getSuccessesPerEpoch()[0]);
     assertEquals(2, abc.getTransactionsPerEpoch()[0]);
     assertEquals(1, abc.getBlockedLinksPerEpoch()[0]);
+
+    assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(0, 2).getUnlockedMin(), ACCEPTABLE_ERROR);
+
+    assertEquals(100.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(2, 3).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(2, 3).getUnlockedMin(), ACCEPTABLE_ERROR);
+
+    assertEquals(100.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(3, 5).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(3, 5).getUnlockedMin(), ACCEPTABLE_ERROR);
+
+    assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(3, 4).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(3, 4).getUnlockedMin(), ACCEPTABLE_ERROR);
+
+    assertEquals(100.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
+    assertEquals(200.0, edgeweights.getWeights(1, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(1, 2).getUnlockedMin(), ACCEPTABLE_ERROR);
+
+  }
+
+  /**
+   * Both transactions should fail because one transaction will hold the funds so there is not
+   * enough liquidity for the other to complete, then the first transaction will fail because the
+   * attacker will not approve it.
+   */
+  @Test
+  void testCountingBlockedLinksSpeedyMurmurs() {
+    String testDir = "/partially-disjoint-concurrent-transactions-test-with-contention-test-blocked-links";
+    Attack attack = new Attack();
+    attack.setNumAttackers(1);
+    attack.setReceiverDelayMs(2000);
+    attack.setType(AttackType.GRIEFING);
+    attack.setSelection(AttackerSelection.SELECTED);
+    Set<Integer> selectedByzantineNodes = new HashSet<>();
+    selectedByzantineNodes.add(5);
+    attack.setSelectedByzantineNodes(selectedByzantineNodes);
+
+    // this is to guarantee that the griefed transaction starts first
+    runConfig.setTransactionDelayMs(100);
+
+    AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir, attack);
+    CreditLinks edgeweights = abc.getCreditLinks();
+    assertEquals(0, abc.getSuccessesPerEpoch()[0]);
+    assertEquals(11, abc.getTransactionsPerEpoch()[0]);
+    assertEquals(10, abc.getBlockedLinksPerEpoch()[0]);
 
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);

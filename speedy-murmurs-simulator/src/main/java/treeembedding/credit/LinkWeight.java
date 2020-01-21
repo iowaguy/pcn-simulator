@@ -42,9 +42,13 @@ public class LinkWeight {
   }
 
   public boolean isLiquidityExhausted(double weight) {
-    // for weight, would link have had enough credit to support tx if it wasn't collateralized
-    return (weight <= this.max && weight > this.unlockedMax) ||
-            (weight >= this.min && weight < this.unlockedMin);
+    // would link have had enough credit to support tx if it wasn't collateralized?
+    double potentialWeight = getCurrent() - weight;
+    if (weight > 0) {
+      return (potentialWeight > getMin()) && (potentialWeight < getUnlockedMin());
+    } else {
+      return (potentialWeight < getMax()) && (potentialWeight > getUnlockedMax());
+    }
   }
 
   boolean isZero() {

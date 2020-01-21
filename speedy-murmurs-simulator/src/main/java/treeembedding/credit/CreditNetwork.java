@@ -149,7 +149,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     if (!results.isSuccess()) {
       Random rand = new Random();
       currentTransaction.incRequeue(currentTransaction.time + rand.nextDouble() * this.requeueInt);
-      if (currentTransaction.requeue <= this.maxTries) {
+      if (currentTransaction.timesRequeued < (this.maxTries - 1)) {
         toRetry.add(currentTransaction);
       } else {
         incrementCount(MESSAGES_ALL, currentTransaction.mes);
@@ -663,26 +663,12 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
   private TransactionResults routeAdhoc(Transaction cur, Graph g, Node[] nodes, boolean[] exclude,
                                         CreditLinks edgeweights) throws TransactionFailedException {
-    int[][] paths = new int[roots.length][];
+    int[][] paths = null; // = new int[roots.length][];
     int src = cur.src;
     int dest = cur.dst;
     //distribute values on paths
     double[] vals = this.part.partition(g, src, dest, cur.val, roots.length);
 
-    // build paths
-//    for (int pathIndex = 0; pathIndex < paths.length; pathIndex++) {
-//      if (vals[pathIndex] != 0) {
-//        int s = src;
-//        int d = dest;
-//        if (vals[pathIndex] < 0) {
-//          s = dest;
-//          d = src;
-//        }
-//        NextHopPlusMetrics n = this.ra.getRoute(s, d, pathIndex, g, nodes, exclude, edgeweights, vals[pathIndex]);
-//        paths[pathIndex] = n.getPath();
-//        addPerEpochValue(BLOCKED_LINKS, n.getBlockedLinks(), calculateEpoch(cur));
-//      }
-//    }
     //check if transaction works
     Map<Edge, LinkWeight> modifiedEdges = new HashMap<>();
 

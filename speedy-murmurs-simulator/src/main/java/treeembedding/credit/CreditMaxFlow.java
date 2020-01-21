@@ -164,7 +164,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
       //re-queue if necessary
       if (!results.isSuccess()) {
         currentTransaction.incRequeue(currentTransaction.time + rand.nextDouble() * this.requeueInt);
-        if (currentTransaction.requeue <= this.maxTries) {
+        if (currentTransaction.timesRequeued <= this.maxTries) {
           toRetry.add(currentTransaction);
         } else {
           incrementCount(MESSAGES_ALL, currentTransaction.mes);

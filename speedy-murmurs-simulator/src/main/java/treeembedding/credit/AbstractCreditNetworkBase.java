@@ -89,7 +89,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   static final String DELAY_SUCCESS = "delSucc"; //distribution of hop delay, successful queries
   static final String DELAY_FAIL = "delFail"; //distribution of hop delay, failed queries
   static final String CREDIT_MAX_FLOW = "CREDIT_MAX_FLOW";
-  public static final String BLOCKED_LINKS = "BLOCKED_LINKS";
+  static final String BLOCKED_LINKS = "BLOCKED_LINKS";
   private static final String SUCCESSES = "SUCCESSES";
   private static final String TRANSACTIONS = "TRANSACTIONS";
 
@@ -308,9 +308,9 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     incrementCount(MESSAGES, results.getSumMessages());
     incrementCount(DELAY, results.getMaxPathLength());
     if (results.isSuccess()) {
-      incrementCount(ATTEMPTS, currentTransaction.requeue);
+      incrementCount(ATTEMPTS, currentTransaction.timesRequeued);
       this.success++;
-      if (currentTransaction.requeue == 0) {
+      if (currentTransaction.timesRequeued == 0) {
         this.success_first++;
       }
       incrementCount(MESSAGES_ALL, currentTransaction.mes);
