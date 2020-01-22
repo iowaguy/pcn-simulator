@@ -157,9 +157,11 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
   }
 
   private TransactionResults transact(Transaction currentTransaction, Graph g, int currentEpoch) {
+    currentTransaction.startTime = (double) System.nanoTime();
     try {
       TransactionResults results = fordFulkerson(currentTransaction, g);
       Random rand = new Random();
+      currentTransaction.endTime = (double) System.nanoTime();
 
       //re-queue if necessary
       if (!results.isSuccess()) {

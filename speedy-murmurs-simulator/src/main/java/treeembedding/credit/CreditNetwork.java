@@ -127,6 +127,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
   private TransactionResults transact(Transaction currentTransaction, Graph g, Node[] nodes,
                                       CreditLinks edgeweights, int currentEpoch) {
+    currentTransaction.startTime = (double) System.nanoTime();
     TransactionResults results = null;
     boolean[] exclude = new boolean[nodes.length];
     try {
@@ -141,6 +142,8 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       results.setSuccess(false);
       log.error(e.getMessage());
     }
+    currentTransaction.endTime = (double) System.nanoTime();
+//    results.setTx(currentTransaction);
 
     currentTransaction.addPath(results.getSumPathLength());
     currentTransaction.addMes(results.getRes4());
@@ -258,7 +261,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       Future<TransactionResults> futureResults = transactionResultsFuture(currentTransaction, g, nodes, edgeweights, currentEpoch);
       pendingTransactions.add(futureResults);
 
-      //4 post-processing: remove edges set to 0, update spanning tree if dynRapir
+      //4 post-processing: remove edges set to 0, update spanning tree if dynRepair
       lastEpoch = currentEpoch;
       if (this.dynRepair && zeroEdges != null) {
         for (int j = 0; j < this.roots.length; j++) {

@@ -149,6 +149,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   private double[] successRatePerEpoch;
   private double[] averageSuccessfulPathLengthPerEpoch;
   private double[] blockedLinksRatioPerEpoch;
+  private double[][] txStartEndTimes;
 
   Distribution[] pathsPerTree; //distribution of single paths per tree
   Distribution[] pathsPerTreeFound; //distribution of single paths per tree, only discovered paths
@@ -166,7 +167,8 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     ctx.updateLoggers();  // This causes all Loggers to refetch information from their LoggerConfig.
     this.log = LogManager.getLogger();
     this.epoch = epoch;
-    transactions = readList(file);
+    this.transactions = readList(file);
+    this.txStartEndTimes = new double[this.transactions.size()][];
     this.networkLatency = runConfig.getNetworkLatencyMs();
     this.attack = runConfig.getAttackProperties();
 
@@ -301,7 +303,9 @@ public abstract class AbstractCreditNetworkBase extends Metric {
       addPerEpochValue(PATH_SUCCESS, results.getSumPathLength(), currentEpoch);
     }
 
-    //3 update metrics accordingly
+    this.txStartEndTimes[currentTransaction.index] = new double[]{currentTransaction.startTime,
+            currentTransaction.endTime};
+
     incrementCount(PATH, results.getSumPathLength());
     incrementCount(RECEIVER_LANDMARK_MESSAGES, results.getSumReceiverLandmarks());
     incrementCount(LANDMARK_SENDER_MESSAGES, results.getSumSourceDepths());
@@ -417,6 +421,9 @@ public abstract class AbstractCreditNetworkBase extends Metric {
       }
     }
 
+    succ &= DataWriter.writeWithoutIndex(this.txStartEndTimes,
+            this.key + "_TX_START_END_TIMES", folder);
+
     succ &= DataWriter.writeWithIndex(this.successRatePerEpoch,
             this.key + "_SUCC_RATIOS", folder);
 
@@ -440,20 +447,22 @@ public abstract class AbstractCreditNetworkBase extends Metric {
       BufferedReader br = new BufferedReader(new FileReader(file));
       String line;
       int count = 0;
-      while ((line = br.readLine()) != null) {
+      for (int i = 0; (line = br.readLine()) != null; i++) {
         String[] parts = line.split(" ");
         if (parts.length == 4) {
           Transaction ta = new Transaction(Double.parseDouble(parts[0]),
                   Double.parseDouble(parts[1]),
                   Integer.parseInt(parts[2]),
-                  Integer.parseInt(parts[3]));
+                  Integer.parseInt(parts[3]),
+                  i);
           vec.add(ta);
         }
         if (parts.length == 3) {
           Transaction ta = new Transaction(count,
                   Double.parseDouble(parts[0]),
                   Integer.parseInt(parts[1]),
-                  Integer.parseInt(parts[2]));
+                  Integer.parseInt(parts[2]),
+                  i);
           vec.add(ta);
           count++;
         }
@@ -481,13 +490,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   // this will block until the current result is available
   void blockUntilAsyncTransactionsComplete(Queue<Future<TransactionResults>> pendingTransactions) {
     for (Future<TransactionResults> res : pendingTransactions) {
-      try {
-        if (res != null) {
-          res.get();
-        }
-      } catch (InterruptedException | ExecutionException e) {
-        log.error("Failed to block until async transactions complete: " + e.getMessage());
-      }
+      blockUntilAsyncTransactionCompletes(res);
     }
   }
 

@@ -721,20 +721,22 @@ public class CreditFlare extends Metric {
       BufferedReader br = new BufferedReader(new FileReader(file));
       String line;
       int count = 0;
-      while ((line = br.readLine()) != null) {
+      for (int i = 0; (line = br.readLine()) != null; i++) {
         String[] parts = line.split(" ");
         if (parts.length == 4) {
           Transaction ta = new Transaction(Double.parseDouble(parts[0]),
                   Double.parseDouble(parts[1]),
                   Integer.parseInt(parts[2]),
-                  Integer.parseInt(parts[3]));
+                  Integer.parseInt(parts[3]),
+                  i);
           vec.add(ta);
         }
         if (parts.length == 3) {
           Transaction ta = new Transaction(count,
                   Double.parseDouble(parts[0]),
                   Integer.parseInt(parts[1]),
-                  Integer.parseInt(parts[2]));
+                  Integer.parseInt(parts[2]),
+                  i);
           vec.add(ta);
           count++;
         }
