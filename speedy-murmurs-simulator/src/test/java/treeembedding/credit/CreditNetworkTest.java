@@ -82,7 +82,7 @@ class CreditNetworkTest {
     AbstractCreditNetworkBase m = null;
     if (ra == RoutingAlgorithm.MAXFLOW ||
             ra == RoutingAlgorithm.MAXFLOW_COLLATERALIZE ||
-            ra == RoutingAlgorithm.MAXFLOW_TOTAL_COLLATERALIZE) {
+            ra == RoutingAlgorithm.MAXFLOW_COLLATERALIZE_TOTAL) {
       m = new CreditMaxFlow(trans, name, 0, 0, newlinks, epoch, runConfig);
     } else {
       m = new CreditNetwork(trans, name, epoch, routingAlgorithm, req, part, roots, max, newlinks, runConfig);
@@ -330,7 +330,7 @@ class CreditNetworkTest {
     // this is to guarantee that the griefed transaction starts first
     runConfig.setTransactionDelayMs(500);
 
-    AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS_NO_COLLATERALIZATION, testDir, attack);
+    AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS_COLLATERALIZE_NONE, testDir, attack);
     CreditLinks edgeweights = abc.getCreditLinks();
     assertEquals(1, abc.getSuccessesPerEpoch()[0]);
     assertEquals(2, abc.getTransactionsPerEpoch()[0]);
@@ -471,7 +471,7 @@ class CreditNetworkTest {
     // this is to guarantee that the griefed transaction starts first
     runConfig.setTransactionDelayMs(500);
 
-    AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.MAXFLOW_TOTAL_COLLATERALIZE, testDir, attack);
+    AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.MAXFLOW_COLLATERALIZE_TOTAL, testDir, attack);
     CreditLinks edgeweights = abc.getCreditLinks();
     assertEquals(0, abc.getSuccessesPerEpoch()[0]);
     assertEquals(2, abc.getTransactionsPerEpoch()[0]);

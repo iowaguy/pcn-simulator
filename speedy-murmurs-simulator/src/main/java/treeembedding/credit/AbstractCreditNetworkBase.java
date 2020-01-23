@@ -358,7 +358,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   private boolean isMaxFlow() {
     return runConfig.getRoutingAlgorithm() == RoutingAlgorithm.MAXFLOW ||
             runConfig.getRoutingAlgorithm() == RoutingAlgorithm.MAXFLOW_COLLATERALIZE ||
-            runConfig.getRoutingAlgorithm() == RoutingAlgorithm.MAXFLOW_TOTAL_COLLATERALIZE;
+            runConfig.getRoutingAlgorithm() == RoutingAlgorithm.MAXFLOW_COLLATERALIZE_TOTAL;
   }
 
   int calculateEpoch(Transaction t) {

@@ -106,7 +106,7 @@ public class Dynamic {
     Metric m = null;
     if (routingAlgorithm == RoutingAlgorithm.SILENTWHISPERS ||
             routingAlgorithm == RoutingAlgorithm.SPEEDYMURMURS ||
-            routingAlgorithm == RoutingAlgorithm.SPEEDYMURMURS_TOTAL_COLLATERALIZATION) {
+            routingAlgorithm == RoutingAlgorithm.SPEEDYMURMURS_COLLATERALIZE_TOTAL) {
       log.info(routingAlgorithm.toString());
       int max = 1;
       double req = runConfig.getEpochLength() / 1000 * 2;
@@ -116,7 +116,7 @@ public class Dynamic {
       m = new CreditNetwork(trans, name, epoch, routingAlgorithm, req, part, roots, max, newlinks, runConfig);
     } else if (routingAlgorithm == RoutingAlgorithm.MAXFLOW ||
             routingAlgorithm == RoutingAlgorithm.MAXFLOW_COLLATERALIZE ||
-            routingAlgorithm == RoutingAlgorithm.MAXFLOW_TOTAL_COLLATERALIZE) {
+            routingAlgorithm == RoutingAlgorithm.MAXFLOW_COLLATERALIZE_TOTAL) {
       log.info(routingAlgorithm.toString());
       m = new CreditMaxFlow(trans, name,
               0, 0, newlinks, epoch, runConfig);

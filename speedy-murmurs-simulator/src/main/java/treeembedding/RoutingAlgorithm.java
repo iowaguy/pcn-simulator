@@ -16,14 +16,14 @@ public enum RoutingAlgorithm {
   VOUTE_NO_DYN(5, "V_NO_DYN", false, false, new TreerouteTDRAP(), Collateralization.STRICT),
   VOUTE_MPC(6, "V_MPC", true, true, new TreerouteTDRAP(), Collateralization.STRICT),
   SPEEDYMURMURS(7, "SM", false, true, new TreerouteTDRAP(), Collateralization.STRICT),
-  SPEEDYMURMURS_NO_COLLATERALIZATION(7, "SM_NO_COLL", false, true, new TreerouteTDRAP(), Collateralization.NONE),
-  SPEEDYMURMURS_TOTAL_COLLATERALIZATION(7, "SM_TOT_COL", false, true, new TreerouteTDRAP(), Collateralization.TOTAL),
+  SPEEDYMURMURS_COLLATERALIZE_NONE(7, "SM_COLL_NO", false, true, new TreerouteTDRAP(), Collateralization.NONE),
+  SPEEDYMURMURS_COLLATERALIZE_TOTAL(7, "SM_COL_TOT", false, true, new TreerouteTDRAP(), Collateralization.TOTAL),
   TREE_ONLY_MCP_NO_DYN(8, "TO_MPC_NO_DYN", true, false, new TreerouteOnly(), Collateralization.STRICT),
   TREE_ONLY_DYN_NO_MCP(9, "TO_DYN_NO_MPC", false, true, new TreerouteOnly(), Collateralization.STRICT),
 
-  MAXFLOW(10, "M", false, false, null, Collateralization.NONE),
-  MAXFLOW_COLLATERALIZE(10, "MC", false, false, null, Collateralization.STRICT),
-  MAXFLOW_TOTAL_COLLATERALIZE(10, "MTC", false, false, null, Collateralization.TOTAL);
+  MAXFLOW(10, "M_COLL_NO", false, false, null, Collateralization.NONE),
+  MAXFLOW_COLLATERALIZE(10, "M", false, false, null, Collateralization.STRICT),
+  MAXFLOW_COLLATERALIZE_TOTAL(10, "M_COLL_TOT", false, false, null, Collateralization.TOTAL);
 
   private int id;
   private String shortName;
