@@ -30,12 +30,15 @@ if __name__ == "__main__":
     xmax = config['xmax']
     xmin = config['xmin']
 
+    ymin = config.get('ymin', 0)
+    ymax = config.get('ymax', 1)
+
     running_avg = None
     if 'running_avg' in config:
         running_avg = config['running_avg']
         xmin += config['running_avg']
 
-    plt.axis([xmin, xmax, 0, 1])
+    plt.axis([xmin, xmax, ymin, ymax])
     for line in config['lines']:
         l = get_plottable_list(line['line'], xmax+1, running_avg)
         plt.plot(range(xmin, xmax+1), l, markersize=1, linewidth=2, label=line['line']['name'])
