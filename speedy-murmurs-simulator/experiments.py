@@ -72,13 +72,12 @@ def generate_configs(data_set_list, routing_algorithms, epoch_lengths_list, expe
         config_dict_list.append(l)
     return config_dict_list
 
-def get_experiment_config(exp_name):
+def get_experiments():
     experiments = {
         "test" : {
             "data_set_list":["id9-synthetic-nodes-1k-txs-1m-scalefree-less-connected-mult-0.5"],
             "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "experiment_name":"test"
+            "epoch_lengths_list":[1250]
         },
         #############################
         "dynamic_baseline_sequential" : {
@@ -89,135 +88,156 @@ def get_experiment_config(exp_name):
                                   common.speedymurmurs,
                                   common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250, 1250, 165552.45497208898],
-            "experiment_name":"dynamic-baseline-sequential"
         },
         #############################
-        "dynamic_baseline_sequential_id8_mfct" : {
+        "dynamic-baseline-sequential-id8-mfct" : {
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
             "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "experiment_name":"dynamic-baseline-sequential-id8-mfct"
+            "epoch_lengths_list":[1250]
         },
-        "dynamic_variable_conurrent_txs_10_id8_mfct" : {
+        "dynamic-variable-conurrent-txs-10-id8-mfct" : {
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
             "concurrent_transactions_count":10,
             "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "experiment_name":"dynamic-variable-concurrent-txs-10"
+            "epoch_lengths_list":[1250]
         },
-        "dynamic_variable_conurrent_txs_25_id8_mfct" : {
+        "dynamic-variable-conurrent-txs-25-id8-mfct" : {
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
             "concurrent_transactions_count":25,
             "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "experiment_name":"dynamic-variable-concurrent-txs-25"
+            "epoch_lengths_list":[1250]
         },
-        "dynamic_variable_conurrent_txs_50_id8_mfct" : {
+        "dynamic-variable-conurrent-txs-50-id8-mfct" : {
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
             "concurrent_transactions_count":50,
             "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "experiment_name":"dynamic-variable-concurrent-txs-50"
+            "epoch_lengths_list":[1250]
         },
-        "dynamic_variable_conurrent_txs_100_id8_mfct" : {
+        "dynamic-variable-conurrent-txs-100-id8-mfct" : {
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
             "concurrent_transactions_count":100,
             "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "experiment_name":"dynamic-variable-concurrent-txs-100"
+            "epoch_lengths_list":[1250]
         },
         ##############################
-        "dynamic_baseline_sequential_single_step_id8_mfct" : {
+        "dynamic-baseline-sequential-single-step-id8-mfct" : {
             "num_steps":1,
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
             "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "experiment_name":"dynamic-baseline-sequential-single-step"
+            "epoch_lengths_list":[1250]
         },
-        "dynamic_variable_conurrent_txs_100_single_step_id8_mfct" : {
+        "dynamic-variable-conurrent-txs-100-single-step-id8-mfct" : {
             "num_steps":1,
             "concurrent_transactions_count":100,
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
             "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "experiment_name":"dynamic-variable-concurrent-txs-100-single-step"
+            "epoch_lengths_list":[1250]
         },
-        "dynamic_variable_conurrent_txs_50_single_step_id8_mfct" : {
+        "dynamic-variable-conurrent-txs-50-single-step-id8-mfct" : {
             "num_steps":1,
             "concurrent_transactions_count":50,
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
             "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "experiment_name":"dynamic-variable-concurrent-txs-50-single-step"
+            "epoch_lengths_list":[1250]
         },
-        "dynamic_variable_conurrent_txs_25_single_step_id8_mfct" : {
+        "dynamic-variable-conurrent-txs-25-single-step-id8-mfct" : {
             "num_steps":1,
             "concurrent_transactions_count":25,
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
             "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "experiment_name":"dynamic-variable-concurrent-txs-25-single-step"
+            "epoch_lengths_list":[1250]
         },
-        "dynamic_variable_conurrent_txs_10_single_step_id8_mfct" : {
+        "dynamic-variable-conurrent-txs-10-single-step-id8-mfct" : {
             "num_steps":1,
             "concurrent_transactions_count":10,
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
             "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "experiment_name":"dynamic-variable-concurrent-txs-10-single-step"
+            "epoch_lengths_list":[1250]
         },
         #############################
-        "dynamic_baseline_sequential_single_step_id0_mf_mfct" : {
+        "dynamic-baseline-sequential-single-step-id0-mf-mfct" : {
             "num_steps":1,
             "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
             "routing_algorithms":[common.maxflow, common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "experiment_name":"dynamic-baseline-sequential-single-step-rerun"
+            "epoch_lengths_list":[1250]
         },
-        "dynamic_variable_conurrent_txs_100_single_step_id0_mf_mfct" : {
+        "dynamic-variable-conurrent-txs-100-single-step-id0-mf-mfct" : {
             "num_steps":1,
             "concurrent_transactions_count":100,
             "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
             "routing_algorithms":[common.maxflow, common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "experiment_name":"dynamic-baseline-sequential-single-step-rerun"
+            "epoch_lengths_list":[1250]
         },
-        "dynamic_variable_conurrent_txs_50_single_step_id0_mf_mfct" : {
+        "dynamic-variable-conurrent-txs-50-single-step-id0-mf-mfct" : {
             "num_steps":1,
             "concurrent_transactions_count":50,
             "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
             "routing_algorithms":[common.maxflow, common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "experiment_name":"dynamic-baseline-sequential-single-step-rerun"
+            "epoch_lengths_list":[1250]
         },
-        "dynamic_variable_conurrent_txs_25_single_step_id0_mf_mfct" : {
+        "dynamic-variable-conurrent-txs-25-single-step-id0-mf-mfct" : {
             "num_steps":1,
             "concurrent_transactions_count":25,
             "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
             "routing_algorithms":[common.maxflow, common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "experiment_name":"dynamic-baseline-sequential-single-step-rerun"
+            "epoch_lengths_list":[1250]
         },
-        "dynamic_variable_conurrent_txs_10_single_step_id0_mf_mfct" : {
+        "dynamic-variable-conurrent-txs-10-single-step-id0-mf-mfct" : {
             "num_steps":1,
             "concurrent_transactions_count":10,
             "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
             "routing_algorithms":[common.maxflow, common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "experiment_name":"dynamic-baseline-sequential-single-step-rerun"
-        }
+            "epoch_lengths_list":[1250]
+        },
         ########################
-
-
-
+        "dynamic-baseline-sequential-single-step-id0-mfct" : {
+            "num_steps":1,
+            "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250]
+        },
+        "dynamic-variable-conurrent-txs-100-single-step-id0-mfct" : {
+            "num_steps":1,
+            "concurrent_transactions_count":100,
+            "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250]
+        },
+        "dynamic-variable-conurrent-txs-50-single-step-id0-mfct" : {
+            "num_steps":1,
+            "concurrent_transactions_count":50,
+            "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250]
+        },
+        "dynamic-variable-conurrent-txs-25-single-step-id0-mfct" : {
+            "num_steps":1,
+            "concurrent_transactions_count":25,
+            "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250]
+        },
+        "dynamic-variable-conurrent-txs-10-single-step-id0-mfct" : {
+            "num_steps":1,
+            "concurrent_transactions_count":10,
+            "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250]
+        }
     }
 
-    return generate_configs(**experiments.get(exp_name))
+    return experiments
+
+def get_experiment_config(exp_name):
+    return generate_configs(experiment_name=exp_name, **get_experiments().get(exp_name))
 
 if __name__ == "__main__":
     exp_name = sys.argv[1]
 
+    if exp_name == "list":
+        for k in get_experiments():
+            print(k)
+        exit()
+
     configs = get_experiment_config(exp_name)
-    print(configs)
-    exit()
     attack_common.start(configs)
