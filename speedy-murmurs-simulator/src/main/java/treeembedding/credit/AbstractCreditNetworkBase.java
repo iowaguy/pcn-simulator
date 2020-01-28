@@ -421,17 +421,25 @@ public abstract class AbstractCreditNetworkBase extends Metric {
       }
     }
 
-    succ &= DataWriter.writeWithoutIndex(this.txStartEndTimes,
-            this.key + "_TX_START_END_TIMES", folder);
+    if (this.txStartEndTimes != null) {
+      succ &= DataWriter.writeWithoutIndex(this.txStartEndTimes,
+              this.key + "_TX_START_END_TIMES", folder);
+    }
 
-    succ &= DataWriter.writeWithIndex(this.successRatePerEpoch,
-            this.key + "_SUCC_RATIOS", folder);
+    if (this.successRatePerEpoch != null) {
+      succ &= DataWriter.writeWithIndex(this.successRatePerEpoch,
+              this.key + "_SUCC_RATIOS", folder);
+    }
 
-    succ &= DataWriter.writeWithIndex(this.averageSuccessfulPathLengthPerEpoch,
-            this.key + "_AVG_SUCC_PATH_LENGTH_RATIOS", folder);
+    if (this.averageSuccessfulPathLengthPerEpoch != null) {
+      succ &= DataWriter.writeWithIndex(this.averageSuccessfulPathLengthPerEpoch,
+              this.key + "_AVG_SUCC_PATH_LENGTH_RATIOS", folder);
+    }
 
-    succ &= DataWriter.writeWithIndex(this.blockedLinksRatioPerEpoch,
-            this.key + "_BLOCKED_TXS_RATIO", folder);
+    if (this.blockedLinksRatioPerEpoch != null) {
+      succ &= DataWriter.writeWithIndex(this.blockedLinksRatioPerEpoch,
+              this.key + "_BLOCKED_TXS_RATIO", folder);
+    }
 
     if (Config.getBoolean("SERIES_GRAPH_WRITE")) {
       (new GtnaGraphWriter()).writeWithProperties(graph, folder + "graph.txt");
@@ -487,7 +495,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   }
 
 
-  // this will block until the current result is available
+  // this will block until the all results are available
   void blockUntilAsyncTransactionsComplete(Queue<Future<TransactionResults>> pendingTransactions) {
     for (Future<TransactionResults> res : pendingTransactions) {
       blockUntilAsyncTransactionCompletes(res);
