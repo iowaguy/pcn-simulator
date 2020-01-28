@@ -54,7 +54,7 @@ experiment() {
   if [ -f "${EXPERIMENT_LOG}" ]; then
       mv "${EXPERIMENT_LOG}" "${EXPERIMENT_LOG}-$(date +%m-%d-%y-%H:%M:%S)"
   fi
-  nohup python "${EXPERIMENT_TYPE}" &> ${EXPERIMENT_LOG} &
+  nohup python experiments.py "${EXPERIMENT_TYPE}" &> ${EXPERIMENT_LOG} &
   sleep 1
   echo "Experiment started" > $(cat ${EXPERIMENT_LOG})
   echo "${EXPERIMENT_LOG}"

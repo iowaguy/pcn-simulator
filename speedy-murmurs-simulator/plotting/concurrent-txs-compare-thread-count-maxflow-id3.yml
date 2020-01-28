@@ -1,0 +1,89 @@
+xmin: 0
+xmax: 700
+running_avg: 50
+plotname: "Ford-Fulkerson on Ripple Dataset"
+xlabel: "Time Epochs"
+ylabel: "Success Ratio"
+legend_loc:
+  - 0.67
+  - 0.75
+lines:
+  - line:
+      name: 1 thread
+      base: data/dynamic-id3-dynamic-baseline-sequential/dynamic-id3-measured-nodes-93502-txs-1m-ripple-dynamic-maxflow_collateralize-3-1-1-lat0ms/
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P1-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P2-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P3-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P4-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P5-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P6-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P7-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        # - READABLE_FILE_M-P8-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        # - READABLE_FILE_M-P9-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+
+  - line:
+      name: 10 threads
+      base: data/dynamic-id3-dynamic-variable-concurrent-txs-10/dynamic-id3-measured-nodes-93502-txs-1m-ripple-dynamic-maxflow_collateralize-3-1-1-lat5ms-concurrent-10/
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P1-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P2-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P3-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P4-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P5-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P6-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P7-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        # - READABLE_FILE_M-P8-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        # - READABLE_FILE_M-P9-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+
+  - line:
+      name: 25 threads
+      base: data/dynamic-id3-dynamic-variable-concurrent-txs-25/dynamic-id3-measured-nodes-93502-txs-1m-ripple-dynamic-maxflow_collateralize-3-1-1-lat5ms-concurrent-25/
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P1-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P2-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P3-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P4-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P5-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P6-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P7-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        # - READABLE_FILE_M-P8-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        # - READABLE_FILE_M-P9-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+
+  - line:
+      name: 50 threads
+      base: data/dynamic-id3-dynamic-variable-concurrent-txs-50/dynamic-id3-measured-nodes-93502-txs-1m-ripple-dynamic-maxflow_collateralize-3-1-1-lat5ms-concurrent-50/
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P1-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P2-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P3-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P4-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P5-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P6-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P7-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        # - READABLE_FILE_M-P8-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        # - READABLE_FILE_M-P9-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+
+  - line:
+      name: 100 threads
+      base: data/dynamic-id3-dynamic-variable-concurrent-txs-100/dynamic-id3-measured-nodes-93502-txs-1m-ripple-dynamic-maxflow_collateralize-3-1-1-lat5ms-concurrent-100/
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P1-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P2-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P3-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P4-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P5-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P6-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        - READABLE_FILE_M-P7-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        # - READABLE_FILE_M-P8-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+        # - READABLE_FILE_M-P9-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt

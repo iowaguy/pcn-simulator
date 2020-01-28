@@ -1,7 +1,7 @@
 xmin: 0
 xmax: 700
 running_avg: 50
-plotname: "Baseline Sequential Transactions Synthetic Dataset #2"
+#plotname: "Baseline Sequential Transactions Synthetic Dataset #2"
 xlabel: "Time Epochs"
 ylabel: "Success Ratio"
 legend_loc:

@@ -9,6 +9,8 @@ ID = 'id'
 silentwhispers = 'silentwhispers'
 speedymurmurs = 'speedymurmurs'
 maxflow = 'maxflow_collateralize'
+maxflow_collateralize_total = 'maxflow_collateralize_total'
+maxflow_collateralize_none = 'maxflow'
 max_steps = 9
 max_attempts = 10
 max_trees = 7
@@ -35,7 +37,11 @@ algo_info = {
     'maxflow_collateralize': {
         'short_name': 'M',
         'id': 10
-    }    
+    },
+    'maxflow_collateralize_total': {
+        'short_name': 'MTC',
+        'id': 10
+    }
 }
 
 run_info = {
@@ -84,7 +90,7 @@ def get_dynamic_data_path_config(config_dict):
     nodes = parse_node_count(config_dict)
     dir = f'/READABLE_FILE_{algo_info[algo]["short_name"]}-P{count}-{nodes}'
 
-    if algo == maxflow:
+    if algo == maxflow or algo == maxflow_collateralize_total or algo == maxflow_collateralize_none:
         dir2 = f'/0/CREDIT_MAX_FLOW-0.0-0/'
     else:
         dir2 = f'/0/CREDIT_NETWORK-{algo_info[algo]["short_name"]}-P{count}-{run_info["dynamic"]["epoch"]}-TREE_ROUTE_{algo_info[algo]["run_token"]}-{config_dict["trees"]}-331.10490994417796-RANDOM_PARTITIONER-{config_dict["attempts"]}/'
