@@ -13,7 +13,7 @@ iterations: {iterations}
 routing_algorithm: "{alg}"
 simulation_type: {simulation_type}
 topology: topology.graph
-transaction_set: transactions-{tran_set}.txt
+transaction_set: transactions{tran_set}.txt
 trees: {trees}
 new_links_path: newlinks-{new_links}.txt
 concurrent_transactions: {concurrent_transactions}
@@ -45,7 +45,11 @@ def generate_configs(data_set_list, routing_algorithms, epoch_lengths_list, expe
         l = []
         for i in range(0, len(data_set_list)):
             for alg in routing_algorithms:
-                tran_set = step + 1
+                if num_steps == 1:
+                    tran_set = ""
+                else:
+                    tran_set = "-" + str(step + 1)
+
                 config_formatted = config.format(alg=alg,
                                   tran_set=tran_set,
                                   step=step,
@@ -194,35 +198,40 @@ def get_experiments():
             "num_steps":1,
             "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
             "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250]
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5
         },
-        "dynamic-variable-conurrent-txs-100-single-step-id0-mfct" : {
-            "num_steps":1,
-            "concurrent_transactions_count":100,
-            "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
-            "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250]
-        },
-        "dynamic-variable-conurrent-txs-50-single-step-id0-mfct" : {
-            "num_steps":1,
-            "concurrent_transactions_count":50,
-            "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
-            "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250]
-        },
-        "dynamic-variable-conurrent-txs-25-single-step-id0-mfct" : {
-            "num_steps":1,
-            "concurrent_transactions_count":25,
-            "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
-            "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250]
-        },
-        "dynamic-variable-conurrent-txs-10-single-step-id0-mfct" : {
+        "dynamic-variable-concurrent-txs-10-single-step-id0-mfct" : {
             "num_steps":1,
             "concurrent_transactions_count":10,
             "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
             "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250]
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5
+        },
+        "dynamic-variable-concurrent-txs-25-single-step-id0-mfct" : {
+            "num_steps":1,
+            "concurrent_transactions_count":25,
+            "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5
+        },
+        "dynamic-variable-concurrent-txs-50-single-step-id0-mfct" : {
+            "num_steps":1,
+            "concurrent_transactions_count":50,
+            "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5
+        },
+        "dynamic-variable-concurrent-txs-100-single-step-id0-mfct" : {
+            "num_steps":1,
+            "concurrent_transactions_count":100,
+            "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5
         }
     }
 
