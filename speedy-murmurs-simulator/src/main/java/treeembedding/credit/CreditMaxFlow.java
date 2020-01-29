@@ -211,7 +211,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
       paths.add(residualPath);
       for (int i = 0; i < residualPath.length - 1; i++) {
         double maxTransactionAmount = edgeweights.getMaxTransactionAmount(residualPath[i],
-                residualPath[i + 1], this, calculateEpoch(currentTransaction));
+                residualPath[i + 1], null, calculateEpoch(currentTransaction));
         if (maxTransactionAmount < minAlongPath) {
           minAlongPath = maxTransactionAmount;
         }

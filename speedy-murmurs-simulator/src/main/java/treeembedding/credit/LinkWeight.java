@@ -153,6 +153,11 @@ public class LinkWeight {
     }
   }
 
+  static boolean areDoublesEqual(double d1, double d2) {
+    double diff = d1 - d2;
+    return diff <= EPSILON && diff >= -EPSILON;
+  }
+
   // if funds are being sent from a lower numbered node to a higher numbered node, the transaction
   // is considered "forward"
   double getMaxTransactionAmount(boolean isForward, RoutingAlgorithm.Collateralization collateralizationType,
@@ -162,26 +167,28 @@ public class LinkWeight {
       mta = getCurrent() - getEffectiveMin(collateralizationType);
       // check if max transaction size is zero
       if (maxFlowCN != null &&
-              (mta < EPSILON && mta > -EPSILON) &&
+              (areDoublesEqual(mta, 0.0)) &&
               // if the effective min is non-zero and the maximum transaction size is zero, this
               // means that the transaction will be blocked due to liquidity exhaustion. Update
               // metric accordingly. This segment only applies to maxflow, because in maxflow *any*
               // amount of collateralization on the link will cause the routing to be different.
               // INVARIANT: min will always be less than or equal to unlockedMin
-              (this.min - this.unlockedMin < EPSILON)) {
+              !(areDoublesEqual(this.min, this.unlockedMin)) &&
+              !(areDoublesEqual(this.min, getCurrent()))) {
         maxFlowCN.incrementPerEpochValue(AbstractCreditNetworkBase.BLOCKED_LINKS, currentEpoch);
       }
     } else {
       mta = getEffectiveMax(collateralizationType) - getCurrent();
       // check if max transaction size is zero
       if (maxFlowCN != null &&
-              (mta < EPSILON && mta > -EPSILON) &&
+              (areDoublesEqual(mta, 0.0)) &&
               // if there is some collateral locked up and the maximum transaction size is zero,
               // this means that the transaction will be blocked due to liquidity exhaustion. Update
               // metric accordingly. This segment only applies to maxflow, because in maxflow *any*
               // amount of collateralization on the link will cause the routing to be different.
               // INVARIANT: max will always be greater or equal to unlockedMax
-              (this.max - this.unlockedMax > EPSILON)) {
+              !(areDoublesEqual(this.max, this.unlockedMax)) &&
+              !(areDoublesEqual(this.max, getCurrent()))) {
         maxFlowCN.incrementPerEpochValue(AbstractCreditNetworkBase.BLOCKED_LINKS, currentEpoch);
       }
     }

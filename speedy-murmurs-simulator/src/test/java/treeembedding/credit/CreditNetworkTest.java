@@ -111,6 +111,16 @@ class CreditNetworkTest {
   }
 
   @Test
+  void testCollateralRelease() {
+    String testDir = "/single-transaction-test";
+    AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.MAXFLOW_COLLATERALIZE_TOTAL, testDir);
+    CreditLinks edgeweights = abc.getCreditLinks();
+    assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeights(0, 2).getUnlockedMin(), ACCEPTABLE_ERROR);
+    assertEquals(90.0, edgeweights.getWeights(0, 2).getCurrent(), ACCEPTABLE_ERROR);
+  }
+
+  @Test
   void singlePathConcurrent() {
     String testDir = "/concurrent-transactions-test";
     for (RoutingAlgorithm ra : algos) {
