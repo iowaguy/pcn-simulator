@@ -232,7 +232,88 @@ def get_experiments():
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250],
             "network_latency_ms":5
+        },
+        ########################
+        "dynamic-baseline-sequential-single-step-id1-mfct" : {
+            "num_steps":1,
+            "data_set_list":["id1-synthetic-nodes-10k-txs-100k-scalefree"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5
+        },
+        "dynamic-variable-concurrent-txs-10-single-step-id1-mfct" : {
+            "num_steps":1,
+            "concurrent_transactions_count":10,
+            "data_set_list":["id1-synthetic-nodes-10k-txs-100k-scalefree"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5
+        },
+        "dynamic-variable-concurrent-txs-25-single-step-id1-mfct" : {
+            "num_steps":1,
+            "concurrent_transactions_count":25,
+            "data_set_list":["id1-synthetic-nodes-10k-txs-100k-scalefree"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5
+        },
+        "dynamic-variable-concurrent-txs-50-single-step-id1-mfct" : {
+            "num_steps":1,
+            "concurrent_transactions_count":50,
+            "data_set_list":["id1-synthetic-nodes-10k-txs-100k-scalefree"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5
+        },
+        "dynamic-variable-concurrent-txs-100-single-step-id1-mfct" : {
+            "num_steps":1,
+            "concurrent_transactions_count":100,
+            "data_set_list":["id1-synthetic-nodes-10k-txs-100k-scalefree"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5
+        },
+        ########################
+        "dynamic-baseline-sequential-single-step-id10-mfct" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5
+        },
+        "dynamic-variable-concurrent-txs-10-single-step-id10-mfct" : {
+            "num_steps":1,
+            "concurrent_transactions_count":10,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5
+        },
+        "dynamic-variable-concurrent-txs-25-single-step-id10-mfct" : {
+            "num_steps":1,
+            "concurrent_transactions_count":25,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5
+        },
+        "dynamic-variable-concurrent-txs-50-single-step-id10-mfct" : {
+            "num_steps":1,
+            "concurrent_transactions_count":50,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5
+        },
+        "dynamic-variable-concurrent-txs-100-single-step-id10-mfct" : {
+            "num_steps":1,
+            "concurrent_transactions_count":100,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5
         }
+
     }
 
     return experiments

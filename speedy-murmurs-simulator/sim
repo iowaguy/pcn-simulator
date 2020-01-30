@@ -62,6 +62,12 @@ experiment() {
   exit 0
 }
 
+single() {
+  #nohup java -cp target/pcn-simulator-1.0-SNAPSHOT-jar-with-dependencies.jar treeembedding.runners.Dynamic data/dynamic-id3-dynamic-baseline-sequential/dynamic-id3-ripple-dynamic-silentwhispers-3-1-1-lat0ms/ &
+  run_config_path=$1
+  nohup java -cp target/pcn-simulator-1.0-SNAPSHOT-jar-with-dependencies.jar treeembedding.runners.Dynamic "$run_config_path" &
+}
+
 mkdir -p ${LOG_DIR}
 while :; do
   case "$1" in
@@ -76,6 +82,9 @@ while :; do
       ;;
     exp|experiment)
       experiment "$2"
+      ;;
+    single)
+      single "$2"
       ;;
     *)
       usage

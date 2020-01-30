@@ -4,13 +4,14 @@ running_avg: 50
 plotname: "Ford-Fulkerson on Dataset #8; 1k nodes; 2 connections; 0.5 multiplier"
 xlabel: "Time Epochs"
 ylabel: "Success Ratio"
+base: ../data
 legend_loc:
   - 0.67
   - 0.45
 lines:
   - line:
       name: 1 thread
-      base: data/dynamic-id9-dynamic-baseline-sequential/dynamic-id9-synthetic-nodes-1k-txs-1m-scalefree-less-connected-mult-0.5-maxflow_collateralize-3-1-1-lat0ms/
+      base: dynamic-id9-dynamic-baseline-sequential/dynamic-id9-synthetic-nodes-1k-txs-1m-scalefree-less-connected-mult-0.5-maxflow_collateralize-3-1-1-lat0ms/
       algo: maxflow
       files:
         - READABLE_FILE_M-P0-1000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
@@ -26,7 +27,7 @@ lines:
 
 #   - line:
 #       name: 10 threads
-#       base: data/dynamic-id9-dynamic-variable-concurrent-txs-10/dynamic-id9-synthetic-nodes-1k-txs-1m-scalefree-less-connected-mult-0.5-maxflow_collateralize-3-1-1-lat5ms-concurrent-10/
+#       base: dynamic-id9-dynamic-variable-concurrent-txs-10/dynamic-id9-synthetic-nodes-1k-txs-1m-scalefree-less-connected-mult-0.5-maxflow_collateralize-3-1-1-lat5ms-concurrent-10/
 #       algo: maxflow
 #       files:
 #         - READABLE_FILE_M-P0-1000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
@@ -42,7 +43,7 @@ lines:
 
 #   - line:
 #       name: 25 threads
-#       base: data/dynamic-id9-dynamic-variable-concurrent-txs-25/dynamic-id9-synthetic-nodes-1k-txs-1m-scalefree-less-connected-mult-0.5-maxflow_collateralize-3-1-1-lat5ms-concurrent-25/
+#       base: dynamic-id9-dynamic-variable-concurrent-txs-25/dynamic-id9-synthetic-nodes-1k-txs-1m-scalefree-less-connected-mult-0.5-maxflow_collateralize-3-1-1-lat5ms-concurrent-25/
 #       algo: maxflow
 #       files:
 #         - READABLE_FILE_M-P0-1000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
@@ -58,7 +59,7 @@ lines:
 
   - line:
       name: 50 threads
-      base: data/dynamic-id9-dynamic-variable-concurrent-txs-50/dynamic-id9-synthetic-nodes-1k-txs-1m-scalefree-less-connected-mult-0.5-maxflow_collateralize-3-1-1-lat5ms-concurrent-50/
+      base: dynamic-id9-dynamic-variable-concurrent-txs-50/dynamic-id9-synthetic-nodes-1k-txs-1m-scalefree-less-connected-mult-0.5-maxflow_collateralize-3-1-1-lat5ms-concurrent-50/
       algo: maxflow
       files:
         - READABLE_FILE_M-P0-1000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
@@ -74,7 +75,7 @@ lines:
 
   - line:
       name: 100 threads
-      base: data/dynamic-id9-dynamic-variable-concurrent-txs-100/dynamic-id9-synthetic-nodes-1k-txs-1m-scalefree-less-connected-mult-0.5-maxflow_collateralize-3-1-1-lat5ms-concurrent-100/
+      base: dynamic-id9-dynamic-variable-concurrent-txs-100/dynamic-id9-synthetic-nodes-1k-txs-1m-scalefree-less-connected-mult-0.5-maxflow_collateralize-3-1-1-lat5ms-concurrent-100/
       algo: maxflow
       files:
         - READABLE_FILE_M-P0-1000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt

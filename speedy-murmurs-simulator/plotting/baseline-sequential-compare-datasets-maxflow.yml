@@ -4,13 +4,14 @@ running_avg: 50
 plotname: "Baseline Sequential Transactions for Ford-Fulkerson"
 xlabel: "Time Epochs"
 ylabel: "Success Ratio"
+base: ../data
 legend_loc:
   - 0.45
   - 0.75
 lines:
   - line:
       name: Full Knowledge (id0)
-      base: data/dynamic-id0-dynamic-baseline-sequential/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize-3-1-1-lat0ms
+      base: dynamic-id0-dynamic-baseline-sequential/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize-3-1-1-lat0ms
       algo: maxflow
       files:
         - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
@@ -26,7 +27,7 @@ lines:
 
   - line:
       name: Alternate Tx Set (id2)
-      base: data/dynamic-id2-dynamic-baseline-sequential/dynamic-id2-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize-3-1-1-lat0ms
+      base: dynamic-id2-dynamic-baseline-sequential/dynamic-id2-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize-3-1-1-lat0ms
       algo: maxflow
       files:
         - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
@@ -42,7 +43,7 @@ lines:
 
   - line:
       name: Measured Ripple Dataset (id3)
-      base: data/dynamic-id3-dynamic-baseline-sequential/dynamic-id3-measured-nodes-93502-txs-1m-ripple-dynamic-maxflow_collateralize-3-1-1-lat0ms
+      base: dynamic-id3-dynamic-baseline-sequential/dynamic-id3-measured-nodes-93502-txs-1m-ripple-dynamic-maxflow_collateralize-3-1-1-lat0ms
       algo: maxflow
       files:
         - READABLE_FILE_M-P0-93502/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt

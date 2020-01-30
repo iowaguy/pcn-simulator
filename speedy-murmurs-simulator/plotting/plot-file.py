@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 
 import sys
+sys.path.insert(1, '..')
+
 import matplotlib.pyplot as plt
 import simulation_utils as su
 import yaml
 from typing import List, Dict
 
-def get_plottable_list(line_config: Dict, xs: int, running_avg=None) -> List[float]:
+def get_plottable_list(line_config: Dict, xs: int, running_avg=None, basepath='') -> List[float]:
     base = line_config['base']
     full_dict = {}
     for f in line_config['files']:
-        path = base + '/' + f
+        path = basepath + '/' + base + '/' + f
         d = su.convert_kv_file_to_dict(path)
         full_dict = su.merge_dicts(d, full_dict)
 
@@ -33,6 +35,8 @@ if __name__ == "__main__":
     ymin = config.get('ymin', 0)
     ymax = config.get('ymax', 1)
 
+    basepath = config.get('base', '')
+
     running_avg = None
     if 'running_avg' in config:
         running_avg = config['running_avg']
@@ -40,7 +44,7 @@ if __name__ == "__main__":
 
     plt.axis([xmin, xmax, ymin, ymax])
     for line in config['lines']:
-        l = get_plottable_list(line['line'], xmax+1, running_avg)
+        l = get_plottable_list(line['line'], xmax+1, running_avg, basepath)
         plt.plot(range(xmin, xmax+1), l, markersize=1, linewidth=2, label=line['line']['name'])
 
     legendx = config['legend_loc'][0]
@@ -49,4 +53,4 @@ if __name__ == "__main__":
     plt.ylabel(config['ylabel'])
     plt.title(config.get('plotname',""))
     plt.legend(loc=(legendx, legendy), scatterpoints=10)
-    plt.savefig(sys.argv[1][:-4]+'.png', dpi=300)
+    plt.savefig('plots/' + sys.argv[1][:-4]+'.png', dpi=300)
