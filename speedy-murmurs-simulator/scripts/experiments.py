@@ -325,6 +325,9 @@ if __name__ == "__main__":
     exp_name = sys.argv[1]
 
     if exp_name == "list":
+        print("+=======================+")
+        print("| Available Experiments |")
+        print("+=======================+")
         for k in get_experiments():
             print(k)
         exit()

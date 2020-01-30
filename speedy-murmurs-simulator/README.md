@@ -35,8 +35,10 @@ Where N is the number of engines to start. If you see something like *./sim: lin
 Later, when the experiments are done running, stop the engines with `./sim stop`. You can see the current start of your ipcluster by running `./sim status`.
 
 ### Running An Experiment
-An experiment takes in a generator script. This script will generate the configurations for each individual simulation. See `dynamic_baseline_sequential.py` for an example. Note that the `generate_configs()` function creates a list of lists. This is done to enforce a partial ordering on the simulations. This is needed because in the Dynamic simulator, a single simulation may consist of several steps (often 9 or 10), and for a given setup, these tests need to happen in order.
+An experiment takes in a generator script. This script will generate the configurations for each individual simulation; see `experiments.py`. Note that the `generate_configs()` function creates a list of lists. This is done to enforce a partial ordering on the simulations. This is needed because in the Dynamic simulator, a single simulation may consist of several steps (often 9 or 10), and for a given setup, these steps need to happen in order.
 
-To start an experiment, run `./sim experiment <EXPERIMENT_NAME>`, where <EXPERIMENT_NAME> is the name of the experiment file, e.g. `dynamic_baseline_sequential.py`.
+The list of available experiments can be viewed by running `./sim experiment list`.
+
+To start an experiment, run `./sim experiment <EXPERIMENT_NAME>`, where <EXPERIMENT_NAME> is one of the provided experiments from the list command. New experiments can be created by defining them within the "experiments" dictionary in `experiments.py`.
 
 There is not much in the way of tracking progess, but it can be helpful to keep an eye on `htop`. Note that every experiment will end up in a different subdirectory. However, if the same experiment is attempted to run twice, it will not run the second time unless the `force_overwrite` option is set to `true`.
