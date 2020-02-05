@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
-sys.path.insert(1, '..')
+sys.path.insert(1, '../scripts')
 
 import matplotlib.pyplot as plt
 import simulation_utils as su
@@ -51,6 +51,6 @@ if __name__ == "__main__":
     legendy = config['legend_loc'][1]
     plt.xlabel(config['xlabel'])
     plt.ylabel(config['ylabel'])
-    plt.title(config.get('plotname',""))
+    plt.title(config.get('plotname',""), {"wrap":True})
     plt.legend(loc=(legendx, legendy), scatterpoints=10)
     plt.savefig('plots/' + sys.argv[1][:-4]+'.png', dpi=300)

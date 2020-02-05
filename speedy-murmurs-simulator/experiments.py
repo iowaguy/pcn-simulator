@@ -15,7 +15,7 @@ simulation_type: {simulation_type}
 topology: topology.graph
 transaction_set: transactions{tran_set}.txt
 trees: {trees}
-new_links_path: newlinks-{new_links}.txt
+new_links_path: newlinks{new_links}.txt
 concurrent_transactions: {concurrent_transactions}
 concurrent_transactions_count: {concurrent_transactions_count}
 network_latency_ms: {network_latency_ms}
@@ -27,8 +27,8 @@ attack_config = '''
 attack_properties:
   attack_type: {attack_type}
   attacker_selection: {attacker_selection}
-  attackers: {attackers}
-  receiver_delay_ms: {attack_delay}
+  attackers: {num_attackers}
+  receiver_delay_ms: {receiver_delay_ms}
 '''
 
 # epoch_lengths_list: a list of the epoch lengths for each data set, indexes should match. See RunConfig.java to learn what the properties mean.
@@ -36,7 +36,7 @@ def generate_configs(data_set_list, routing_algorithms, epoch_lengths_list, expe
                      attempts=1, num_steps=8, force_overwrite=False, iterations=1,
                      simulation_type="dynamic", trees=3, concurrent_transactions_count=1,
                      network_latency_ms=0, attack_type=None, attacker_selection=None,
-                     attackers=0, attack_delay=0):
+                     attackers=0, receiver_delay_ms=0):
 
     # if there is only one transaction at a time, transactions are not concurrent
     concurrent_transactions = concurrent_transactions_count != 1
@@ -66,11 +66,11 @@ def generate_configs(data_set_list, routing_algorithms, epoch_lengths_list, expe
                                   concurrent_transactions_count=concurrent_transactions_count,
                                   network_latency_ms=network_latency_ms)
                 if attack_type:
-                    attack_config = attack_config.format(attack_type=attack_type,
+                    attack_config_formatted = attack_config.format(attack_type=attack_type,
                                                          attacker_selection=attacker_selection,
-                                                         attackers=attackers,
-                                                         attack_delay=attack_delay)
-                    config_formatted+=attack_config
+                                                         num_attackers=attackers,
+                                                         receiver_delay_ms=receiver_delay_ms)
+                    config_formatted+=attack_config_formatted
 
                 l.append(common.parse_config(config_formatted))
         config_dict_list.append(l)
@@ -277,7 +277,7 @@ def get_experiments():
         "dynamic-baseline-sequential-single-step-id10-mfct" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
-            "routing_algorithms":[common.maxflow_collateralize_total],
+            "routing_algorithms":[common.maxflow_collateralize_total, common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":5
         },
@@ -285,7 +285,7 @@ def get_experiments():
             "num_steps":1,
             "concurrent_transactions_count":10,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
-            "routing_algorithms":[common.maxflow_collateralize_total],
+            "routing_algorithms":[common.maxflow_collateralize_total, common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":5
         },
@@ -293,7 +293,7 @@ def get_experiments():
             "num_steps":1,
             "concurrent_transactions_count":25,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
-            "routing_algorithms":[common.maxflow_collateralize_total],
+            "routing_algorithms":[common.maxflow_collateralize_total, common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":5
         },
@@ -301,7 +301,7 @@ def get_experiments():
             "num_steps":1,
             "concurrent_transactions_count":50,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
-            "routing_algorithms":[common.maxflow_collateralize_total],
+            "routing_algorithms":[common.maxflow_collateralize_total, common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":5
         },
@@ -309,11 +309,82 @@ def get_experiments():
             "num_steps":1,
             "concurrent_transactions_count":100,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
-            "routing_algorithms":[common.maxflow_collateralize_total],
+            "routing_algorithms":[common.maxflow_collateralize_total, common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":5
-        }
-
+        },
+        ######################
+        "dynamic-baseline-sequential-single-step-id10-mfct-lat0ms" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":0
+        },
+        "dynamic-baseline-sequential-single-step-id10-mfct-lat1ms" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
+            "routing_algorithms":[common.maxflow_collateralize_total],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":1
+        },
+        ######################
+        "dynamic-mfc-griefing-attackers-5%" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
+            "concurrent_transactions_count":25,
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5,
+            "attack_type":"griefing",
+            "attacker_selection":"random",
+            "attackers":500,
+            "receiver_delay_ms":10
+        },
+        "dynamic-mfc-griefing-attackers-10%" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
+            "concurrent_transactions_count":25,
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5,
+            "attack_type":"griefing",
+            "attacker_selection":"random",
+            "attackers":1000,
+            "receiver_delay_ms":10
+        },
+        "dynamic-mfc-griefing-attackers-20%" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
+            "concurrent_transactions_count":25,
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5,
+            "attack_type":"griefing",
+            "attacker_selection":"random",
+            "attackers":2000,
+            "receiver_delay_ms":10
+        },
+        "dynamic-mfc-griefing-attackers-30%" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
+            "concurrent_transactions_count":25,
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":5,
+            "attack_type":"griefing",
+            "attacker_selection":"random",
+            "attackers":3000,
+            "receiver_delay_ms":10
+        },
+        "ripple_dynamic" : {
+            "data_set_list":["id3-measured-nodes-93502-txs-1m-ripple-dynamic"],
+            "routing_algorithms":[common.speedymurmurs,
+                                  common.silentwhispers],
+            "epoch_lengths_list":[165552.45497208898],
+        },
+        
+        
     }
 
     return experiments

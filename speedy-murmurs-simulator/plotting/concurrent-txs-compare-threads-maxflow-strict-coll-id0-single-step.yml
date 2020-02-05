@@ -1,7 +1,7 @@
 xmin: 0
 xmax: 700
 running_avg: 20
-#plotname: "Ford-Fulkerson Strict Collateral; 10k nodes; 2 connections; 0.5 multiplier"
+plotname: "Ford-Fulkerson; Strict collateral; 100k nodes; scale-free network; 2 connections/node; Full knowledge assignment; 1M txs; single step"
 # data set #0
 xlabel: "Time Epochs"
 ylabel: "Success Ratio"
@@ -11,12 +11,12 @@ legend_loc:
   - 0
 
 lines:
-  # - line:
-  #     name: sequential txs
-  #     base: dynamic-id0-dynamic-baseline-sequential-single-step-rerun/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize-3-1-1-lat0ms/
-  #     algo: maxflow
-  #     files:
-  #       - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+  - line:
+      name: sequential txs
+      base: dynamic-id0-dynamic-baseline-sequential-single-step-id0-mfct/dynamic-id0-synthetic-nodes-100k-txs-1m-scalefree-maxflow_collateralize_total-3-1-1-lat5ms/
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-100000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
 
   - line:
       name: 10 concurrent txs
