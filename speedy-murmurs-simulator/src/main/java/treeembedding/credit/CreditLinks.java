@@ -102,14 +102,21 @@ public class CreditLinks extends GraphProperty {
     weights.undoUpdateWeight(weightChange, this.collateralization);
   }
 
-  synchronized void finalizeUpdateWeight(int src, int dst, double weightChange)
+  synchronized LinkBCD finalizeUpdateWeight(int src, int dst, double weightChange)
           throws TransactionFailedException {
     if (src > dst) {
       weightChange *= -1;
     }
     LinkWeight weights = getWeights(src, dst);
+
+    LinkBCD bcd = new LinkBCD();
+    bcd.setPrevious(weights.getBCD());
+
     weights.finalizeUpdateWeight(weightChange, this.collateralization);
     setWeight(makeEdge(src, dst), weights);
+    bcd.setCurrent(weights.getBCD());
+    bcd.setName(weights.getEdge().toString());
+    return bcd;
   }
 
   public void setBound(int src, int dst, double val) {

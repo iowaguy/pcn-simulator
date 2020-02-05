@@ -9,18 +9,17 @@ import treeembedding.credit.exceptions.InsufficientFundsException;
 import treeembedding.credit.exceptions.TransactionFailedException;
 
 public class LinkWeight {
+  static final double EPSILON = 0.000000001;
+  private final double initial;
   private Edge edge;
   private double min;
   private double max;
   private double current;
   private Map<Double, Integer> pendingTransactions;
-  static final double EPSILON = 0.000000001;
-
   // these are the bounds of the funds taking into consideration funds that have been locked up by
   // concurrent transactions
   private double unlockedMax;
   private double unlockedMin;
-
   LinkWeight(Edge edge) {
     this.edge = edge;
     this.min = 0;
@@ -28,6 +27,7 @@ public class LinkWeight {
     this.current = 0;
     this.unlockedMax = 0;
     this.unlockedMin = 0;
+    this.initial = 0;
     this.pendingTransactions = new ConcurrentHashMap<>();
   }
 
@@ -36,9 +36,33 @@ public class LinkWeight {
     this.min = min;
     this.max = max;
     this.current = current;
+    this.initial = current;
     this.unlockedMax = max;
     this.unlockedMin = min;
     this.pendingTransactions = new ConcurrentHashMap<>();
+  }
+
+  private static boolean areDoublesEqual(double d1, double d2) {
+    double diff = d1 - d2;
+    return diff <= EPSILON && diff >= -EPSILON;
+  }
+
+  public Edge getEdge() {
+    return edge;
+  }
+
+  private double getInitial() {
+    return this.initial;
+  }
+
+  double getBCD() {
+    double x = getMaxTransactionAmount(true, RoutingAlgorithm.Collateralization.NONE);
+    double y = getMaxTransactionAmount(false, RoutingAlgorithm.Collateralization.NONE);
+    double U = Math.max(x, y);
+    double L = -Math.min(x, y);
+    double s = getCurrent() - getInitial();
+
+    return Math.abs(s) * Math.abs(U - L) / U;
   }
 
   public boolean isLiquidityExhausted(double weight) {
@@ -93,16 +117,16 @@ public class LinkWeight {
     return this.unlockedMax;
   }
 
+  private void setUnlockedMax(double unlockedMax) {
+    this.unlockedMax = unlockedMax;
+  }
+
   double getUnlockedMin() {
     return this.unlockedMin;
   }
 
   private void setUnlockedMin(double unlockedMin) {
     this.unlockedMin = unlockedMin;
-  }
-
-  private void setUnlockedMax(double unlockedMax) {
-    this.unlockedMax = unlockedMax;
   }
 
   private synchronized void strictlyCollateralizeFunds(double lockAmount) {
@@ -153,9 +177,8 @@ public class LinkWeight {
     }
   }
 
-  static boolean areDoublesEqual(double d1, double d2) {
-    double diff = d1 - d2;
-    return diff <= EPSILON && diff >= -EPSILON;
+  double getMaxTransactionAmount(boolean isForward, RoutingAlgorithm.Collateralization collateralizationType) {
+    return getMaxTransactionAmount(isForward, collateralizationType, null, 0);
   }
 
   // if funds are being sent from a lower numbered node to a higher numbered node, the transaction

@@ -576,7 +576,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
     if (transactionStepResult != null) {
       Map<Edge, List<Double>> edgeModifications = transactionStepResult.getEdgeModifications();
-      finalizeTransaction(vals, paths, edgeweights, edgeModifications);
+      finalizeTransaction(cur, vals, paths, edgeweights, edgeModifications);
     }
 
     //compute metrics
@@ -682,7 +682,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       paths = transactionStepResult.getPaths();
       Map<Edge, List<Double>> edgeModifications = transactionStepResult.getEdgeModifications();
       // will only enter here if transaction was successful
-      finalizeTransaction(vals, transactionStepResult.getPaths(), edgeweights, edgeModifications);
+      finalizeTransaction(cur, vals, transactionStepResult.getPaths(), edgeweights, edgeModifications);
     }
 
     //compute metrics
@@ -830,8 +830,9 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     return new TransactionStepResult(paths, edgeModifications);
   }
 
-  private void finalizeTransaction(double[] vals, int[][] paths, CreditLinks edgeweights, Map<Edge, List<Double>> edgeModifications)
-          throws TransactionFailedException {
+  private void finalizeTransaction(Transaction currentTransaction, double[] vals, int[][] paths,
+                                   CreditLinks edgeweights, Map<Edge,
+          List<Double>> edgeModifications) throws TransactionFailedException {
     if (vals == null) {
       throw new TransactionFailedException("Transaction values cannot be null");
     }
@@ -865,7 +866,8 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
           if (log.isInfoEnabled()) {
             log.info("Finalize: cur=" + currentNodeIndex + "; next=" + nextNodeIndex + "; val=" + vals[treeIndex]);
           }
-          edgeweights.finalizeUpdateWeight(currentNodeIndex, nextNodeIndex, vals[treeIndex]);
+          finalizeUpdateWeight(currentNodeIndex, nextNodeIndex, vals[treeIndex],
+                  calculateEpoch(currentTransaction));
 
           if (edgeModifications.containsKey(edge)) {
             log.debug("Removing updated edge from set");

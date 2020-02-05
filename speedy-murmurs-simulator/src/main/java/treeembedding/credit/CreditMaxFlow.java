@@ -311,8 +311,8 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
                     "; val=" + transactionVals.get(pathIndex));
           }
           try {
-            edgeweights.finalizeUpdateWeight(currentNodeIndex, nextNodeIndex,
-                    transactionVals.get(pathIndex));
+            finalizeUpdateWeight(currentNodeIndex, nextNodeIndex, transactionVals.get(pathIndex),
+                    calculateEpoch(currentTransaction));
           } catch (TransactionFailedException e) {
             transactionFailed(edgeweights, edgeModifications);
             results.setSuccess(false);

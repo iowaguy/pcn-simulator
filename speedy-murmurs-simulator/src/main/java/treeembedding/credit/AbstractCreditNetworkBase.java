@@ -150,10 +150,13 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   private double[] averageSuccessfulPathLengthPerEpoch;
   private double[] blockedLinksRatioPerEpoch;
   private double[][] txStartEndTimes;
+  private double[] totalBCDPerEpoch;
 
   Distribution[] pathsPerTree; //distribution of single paths per tree
   Distribution[] pathsPerTreeFound; //distribution of single paths per tree, only discovered paths
   Distribution[] pathsPerTreeNF; //distribution of single paths per tree, not found dest
+
+  private List<Map<String, LinkBCD>> bcdChanges; // changes to total BCD indexed by epoch
 
   AbstractCreditNetworkBase(String key, Parameter[] parameters, double epoch, int numRoots,
                             String file, RunConfig runConfig) {
@@ -224,6 +227,28 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     this.distributions = new HashMap<>();
 
     toRetry = new PriorityBlockingQueue<>();
+
+    bcdChanges = new ArrayList<>(numEpochs);
+    for (int i = 0; i < numEpochs; i++) {
+      bcdChanges.add(new ConcurrentHashMap<>());
+    }
+
+    totalBCDPerEpoch = new double[numEpochs];
+  }
+
+  void finalizeUpdateWeight(int src, int dst, double weightChange, int epochNumber)
+          throws TransactionFailedException {
+    LinkBCD bcd = edgeweights.finalizeUpdateWeight(src, dst, weightChange);
+    bcdChanges.get(epochNumber).put(bcd.getName(), bcd);
+  }
+
+  static double calculateTotalBCD(CreditLinks edgeweights) {
+    double totalBCD = 0;
+    for (Map.Entry<Edge, LinkWeight> e : edgeweights.getWeights()) {
+      totalBCD += e.getValue().getBCD();
+    }
+
+    return totalBCD;
   }
 
   synchronized void incrementPerEpochValue(String name, int currentEpoch) {
@@ -441,6 +466,11 @@ public abstract class AbstractCreditNetworkBase extends Metric {
               this.key + "_BLOCKED_TXS_RATIO", folder);
     }
 
+    if (this.totalBCDPerEpoch != null) {
+      succ &= DataWriter.writeWithIndex(this.totalBCDPerEpoch,
+              this.key + "_BIDIRECTIONAL_CREDIT_DEPLETION", folder);
+    }
+
     if (Config.getBoolean("SERIES_GRAPH_WRITE")) {
       (new GtnaGraphWriter()).writeWithProperties(graph, folder + "graph.txt");
     }
@@ -511,10 +541,22 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     this.successRatePerEpoch = new double[getPerEpochMetric(TRANSACTIONS).length];
     this.averageSuccessfulPathLengthPerEpoch = new double[getPerEpochMetric(PATH_SUCCESS).length];
     this.blockedLinksRatioPerEpoch = new double[getPerEpochMetric(TRANSACTIONS).length];
-    for (int i = 0; i < getPerEpochMetric(TRANSACTIONS).length; i++) {
-      this.successRatePerEpoch[i] = (double) getPerEpochMetric(SUCCESSES)[i] / (double) getPerEpochMetric(TRANSACTIONS)[i];
-      this.blockedLinksRatioPerEpoch[i] = (double) getPerEpochMetric(BLOCKED_LINKS)[i] / (double) getPerEpochMetric(TRANSACTIONS)[i];
-      this.averageSuccessfulPathLengthPerEpoch[i] = (double) getPerEpochMetric(PATH_SUCCESS)[i] / (double) getPerEpochMetric(SUCCESSES)[i];
+    for (int epochNumber = 0; epochNumber < getPerEpochMetric(TRANSACTIONS).length; epochNumber++) {
+      this.successRatePerEpoch[epochNumber] =
+              (double) getPerEpochMetric(SUCCESSES)[epochNumber] /
+                      (double) getPerEpochMetric(TRANSACTIONS)[epochNumber];
+      this.blockedLinksRatioPerEpoch[epochNumber] =
+              (double) getPerEpochMetric(BLOCKED_LINKS)[epochNumber] /
+                      (double) getPerEpochMetric(TRANSACTIONS)[epochNumber];
+      this.averageSuccessfulPathLengthPerEpoch[epochNumber] =
+              (double) getPerEpochMetric(PATH_SUCCESS)[epochNumber] /
+                      (double) getPerEpochMetric(SUCCESSES)[epochNumber];
+      double runningBCDTotal = epochNumber == 0 ? 0 : totalBCDPerEpoch[epochNumber - 1];
+      for (Map.Entry<String, LinkBCD> m : bcdChanges.get(epochNumber).entrySet()) {
+        runningBCDTotal -= m.getValue().getPrevious();
+        runningBCDTotal += m.getValue().getCurrent();
+      }
+      totalBCDPerEpoch[epochNumber] = runningBCDTotal;
     }
   }
 
