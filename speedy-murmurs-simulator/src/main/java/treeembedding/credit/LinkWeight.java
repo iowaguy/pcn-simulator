@@ -58,11 +58,11 @@ public class LinkWeight {
   double getBCD() {
     double x = getMaxTransactionAmount(true, RoutingAlgorithm.Collateralization.NONE);
     double y = getMaxTransactionAmount(false, RoutingAlgorithm.Collateralization.NONE);
-    double U = Math.max(x, y);
-    double L = -Math.min(x, y);
+    double U = getMax();
+    double L = -getMin();
     double s = getCurrent() - getInitial();
 
-    return Math.abs(s) * Math.abs(U - L) / U;
+    return Math.abs(s) * Math.abs(U - L) / (U - getInitial());
   }
 
   public boolean isLiquidityExhausted(double weight) {
