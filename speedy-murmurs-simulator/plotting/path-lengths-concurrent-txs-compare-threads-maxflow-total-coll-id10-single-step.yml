@@ -19,37 +19,37 @@ legend_loc:
   - 0.63
   - 0.70
 lines:
-  - line:
-      name: sequential txs
-      base: dynamic-id10-dynamic-baseline-sequential-single-step-id10-mfct/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize_total-3-1-1-lat5ms/
-      algo: maxflow
-      files:
-        - READABLE_FILE_M_COLL_TOT-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-pathLSuccAvg.txt
+  # - line:
+  #     name: sequential txs
+  #     base: dynamic-id10-dynamic-baseline-sequential-single-step-id10-mfct-mfcs-sm/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize_total-3-1-1-lat5ms/
+  #     algo: maxflow
+  #     files:
+  #       - READABLE_FILE_M_COLL_TOT-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-pathLSuccAvg.txt
 
   - line:
       name: 10 concurrent txs
-      base: dynamic-id10-dynamic-variable-concurrent-txs-10-single-step-id10-mfct/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize_total-3-1-1-lat5ms-concurrent-10/
+      base: dynamic-id10-dynamic-variable-concurrent-txs-10-single-step-id10-mfct-mfcs-sm/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize_total-3-1-1-lat5ms-concurrent-10/
       algo: maxflow
       files:
         - READABLE_FILE_M_COLL_TOT-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-pathLSuccAvg.txt
 
   - line:
       name: 25 concurrent txs
-      base: dynamic-id10-dynamic-variable-concurrent-txs-25-single-step-id10-mfct/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize_total-3-1-1-lat5ms-concurrent-25/
+      base: dynamic-id10-dynamic-variable-concurrent-txs-25-single-step-id10-mfct-mfcs-sm/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize_total-3-1-1-lat5ms-concurrent-25/
       algo: maxflow
       files:
         - READABLE_FILE_M_COLL_TOT-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-pathLSuccAvg.txt
 
   - line:
       name: 50 concurrent txs
-      base: dynamic-id10-dynamic-variable-concurrent-txs-50-single-step-id10-mfct/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize_total-3-1-1-lat5ms-concurrent-50/
+      base: dynamic-id10-dynamic-variable-concurrent-txs-50-single-step-id10-mfct-mfcs-sm/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize_total-3-1-1-lat5ms-concurrent-50/
       algo: maxflow
       files:
         - READABLE_FILE_M_COLL_TOT-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-pathLSuccAvg.txt
 
   - line:
       name: 100 concurrent txs
-      base: dynamic-id10-dynamic-variable-concurrent-txs-100-single-step-id10-mfct/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize_total-3-1-1-lat5ms-concurrent-100/
+      base: dynamic-id10-dynamic-variable-concurrent-txs-100-single-step-id10-mfct-mfcs-sm/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize_total-3-1-1-lat5ms-concurrent-100/
       algo: maxflow
       files:
         - READABLE_FILE_M_COLL_TOT-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-pathLSuccAvg.txt

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
-sys.path.insert(1, '../scripts')
+sys.path.insert(1, '../')
 
 import matplotlib.pyplot as plt
 import simulation_utils as su

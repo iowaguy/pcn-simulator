@@ -274,42 +274,42 @@ def get_experiments():
             "network_latency_ms":5
         },
         ########################
-        "dynamic-baseline-sequential-single-step-id10-mfct" : {
+        "dynamic-baseline-sequential-single-step-id10-mfct-mfcs-sm" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
-            "routing_algorithms":[common.maxflow_collateralize_total, common.speedymurmurs],
+            "routing_algorithms":[common.maxflow_collateralize_total, common.maxflow, common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":5
         },
-        "dynamic-variable-concurrent-txs-10-single-step-id10-mfct" : {
+        "dynamic-variable-concurrent-txs-10-single-step-id10-mfct-mfcs-sm" : {
             "num_steps":1,
             "concurrent_transactions_count":10,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
-            "routing_algorithms":[common.maxflow_collateralize_total, common.speedymurmurs],
+            "routing_algorithms":[common.maxflow_collateralize_total, common.maxflow, common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":5
         },
-        "dynamic-variable-concurrent-txs-25-single-step-id10-mfct" : {
+        "dynamic-variable-concurrent-txs-25-single-step-id10-mfct-mfcs-sm" : {
             "num_steps":1,
             "concurrent_transactions_count":25,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
-            "routing_algorithms":[common.maxflow_collateralize_total, common.speedymurmurs],
+            "routing_algorithms":[common.maxflow_collateralize_total, common.maxflow, common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":5
         },
-        "dynamic-variable-concurrent-txs-50-single-step-id10-mfct" : {
+        "dynamic-variable-concurrent-txs-50-single-step-id10-mfct-mfcs-sm" : {
             "num_steps":1,
             "concurrent_transactions_count":50,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
-            "routing_algorithms":[common.maxflow_collateralize_total, common.speedymurmurs],
+            "routing_algorithms":[common.maxflow_collateralize_total, common.maxflow, common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":5
         },
-        "dynamic-variable-concurrent-txs-100-single-step-id10-mfct" : {
+        "dynamic-variable-concurrent-txs-100-single-step-id10-mfct-mfcs-sm" : {
             "num_steps":1,
             "concurrent_transactions_count":100,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
-            "routing_algorithms":[common.maxflow_collateralize_total, common.speedymurmurs],
+            "routing_algorithms":[common.maxflow_collateralize_total, common.maxflow, common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":5
         },
