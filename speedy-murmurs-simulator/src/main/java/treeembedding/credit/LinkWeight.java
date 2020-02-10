@@ -16,6 +16,9 @@ public class LinkWeight {
   private double max;
   private double current;
   private Map<Double, Integer> pendingTransactions;
+  private final double u; // used in BCD metric
+  private final double l; // used in BCD metric
+
   // these are the bounds of the funds taking into consideration funds that have been locked up by
   // concurrent transactions
   private double unlockedMax;
@@ -29,6 +32,8 @@ public class LinkWeight {
     this.unlockedMin = 0;
     this.initial = 0;
     this.pendingTransactions = new ConcurrentHashMap<>();
+    this.u = 0.0;
+    this.l = 0.0;
   }
 
   LinkWeight(Edge edge, double min, double max, double current) {
@@ -40,6 +45,12 @@ public class LinkWeight {
     this.unlockedMax = max;
     this.unlockedMin = min;
     this.pendingTransactions = new ConcurrentHashMap<>();
+
+    // calculate L and U for BCD
+    double l1 = Math.abs(max - initial);
+    double l2 = Math.abs(min - initial);
+    this.l = Math.abs(Math.min(l1, l2));
+    this.u = Math.abs(Math.max(l1, l2));
   }
 
   private static boolean areDoublesEqual(double d1, double d2) {
@@ -51,18 +62,11 @@ public class LinkWeight {
     return edge;
   }
 
-  private double getInitial() {
-    return this.initial;
+  private double getDeviation() {
+    return Math.abs(this.current - this.initial);
   }
-
   double getBCD() {
-    double x = getMaxTransactionAmount(true, RoutingAlgorithm.Collateralization.NONE);
-    double y = getMaxTransactionAmount(false, RoutingAlgorithm.Collateralization.NONE);
-    double U = getMax();
-    double L = -getMin();
-    double s = getCurrent() - getInitial();
-
-    return Math.abs(s) * Math.abs(U - L) / (U - getInitial());
+    return getDeviation() * Math.abs(u + l) / (u);
   }
 
   public boolean isLiquidityExhausted(double weight) {
