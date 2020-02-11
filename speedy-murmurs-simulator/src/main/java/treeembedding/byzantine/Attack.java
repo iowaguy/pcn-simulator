@@ -3,8 +3,10 @@ package treeembedding.byzantine;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Set;
+import java.util.Vector;
 
 import gtna.graph.Node;
+import treeembedding.credit.Transaction;
 
 public class Attack {
   @JsonProperty("attackers")
@@ -22,14 +24,20 @@ public class Attack {
   @JsonProperty("selected_byzantine_nodes")
   private Set<Integer> selectedByzantineNodes;
 
-  public Set<Integer> generateAttackers(Node[] allNodes) {
+  public Set<Integer> generateAttackers(Node[] allNodes, Vector<Transaction> transactions) {
     ByzantineNodeSelection byz = selection.getSelectionType();
-    if (byz == null) {
+    if (byz instanceof TopRecipientsTxsByzantineNodeSelection) {
+      byz.setNumByzantineNodes(numAttackers);
+    } else if (byz instanceof RandomByzantineNodeSelection) {
+      byz.setNumByzantineNodes(numAttackers);
+    } else if (byz instanceof SpecificByzantineNodeSelection) {
+      byz.setNumByzantineNodes(numAttackers);
+      byz.setSelectedByzantineNodes(selectedByzantineNodes);
+    } else {
       byz = new NoByzantineNodeSelection();
     }
-    byz.setNumByzantineNodes(numAttackers);
-    byz.setSelectedByzantineNodes(selectedByzantineNodes);
-    return byz.conscript(allNodes);
+
+    return byz.conscript(allNodes, transactions);
   }
 
   public void setSelectedByzantineNodes(Set<Integer> selectedByzantineNodes) {
@@ -67,4 +75,6 @@ public class Attack {
   public void setType(AttackType type) {
     this.type = type;
   }
+
+
 }

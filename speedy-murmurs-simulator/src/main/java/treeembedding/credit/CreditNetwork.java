@@ -208,7 +208,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     Node[] nodes = g.getNodes();
 
     // generate byzantine nodes
-    this.byzantineNodes = this.attack.generateAttackers(nodes);
+    this.byzantineNodes = this.attack.generateAttackers(nodes, this.transactions);
 
     int lastEpoch = 0;
     int stabilizationMessages = 0;

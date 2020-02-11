@@ -1,20 +1,22 @@
 package treeembedding.byzantine;
 
 import java.util.Set;
+import java.util.Vector;
 
 import gtna.graph.Node;
+import treeembedding.credit.Transaction;
 
-public abstract class ByzantineNodeSelection {
+abstract class ByzantineNodeSelection {
   int numByzantineNodes = 0;
   Set<Integer> selectedByzantineNodes;
 
-  public abstract Set<Integer> conscript(Node[] allNodes);
+  abstract Set<Integer> conscript(Node[] allNodes, Vector<Transaction> transactions);
 
-  public void setNumByzantineNodes(int numByzantineNodes) {
+  void setNumByzantineNodes(int numByzantineNodes) {
     this.numByzantineNodes = numByzantineNodes;
   }
 
-  public void setSelectedByzantineNodes(Set<Integer> selectedByzantineNodes) {
+  void setSelectedByzantineNodes(Set<Integer> selectedByzantineNodes) {
     this.selectedByzantineNodes = selectedByzantineNodes;
   }
 }

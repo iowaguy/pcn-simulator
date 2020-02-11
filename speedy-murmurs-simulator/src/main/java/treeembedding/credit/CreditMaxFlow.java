@@ -89,7 +89,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
     Node[] nodes = g.getNodes();
 
     // generate byzantine nodes
-    this.byzantineNodes = runConfig.getAttackProperties().generateAttackers(nodes);
+    this.byzantineNodes = runConfig.getAttackProperties().generateAttackers(nodes, this.transactions);
 
     edgeweights = (CreditLinks) g.getProperty("CREDIT_LINKS");
     edgeweights.setCollateralization(runConfig.getRoutingAlgorithm().collateralizationType());

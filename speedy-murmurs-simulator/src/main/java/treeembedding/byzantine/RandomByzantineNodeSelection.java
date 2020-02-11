@@ -2,9 +2,11 @@ package treeembedding.byzantine;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Vector;
 import java.util.concurrent.ThreadLocalRandom;
 
 import gtna.graph.Node;
+import treeembedding.credit.Transaction;
 
 public class RandomByzantineNodeSelection extends ByzantineNodeSelection {
 
@@ -15,7 +17,7 @@ public class RandomByzantineNodeSelection extends ByzantineNodeSelection {
    * @return a set of all the nodes selected to be byzantine
    */
   @Override
-  public Set<Integer> conscript(Node[] allNodes) {
+  public Set<Integer> conscript(Node[] allNodes, Vector<Transaction> transactions) {
     Set<Integer> ret = new HashSet<>();
 
     for (int i = 0; i < numByzantineNodes; i++) {
