@@ -282,7 +282,8 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
 
     // payment griefing attack logic
     for (int[] path : paths) {
-      if (attack != null && attack.getType() == AttackType.GRIEFING) {
+      if (attack != null && (attack.getType() == AttackType.GRIEFING ||
+              attack.getType() == AttackType.GRIEFING_SUCCESS)) {
         int destination = path[path.length - 1];
         if (this.byzantineNodes.contains(destination)) {
           try {
@@ -290,9 +291,11 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
           } catch (InterruptedException e) {
             // don't worry about it
           }
-          transactionFailed(edgeweights, edgeModifications);
-          results.setSuccess(false);
-          return results;
+          if (attack.getType() == AttackType.GRIEFING) {
+            transactionFailed(edgeweights, edgeModifications);
+            results.setSuccess(false);
+            return results;
+          }
         }
       }
     }
