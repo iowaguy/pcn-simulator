@@ -165,7 +165,7 @@ class TxDistro:
 
         logging.debug(f"dest={dest}; source={source}")
         while dest == source:
-            dest = self.__sample_pareto_dist(self.__topology.graph.nodes, max=5)
+            dest = self.__sample_pareto_dist(self.__dest_nodes_distro, max=5)
             logging.debug(f"dest={dest}; source={source}")
 
         return (source, dest)
