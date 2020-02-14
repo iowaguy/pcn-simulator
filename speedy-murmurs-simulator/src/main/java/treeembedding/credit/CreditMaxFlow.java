@@ -32,6 +32,8 @@ import treeembedding.byzantine.AttackType;
 import treeembedding.credit.exceptions.InsufficientFundsException;
 import treeembedding.credit.exceptions.TransactionFailedException;
 
+import static treeembedding.credit.AbstractCreditNetworkBase.Metrics.MESSAGES_ALL;
+
 
 public class CreditMaxFlow extends AbstractCreditNetworkBase {
   //input parameters
@@ -127,18 +129,18 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
     }
 
     //compute metrics
-    distributions.put(PATH, new Distribution(convertListToLongArray(PATH), totalTransactionAttemptCount));
-    distributions.put(MESSAGES, new Distribution(convertListToLongArray(MESSAGES), totalTransactionAttemptCount));
-    distributions.put(PATHS_ALL, new Distribution(convertListToLongArray(PATHS_ALL), transactions.size()));
+    distributions.put(Metrics.PATH, new Distribution(convertListToLongArray(Metrics.PATH), totalTransactionAttemptCount));
+    distributions.put(Metrics.MESSAGES, new Distribution(convertListToLongArray(Metrics.MESSAGES), totalTransactionAttemptCount));
+    distributions.put(Metrics.PATHS_ALL, new Distribution(convertListToLongArray(Metrics.PATHS_ALL), transactions.size()));
     distributions.put(MESSAGES_ALL, new Distribution(convertListToLongArray(MESSAGES_ALL), transactions.size()));
-    distributions.put(PATH_SUCCESS, new Distribution(convertListToLongArray(PATH_SUCCESS), (int) this.success));
-    distributions.put(MESSAGES_SUCCESS, new Distribution(convertListToLongArray(MESSAGES_SUCCESS), (int) this.success));
-    distributions.put(PATH_FAIL, new Distribution(convertListToLongArray(PATH_FAIL), transactions.size() - (int) this.success));
-    distributions.put(MESSAGES_FAIL, new Distribution(convertListToLongArray(MESSAGES_FAIL), transactions.size() - (int) this.success));
-    distributions.put(ATTEMPTS, new Distribution(convertListToLongArray(ATTEMPTS), (int) this.success));
-    distributions.put(SINGLE_PATHS, new Distribution(convertListToLongArray(SINGLE_PATHS), cAllPath.get(0) + cAllPath.get(1)));
-    distributions.put(SINGLE_PATHS_DEST_FOUND, new Distribution(convertListToLongArray(SINGLE_PATHS_DEST_FOUND), cAllPath.get(0)));
-    distributions.put(SINGLE_PATHS_DEST_NOT_FOUND, new Distribution(convertListToLongArray(SINGLE_PATHS_DEST_NOT_FOUND), cAllPath.get(1)));
+    distributions.put(Metrics.PATH_SUCCESS, new Distribution(convertListToLongArray(Metrics.PATH_SUCCESS), (int) this.success));
+    distributions.put(Metrics.MESSAGES_SUCCESS, new Distribution(convertListToLongArray(Metrics.MESSAGES_SUCCESS), (int) this.success));
+    distributions.put(Metrics.PATH_FAIL, new Distribution(convertListToLongArray(Metrics.PATH_FAIL), transactions.size() - (int) this.success));
+    distributions.put(Metrics.MESSAGES_FAIL, new Distribution(convertListToLongArray(Metrics.MESSAGES_FAIL), transactions.size() - (int) this.success));
+    distributions.put(Metrics.ATTEMPTS, new Distribution(convertListToLongArray(Metrics.ATTEMPTS), (int) this.success));
+    distributions.put(Metrics.SINGLE_PATHS, new Distribution(convertListToLongArray(Metrics.SINGLE_PATHS), cAllPath.get(0) + cAllPath.get(1)));
+    distributions.put(Metrics.SINGLE_PATHS_DEST_FOUND, new Distribution(convertListToLongArray(Metrics.SINGLE_PATHS_DEST_FOUND), cAllPath.get(0)));
+    distributions.put(Metrics.SINGLE_PATHS_DEST_NOT_FOUND, new Distribution(convertListToLongArray(Metrics.SINGLE_PATHS_DEST_NOT_FOUND), cAllPath.get(1)));
 
     this.success = this.success / (double) transactions.size();
     this.success_first = this.success_first / (double) transactions.size();
@@ -169,8 +171,8 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
         if (currentTransaction.timesRequeued <= this.maxTries) {
           toRetry.add(currentTransaction);
         } else {
-          incrementCount(MESSAGES_ALL, currentTransaction.mes);
-          incrementCount(PATHS_ALL, currentTransaction.path);
+          incrementCount(Metrics.MESSAGES_ALL, currentTransaction.mes);
+          incrementCount(Metrics.PATHS_ALL, currentTransaction.path);
         }
       }
 
@@ -393,8 +395,8 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
   @Override
   public Single[] getSingles() {
     List<Single> l = new ArrayList<>(20);
-    for (String dataKey : distributions.keySet()) {
-      l.add(new Single(CREDIT_MAX_FLOW + SINGLE_NAMES.get(dataKey), distributions.get(dataKey).getAverage()));
+    for (Metrics dataKey : distributions.keySet()) {
+      l.add(new Single(CREDIT_MAX_FLOW + dataKey.getSingleName(), distributions.get(dataKey).getAverage()));
     }
     Single[] singles = l.toArray(new Single[l.size() + 2]);
 

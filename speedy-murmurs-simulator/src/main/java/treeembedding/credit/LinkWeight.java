@@ -202,7 +202,7 @@ public class LinkWeight {
               // INVARIANT: min will always be less than or equal to unlockedMin
               !(areDoublesEqual(this.min, this.unlockedMin)) &&
               !(areDoublesEqual(this.min, getCurrent()))) {
-        maxFlowCN.incrementPerEpochValue(AbstractCreditNetworkBase.BLOCKED_LINKS, currentEpoch);
+        maxFlowCN.incrementPerEpochValue(AbstractCreditNetworkBase.Metrics.BLOCKED_LINKS, currentEpoch);
       }
     } else {
       mta = getEffectiveMax(collateralizationType) - getCurrent();
@@ -216,7 +216,7 @@ public class LinkWeight {
               // INVARIANT: max will always be greater or equal to unlockedMax
               !(areDoublesEqual(this.max, this.unlockedMax)) &&
               !(areDoublesEqual(this.max, getCurrent()))) {
-        maxFlowCN.incrementPerEpochValue(AbstractCreditNetworkBase.BLOCKED_LINKS, currentEpoch);
+        maxFlowCN.incrementPerEpochValue(AbstractCreditNetworkBase.Metrics.BLOCKED_LINKS, currentEpoch);
       }
     }
     return mta;

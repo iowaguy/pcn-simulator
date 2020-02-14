@@ -44,7 +44,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   Queue<Transaction> toRetry;
   RunConfig runConfig;
   private final double epoch; //interval for stabilization overhead (=epoch between spanning tree recomputations if !dynRepair)
-  Map<String, Distribution> distributions;
+  Map<Metrics, Distribution> distributions;
   double[] passRoot;
   CreditLinks edgeweights;
   private int networkLatency;
@@ -53,88 +53,72 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   Queue<Edge> zeroEdges;
 
   int[] getTransactionsPerEpoch() {
-    return perEpochMetrics.get(TRANSACTIONS);
+    return perEpochMetrics.get(Metrics.TRANSACTIONS);
   }
 
   int[] getSuccessesPerEpoch() {
-    return perEpochMetrics.get(SUCCESSES);
+    return perEpochMetrics.get(Metrics.SUCCESSES);
   }
 
   int[] getBlockedLinksPerEpoch() {
-    return perEpochMetrics.get(BLOCKED_LINKS);
+    return perEpochMetrics.get(Metrics.BLOCKED_LINKS);
   }
 
-  private int[] getPerEpochMetric(String name) {
+  private int[] getPerEpochMetric(Metrics name) {
     return perEpochMetrics.get(name);
   }
 
-  private Map<String, List<Long>> longMetrics;
-  private Map<String, int[]> perEpochMetrics;
+  private Map<Metrics, List<Long>> longMetrics;
+  private Map<Metrics, int[]> perEpochMetrics;
 
-  static final String SINGLE_PATHS_DEST_FOUND = "pathSF"; //distribution of single paths, only discovered paths
-  static final String SINGLE_PATHS_DEST_NOT_FOUND = "pathSNF"; //distribution of single paths, not found dest
-  static final String SINGLE_PATHS = "pathS"; //distribution of single paths
-  static final String ATTEMPTS = "trys"; //Distribution of number of trials needed to get through
-  static final String MESSAGES_ALL = "mesAll"; //distribution of #messages needed, counting re-transactions as part of transaction
-  static final String PATHS_ALL = "pathAll"; //distribution of path length counting re-transactions as one
-  static final String RECEIVER_LANDMARK_MESSAGES = "reLand"; //messages receiver-landmarks communication
-  static final String LANDMARK_SENDER_MESSAGES = "landSen"; //messages sender-landmarks communication
-  static final String MESSAGES = "mes"; //distribution of #messages needed for one transaction trial i.e. each retry counts as a new transaction
-  static final String PATH = "path"; //distribution of path length (sum over all trees!)
-  static final String PATH_SUCCESS = "pathSucc"; //path length successful transactions
-  static final String PATH_FAIL = "pathFail"; //path length failed transactions
-  static final String MESSAGES_SUCCESS = "mesSucc"; //messages successful transactions
-  static final String MESSAGES_FAIL = "mesFail"; //messages failed transactions
-  static final String DELAY = "del"; //distribution of hop delay
-  static final String DELAY_SUCCESS = "delSucc"; //distribution of hop delay, successful queries
-  static final String DELAY_FAIL = "delFail"; //distribution of hop delay, failed queries
   static final String CREDIT_MAX_FLOW = "CREDIT_MAX_FLOW";
-  static final String BLOCKED_LINKS = "BLOCKED_LINKS";
-  private static final String SUCCESSES = "SUCCESSES";
-  private static final String TRANSACTIONS = "TRANSACTIONS";
 
+  enum Metrics {
+    SINGLE_PATHS_DEST_FOUND("_PATH_SINGLE_FOUND", "_PATH_SINGLE_FOUND_AV"), //distribution of single paths, only discovered paths
+    SINGLE_PATHS_DEST_NOT_FOUND("_PATH_SINGLE_NF", "_PATH_SINGLE_NF_AV"), //distribution of single paths, not found dest
+    SINGLE_PATHS("_PATH_SINGLE", "_PATH_SINGLE_AV"), //distribution of single paths
+    ATTEMPTS("_TRIALS", "_ATTEMPTS"), //Distribution of number of trials needed to get through
+    MESSAGES_ALL("_MESSAGES_RE", "_MES_RE_AV"), //distribution of #messages needed, counting re-transactions as part of transaction
+    PATHS_ALL("_PATH_LENGTH_RE", "_PATH_RE_AV"), //distribution of path length counting re-transactions as one
+    RECEIVER_LANDMARK_MESSAGES("_REC_LANDMARK", "_REC_LAND_MES_AV"), //messages receiver-landmarks communication
+    LANDMARK_SENDER_MESSAGES("_LANDMARK_SRC", "_LAND_SRC_MES_AV"), //messages sender-landmarks communication
+    MESSAGES("_MESSAGES", "_MES_AV"), //distribution of #messages needed for one transaction trial i.e. each retry counts as a new transaction
+    PATH("_PATH_LENGTH", "_PATH_AV"), //distribution of path length (sum over all trees!)
+    PATH_SUCCESS("_PATH_LENGTH_SUCC", "_PATH_SUCC_AV"), //path length successful transactions
+    PATH_FAIL("_PATH_LENGTH_FAIL", "_PATH_FAIL_AV"), //path length failed transactions
+    MESSAGES_SUCCESS("_MESSAGES_SUCC", "_MES_SUCC_AV"), //messages successful transactions
+    MESSAGES_FAIL("_MESSAGES_FAIL", "_MES_FAIL_AV"), //messages failed transactions
+    DELAY("_DELAY", "_DELAY_AV"), //distribution of hop delay
+    DELAY_SUCCESS("_DELAY_SUCC", "_DELAY_SUCC_AV"), //distribution of hop delay, successful queries
+    DELAY_FAIL("_DELAY_FAIL", "_DELAY_FAIL_AV"), //distribution of hop delay, failed queries
+    BLOCKED_LINKS,
+    SUCCESSES,
+    SUCCESS_RATE,
+    TRANSACTIONS,
+    TRANSACTION_WEIGHTS,
+    BCD,
+    BCD_NORMALIZED;
 
-  private static final Map<String, String> FILE_SUFFIXES;
-  static final Map<String, String> SINGLE_NAMES;
+    final String fileSuffix;
+    final String singleName;
 
-  static {
-    FILE_SUFFIXES = new HashMap<>();
-    FILE_SUFFIXES.put(MESSAGES, "_MESSAGES");
-    FILE_SUFFIXES.put(MESSAGES_ALL, "_MESSAGES_RE");
-    FILE_SUFFIXES.put(MESSAGES_SUCCESS, "_MESSAGES_SUCC");
-    FILE_SUFFIXES.put(MESSAGES_FAIL, "_MESSAGES_FAIL");
-    FILE_SUFFIXES.put(PATH, "_PATH_LENGTH");
-    FILE_SUFFIXES.put(PATHS_ALL, "_PATH_LENGTH_RE");
-    FILE_SUFFIXES.put(PATH_SUCCESS, "_PATH_LENGTH_SUCC");
-    FILE_SUFFIXES.put(PATH_FAIL, "_PATH_LENGTH_FAIL");
-    FILE_SUFFIXES.put(RECEIVER_LANDMARK_MESSAGES, "_REC_LANDMARK");
-    FILE_SUFFIXES.put(LANDMARK_SENDER_MESSAGES, "_LANDMARK_SRC");
-    FILE_SUFFIXES.put(ATTEMPTS, "_TRIALS");
-    FILE_SUFFIXES.put(SINGLE_PATHS, "_PATH_SINGLE");
-    FILE_SUFFIXES.put(SINGLE_PATHS_DEST_FOUND, "_PATH_SINGLE_FOUND");
-    FILE_SUFFIXES.put(SINGLE_PATHS_DEST_NOT_FOUND, "_PATH_SINGLE_NF");
-    FILE_SUFFIXES.put(DELAY, "_DELAY");
-    FILE_SUFFIXES.put(DELAY_SUCCESS, "_DELAY_SUCC");
-    FILE_SUFFIXES.put(DELAY_FAIL, "_DELAY_FAIL");
+    String getFileSuffix() {
+      return this.fileSuffix;
+    }
 
-    SINGLE_NAMES = new HashMap<>();
-    SINGLE_NAMES.put(MESSAGES, "_MES_AV");
-    SINGLE_NAMES.put(MESSAGES_ALL, "_MES_RE_AV");
-    SINGLE_NAMES.put(MESSAGES_SUCCESS, "_MES_SUCC_AV");
-    SINGLE_NAMES.put(MESSAGES_FAIL, "_MES_FAIL_AV");
-    SINGLE_NAMES.put(PATH, "_PATH_AV");
-    SINGLE_NAMES.put(PATHS_ALL, "_PATH_RE_AV");
-    SINGLE_NAMES.put(PATH_SUCCESS, "_PATH_SUCC_AV");
-    SINGLE_NAMES.put(PATH_FAIL, "_PATH_FAIL_AV");
-    SINGLE_NAMES.put(RECEIVER_LANDMARK_MESSAGES, "_REC_LAND_MES_AV");
-    SINGLE_NAMES.put(LANDMARK_SENDER_MESSAGES, "_LAND_SRC_MES_AV");
-    SINGLE_NAMES.put(SINGLE_PATHS, "_PATH_SINGLE_AV");
-    SINGLE_NAMES.put(SINGLE_PATHS_DEST_FOUND, "_PATH_SINGLE_FOUND_AV");
-    SINGLE_NAMES.put(SINGLE_PATHS_DEST_NOT_FOUND, "_PATH_SINGLE_NF_AV");
-    SINGLE_NAMES.put(DELAY, "_DELAY_AV");
-    SINGLE_NAMES.put(DELAY_SUCCESS, "_DELAY_SUCC_AV");
-    SINGLE_NAMES.put(DELAY_FAIL, "_DELAY_FAIL_AV");
-    SINGLE_NAMES.put(ATTEMPTS, "_ATTEMPTS");
+    String getSingleName() {
+      return this.singleName;
+    }
+
+    Metrics() {
+      this.fileSuffix = "";
+      this.singleName = "";
+    }
+
+    Metrics(String fileSuffix, String singleName) {
+      this.fileSuffix = fileSuffix;
+      this.singleName = singleName;
+    }
   }
 
   List<Integer> cAllPath = new ArrayList<>();
@@ -146,6 +130,9 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   double success_first; //fraction of transactions successful in first try
   final int numRoots;
   double[] stab; //stabilization overhead over time (in #messages)
+
+  private Map<String, int[]> perEpochDoubleMetrics;
+
   private double[] successRatePerEpoch;
   private double[] averageSuccessfulPathLengthPerEpoch;
   private double[] blockedLinksRatioPerEpoch;
@@ -182,29 +169,29 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     // last transaction was in
     numEpochs++;
     perEpochMetrics = new HashMap<>();
-    perEpochMetrics.put(SUCCESSES, new int[numEpochs]);
-    perEpochMetrics.put(TRANSACTIONS, new int[numEpochs]);
-    perEpochMetrics.put(PATH_SUCCESS, new int[numEpochs]);
-    perEpochMetrics.put(BLOCKED_LINKS, new int[numEpochs]);
+    perEpochMetrics.put(Metrics.SUCCESSES, new int[numEpochs]);
+    perEpochMetrics.put(Metrics.TRANSACTIONS, new int[numEpochs]);
+    perEpochMetrics.put(Metrics.PATH_SUCCESS, new int[numEpochs]);
+    perEpochMetrics.put(Metrics.BLOCKED_LINKS, new int[numEpochs]);
 
     longMetrics = new ConcurrentHashMap<>(17);
-    longMetrics.put(MESSAGES_ALL, new ArrayList<>());
-    longMetrics.put(PATHS_ALL, new ArrayList<>());
-    longMetrics.put(RECEIVER_LANDMARK_MESSAGES, new ArrayList<>());
-    longMetrics.put(LANDMARK_SENDER_MESSAGES, new ArrayList<>());
-    longMetrics.put(MESSAGES, new ArrayList<>());
-    longMetrics.put(ATTEMPTS, new ArrayList<>());
-    longMetrics.put(PATH, new ArrayList<>());
-    longMetrics.put(PATH_SUCCESS, new ArrayList<>());
-    longMetrics.put(PATH_FAIL, new ArrayList<>());
-    longMetrics.put(MESSAGES_SUCCESS, new ArrayList<>());
-    longMetrics.put(MESSAGES_FAIL, new ArrayList<>());
-    longMetrics.put(SINGLE_PATHS, new ArrayList<>());
-    longMetrics.put(SINGLE_PATHS_DEST_FOUND, new ArrayList<>());
-    longMetrics.put(SINGLE_PATHS_DEST_NOT_FOUND, new ArrayList<>());
-    longMetrics.put(DELAY, new ArrayList<>());
-    longMetrics.put(DELAY_SUCCESS, new ArrayList<>());
-    longMetrics.put(DELAY_FAIL, new ArrayList<>());
+    longMetrics.put(Metrics.MESSAGES_ALL, new ArrayList<>());
+    longMetrics.put(Metrics.PATHS_ALL, new ArrayList<>());
+    longMetrics.put(Metrics.RECEIVER_LANDMARK_MESSAGES, new ArrayList<>());
+    longMetrics.put(Metrics.LANDMARK_SENDER_MESSAGES, new ArrayList<>());
+    longMetrics.put(Metrics.MESSAGES, new ArrayList<>());
+    longMetrics.put(Metrics.ATTEMPTS, new ArrayList<>());
+    longMetrics.put(Metrics.PATH, new ArrayList<>());
+    longMetrics.put(Metrics.PATH_SUCCESS, new ArrayList<>());
+    longMetrics.put(Metrics.PATH_FAIL, new ArrayList<>());
+    longMetrics.put(Metrics.MESSAGES_SUCCESS, new ArrayList<>());
+    longMetrics.put(Metrics.MESSAGES_FAIL, new ArrayList<>());
+    longMetrics.put(Metrics.SINGLE_PATHS, new ArrayList<>());
+    longMetrics.put(Metrics.SINGLE_PATHS_DEST_FOUND, new ArrayList<>());
+    longMetrics.put(Metrics.SINGLE_PATHS_DEST_NOT_FOUND, new ArrayList<>());
+    longMetrics.put(Metrics.DELAY, new ArrayList<>());
+    longMetrics.put(Metrics.DELAY_SUCCESS, new ArrayList<>());
+    longMetrics.put(Metrics.DELAY_FAIL, new ArrayList<>());
 
     pathSs = new ArrayList<>(numRoots);
     pathSsF = new ArrayList<>(numRoots);
@@ -251,11 +238,11 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     return totalBCD;
   }
 
-  synchronized void incrementPerEpochValue(String name, int currentEpoch) {
+  synchronized void incrementPerEpochValue(Metrics name, int currentEpoch) {
     addPerEpochValue(name, 1, currentEpoch);
   }
 
-  synchronized void addPerEpochValue(String name, double value, int currentEpoch) {
+  synchronized void addPerEpochValue(Metrics name, double value, int currentEpoch) {
     perEpochMetrics.computeIfPresent(name, (k, v) -> {
       v[currentEpoch] += value;
       return v;
@@ -322,35 +309,35 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   }
 
   synchronized void calculateMetrics(TransactionResults results, Transaction currentTransaction, int currentEpoch) {
-    incrementPerEpochValue(TRANSACTIONS, currentEpoch);
+    incrementPerEpochValue(Metrics.TRANSACTIONS, currentEpoch);
     if (results.isSuccess()) {
-      incrementPerEpochValue(SUCCESSES, currentEpoch);
-      addPerEpochValue(PATH_SUCCESS, results.getSumPathLength(), currentEpoch);
+      incrementPerEpochValue(Metrics.SUCCESSES, currentEpoch);
+      addPerEpochValue(Metrics.PATH_SUCCESS, results.getSumPathLength(), currentEpoch);
     }
 
     this.txStartEndTimes[currentTransaction.index] = new double[]{currentTransaction.startTime,
             currentTransaction.endTime};
 
-    incrementCount(PATH, results.getSumPathLength());
-    incrementCount(RECEIVER_LANDMARK_MESSAGES, results.getSumReceiverLandmarks());
-    incrementCount(LANDMARK_SENDER_MESSAGES, results.getSumSourceDepths());
-    incrementCount(MESSAGES, results.getSumMessages());
-    incrementCount(DELAY, results.getMaxPathLength());
+    incrementCount(Metrics.PATH, results.getSumPathLength());
+    incrementCount(Metrics.RECEIVER_LANDMARK_MESSAGES, results.getSumReceiverLandmarks());
+    incrementCount(Metrics.LANDMARK_SENDER_MESSAGES, results.getSumSourceDepths());
+    incrementCount(Metrics.MESSAGES, results.getSumMessages());
+    incrementCount(Metrics.DELAY, results.getMaxPathLength());
     if (results.isSuccess()) {
-      incrementCount(ATTEMPTS, currentTransaction.timesRequeued);
+      incrementCount(Metrics.ATTEMPTS, currentTransaction.timesRequeued);
       this.success++;
       if (currentTransaction.timesRequeued == 0) {
         this.success_first++;
       }
-      incrementCount(MESSAGES_ALL, currentTransaction.mes);
-      incrementCount(PATHS_ALL, currentTransaction.path);
-      incrementCount(PATH_SUCCESS, results.getSumPathLength());
-      incrementCount(MESSAGES_SUCCESS, results.getSumMessages());
-      incrementCount(DELAY_SUCCESS, results.getMaxPathLength());
+      incrementCount(Metrics.MESSAGES_ALL, currentTransaction.mes);
+      incrementCount(Metrics.PATHS_ALL, currentTransaction.path);
+      incrementCount(Metrics.PATH_SUCCESS, results.getSumPathLength());
+      incrementCount(Metrics.MESSAGES_SUCCESS, results.getSumMessages());
+      incrementCount(Metrics.DELAY_SUCCESS, results.getMaxPathLength());
     } else {
-      incrementCount(PATH_FAIL, results.getSumPathLength());
-      incrementCount(MESSAGES_FAIL, results.getSumMessages());
-      incrementCount(DELAY_FAIL, results.getMaxPathLength());
+      incrementCount(Metrics.PATH_FAIL, results.getSumPathLength());
+      incrementCount(Metrics.MESSAGES_FAIL, results.getSumMessages());
+      incrementCount(Metrics.DELAY_FAIL, results.getMaxPathLength());
     }
     for (int j = 0; j < results.getPathLengths().length; j++) {
       int index = 0;
@@ -364,15 +351,15 @@ public abstract class AbstractCreditNetworkBase extends Metric {
         incrementCount(pathSs.get(j), pathLength);
       }
 
-      incrementCount(SINGLE_PATHS, pathLength);
+      incrementCount(Metrics.SINGLE_PATHS, pathLength);
 
       if (index == 0) {
-        incrementCount(SINGLE_PATHS_DEST_FOUND, pathLength);
+        incrementCount(Metrics.SINGLE_PATHS_DEST_FOUND, pathLength);
         if (!isMaxFlow()) {
           incrementCount(pathSsF.get(j), pathLength);
         }
       } else {
-        incrementCount(SINGLE_PATHS_DEST_NOT_FOUND, pathLength);
+        incrementCount(Metrics.SINGLE_PATHS_DEST_NOT_FOUND, pathLength);
         if (!isMaxFlow()) {
           incrementCount(pathSsNF.get(j), pathLength);
         }
@@ -390,7 +377,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     return (int) Math.floor(t.time / epoch);
   }
 
-  long[] convertListToLongArray(String propName) {
+  long[] convertListToLongArray(Metrics propName) {
     return convertListToLongArray(longMetrics.get(propName));
   }
 
@@ -423,7 +410,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     }
   }
 
-  void incrementCount(String propName, int index) {
+  void incrementCount(Metrics propName, int index) {
     List<Long> values = longMetrics.get(propName);
     incrementCount(values, index);
   }
@@ -439,10 +426,10 @@ public abstract class AbstractCreditNetworkBase extends Metric {
 
   boolean writeDataCommon(String folder) {
     boolean succ = true;
-    for (String dataKey : distributions.keySet()) {
+    for (Metrics dataKey : distributions.keySet()) {
       if (distributions.get(dataKey).getDistribution() != null) {
         succ &= DataWriter.writeWithIndex(distributions.get(dataKey).getDistribution(),
-                this.key + FILE_SUFFIXES.get(dataKey), folder);
+                this.key + dataKey.getFileSuffix(), folder);
       }
     }
 
@@ -538,19 +525,19 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   }
 
   void calculatePerEpochRatios() {
-    this.successRatePerEpoch = new double[getPerEpochMetric(TRANSACTIONS).length];
-    this.averageSuccessfulPathLengthPerEpoch = new double[getPerEpochMetric(PATH_SUCCESS).length];
-    this.blockedLinksRatioPerEpoch = new double[getPerEpochMetric(TRANSACTIONS).length];
-    for (int epochNumber = 0; epochNumber < getPerEpochMetric(TRANSACTIONS).length; epochNumber++) {
+    this.successRatePerEpoch = new double[getPerEpochMetric(Metrics.TRANSACTIONS).length];
+    this.averageSuccessfulPathLengthPerEpoch = new double[getPerEpochMetric(Metrics.PATH_SUCCESS).length];
+    this.blockedLinksRatioPerEpoch = new double[getPerEpochMetric(Metrics.TRANSACTIONS).length];
+    for (int epochNumber = 0; epochNumber < getPerEpochMetric(Metrics.TRANSACTIONS).length; epochNumber++) {
       this.successRatePerEpoch[epochNumber] =
-              (double) getPerEpochMetric(SUCCESSES)[epochNumber] /
-                      (double) getPerEpochMetric(TRANSACTIONS)[epochNumber];
+              (double) getPerEpochMetric(Metrics.SUCCESSES)[epochNumber] /
+                      (double) getPerEpochMetric(Metrics.TRANSACTIONS)[epochNumber];
       this.blockedLinksRatioPerEpoch[epochNumber] =
-              (double) getPerEpochMetric(BLOCKED_LINKS)[epochNumber] /
-                      (double) getPerEpochMetric(TRANSACTIONS)[epochNumber];
+              (double) getPerEpochMetric(Metrics.BLOCKED_LINKS)[epochNumber] /
+                      (double) getPerEpochMetric(Metrics.TRANSACTIONS)[epochNumber];
       this.averageSuccessfulPathLengthPerEpoch[epochNumber] =
-              (double) getPerEpochMetric(PATH_SUCCESS)[epochNumber] /
-                      (double) getPerEpochMetric(SUCCESSES)[epochNumber];
+              (double) getPerEpochMetric(Metrics.PATH_SUCCESS)[epochNumber] /
+                      (double) getPerEpochMetric(Metrics.SUCCESSES)[epochNumber];
       double runningBCDTotal = epochNumber == 0 ? 0 : totalBCDPerEpoch[epochNumber - 1];
       for (Map.Entry<String, LinkBCD> m : bcdChanges.get(epochNumber).entrySet()) {
         runningBCDTotal -= m.getValue().getPrevious();

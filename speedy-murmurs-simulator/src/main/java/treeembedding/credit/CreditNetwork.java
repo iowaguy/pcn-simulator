@@ -155,8 +155,8 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       if (currentTransaction.timesRequeued < (this.maxTries - 1)) {
         toRetry.add(currentTransaction);
       } else {
-        incrementCount(MESSAGES_ALL, currentTransaction.mes);
-        incrementCount(PATHS_ALL, currentTransaction.path);
+        incrementCount(Metrics.MESSAGES_ALL, currentTransaction.mes);
+        incrementCount(Metrics.PATHS_ALL, currentTransaction.path);
       }
     }
 
@@ -305,23 +305,23 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     }
 
     //compute metrics
-    distributions.put(PATH, new Distribution(convertListToLongArray(PATH), totalTransactionAttemptCount));
-    distributions.put(MESSAGES, new Distribution(convertListToLongArray(MESSAGES), totalTransactionAttemptCount));
-    distributions.put(PATHS_ALL, new Distribution(convertListToLongArray(PATHS_ALL), transactions.size()));
-    distributions.put(MESSAGES_ALL, new Distribution(convertListToLongArray(MESSAGES_ALL), transactions.size()));
-    distributions.put(PATH_SUCCESS, new Distribution(convertListToLongArray(PATH_SUCCESS), (int) this.success));
-    distributions.put(MESSAGES_SUCCESS, new Distribution(convertListToLongArray(MESSAGES_SUCCESS), (int) this.success));
-    distributions.put(PATH_FAIL, new Distribution(convertListToLongArray(PATH_FAIL), transactions.size() - (int) this.success));
-    distributions.put(MESSAGES_FAIL, new Distribution(convertListToLongArray(MESSAGES_FAIL), transactions.size() - (int) this.success));
-    distributions.put(RECEIVER_LANDMARK_MESSAGES, new Distribution(convertListToLongArray(RECEIVER_LANDMARK_MESSAGES), totalTransactionAttemptCount));
-    distributions.put(LANDMARK_SENDER_MESSAGES, new Distribution(convertListToLongArray(LANDMARK_SENDER_MESSAGES), totalTransactionAttemptCount));
-    distributions.put(ATTEMPTS, new Distribution(convertListToLongArray(ATTEMPTS), (int) this.success));
-    distributions.put(SINGLE_PATHS, new Distribution(convertListToLongArray(SINGLE_PATHS), cAllPath.get(0) + cAllPath.get(1)));
-    distributions.put(SINGLE_PATHS_DEST_FOUND, new Distribution(convertListToLongArray(SINGLE_PATHS_DEST_FOUND), cAllPath.get(0)));
-    distributions.put(SINGLE_PATHS_DEST_NOT_FOUND, new Distribution(convertListToLongArray(SINGLE_PATHS_DEST_NOT_FOUND), cAllPath.get(1)));
-    distributions.put(DELAY, new Distribution(convertListToLongArray(DELAY), totalTransactionAttemptCount));
-    distributions.put(DELAY_SUCCESS, new Distribution(convertListToLongArray(DELAY_SUCCESS), (int) this.success));
-    distributions.put(DELAY_FAIL, new Distribution(convertListToLongArray(DELAY_FAIL), totalTransactionAttemptCount - (int) this.success));
+    distributions.put(Metrics.PATH, new Distribution(convertListToLongArray(Metrics.PATH), totalTransactionAttemptCount));
+    distributions.put(Metrics.MESSAGES, new Distribution(convertListToLongArray(Metrics.MESSAGES), totalTransactionAttemptCount));
+    distributions.put(Metrics.PATHS_ALL, new Distribution(convertListToLongArray(Metrics.PATHS_ALL), transactions.size()));
+    distributions.put(Metrics.MESSAGES_ALL, new Distribution(convertListToLongArray(Metrics.MESSAGES_ALL), transactions.size()));
+    distributions.put(Metrics.PATH_SUCCESS, new Distribution(convertListToLongArray(Metrics.PATH_SUCCESS), (int) this.success));
+    distributions.put(Metrics.MESSAGES_SUCCESS, new Distribution(convertListToLongArray(Metrics.MESSAGES_SUCCESS), (int) this.success));
+    distributions.put(Metrics.PATH_FAIL, new Distribution(convertListToLongArray(Metrics.PATH_FAIL), transactions.size() - (int) this.success));
+    distributions.put(Metrics.MESSAGES_FAIL, new Distribution(convertListToLongArray(Metrics.MESSAGES_FAIL), transactions.size() - (int) this.success));
+    distributions.put(Metrics.RECEIVER_LANDMARK_MESSAGES, new Distribution(convertListToLongArray(Metrics.RECEIVER_LANDMARK_MESSAGES), totalTransactionAttemptCount));
+    distributions.put(Metrics.LANDMARK_SENDER_MESSAGES, new Distribution(convertListToLongArray(Metrics.LANDMARK_SENDER_MESSAGES), totalTransactionAttemptCount));
+    distributions.put(Metrics.ATTEMPTS, new Distribution(convertListToLongArray(Metrics.ATTEMPTS), (int) this.success));
+    distributions.put(Metrics.SINGLE_PATHS, new Distribution(convertListToLongArray(Metrics.SINGLE_PATHS), cAllPath.get(0) + cAllPath.get(1)));
+    distributions.put(Metrics.SINGLE_PATHS_DEST_FOUND, new Distribution(convertListToLongArray(Metrics.SINGLE_PATHS_DEST_FOUND), cAllPath.get(0)));
+    distributions.put(Metrics.SINGLE_PATHS_DEST_NOT_FOUND, new Distribution(convertListToLongArray(Metrics.SINGLE_PATHS_DEST_NOT_FOUND), cAllPath.get(1)));
+    distributions.put(Metrics.DELAY, new Distribution(convertListToLongArray(Metrics.DELAY), totalTransactionAttemptCount));
+    distributions.put(Metrics.DELAY_SUCCESS, new Distribution(convertListToLongArray(Metrics.DELAY_SUCCESS), (int) this.success));
+    distributions.put(Metrics.DELAY_FAIL, new Distribution(convertListToLongArray(Metrics.DELAY_FAIL), totalTransactionAttemptCount - (int) this.success));
 
     this.pathsPerTree = new Distribution[this.roots.length];
     this.pathsPerTreeFound = new Distribution[this.roots.length];
@@ -548,7 +548,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     for (int treeIndex = 0; treeIndex < mins.length; treeIndex++) {
       NextHopPlusMetrics n = ra.getRoute(src, dest, treeIndex, g, nodes, exclude);
       paths[treeIndex] = n.getPath();
-      addPerEpochValue(BLOCKED_LINKS, (double) n.getBlockedLinks(), calculateEpoch(cur));
+      addPerEpochValue(Metrics.BLOCKED_LINKS, (double) n.getBlockedLinks(), calculateEpoch(cur));
 
       if (paths[treeIndex][paths[treeIndex].length - 1] == dest) {
         int currentNodeIndex = src;
@@ -764,7 +764,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
         }
         NextHopPlusMetrics n = this.ra.getRoute(s, d, pathIndex, g, nodes, exclude, edgeweights, vals[pathIndex]);
         paths[pathIndex] = n.getPath();
-        addPerEpochValue(BLOCKED_LINKS, n.getBlockedLinks(), calculateEpoch(cur));
+        addPerEpochValue(Metrics.BLOCKED_LINKS, n.getBlockedLinks(), calculateEpoch(cur));
 
         if (paths[pathIndex][paths[pathIndex].length - 1] == -1) {
           // could not find a path
@@ -839,7 +839,8 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
     // payment griefing attack logic
     for (int[] path : paths) {
-      if (attack != null && attack.getType() == AttackType.GRIEFING) {
+      if (attack != null && (attack.getType() == AttackType.GRIEFING ||
+              attack.getType() == AttackType.GRIEFING_SUCCESS)) {
         int destination = path[path.length - 1];
         if (this.byzantineNodes.contains(destination)) {
           try {
@@ -847,8 +848,11 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
           } catch (InterruptedException e) {
             // don't worry about it
           }
-          transactionFailed(edgeweights, edgeModifications);
-          throw new TransactionFailedException("This payment was griefed");
+
+          if (attack.getType() == AttackType.GRIEFING) {
+            transactionFailed(edgeweights, edgeModifications);
+            throw new TransactionFailedException("This payment was griefed");
+          }
 
         }
       }
@@ -888,8 +892,8 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
   @Override
   public Single[] getSingles() {
     List<Single> l = new ArrayList<>(20);
-    for (String dataKey: distributions.keySet()) {
-      l.add(new Single("CREDIT_NETWORK" + SINGLE_NAMES.get(dataKey), distributions.get(dataKey).getAverage()));
+    for (Metrics dataKey : distributions.keySet()) {
+      l.add(new Single("CREDIT_NETWORK" + dataKey.getSingleName(), distributions.get(dataKey).getAverage()));
     }
     Single[] singles = l.toArray(new Single[20]);
 
