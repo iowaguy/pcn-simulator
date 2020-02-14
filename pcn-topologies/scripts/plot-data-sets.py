@@ -22,8 +22,9 @@ def plot_credit_on_links(base: str, fname: str):
             # node_id = link[1]
             # min_credit = link[2]
             # current_credit = link[3]
-            max_credit = link[4]
-            credit.append(float(max_credit))
+            max_credit = float(link[4])
+            if max_credit > 0:
+                credit.append(max_credit)
 
 
     plt.xlabel("Credit per link")
@@ -31,7 +32,8 @@ def plot_credit_on_links(base: str, fname: str):
     plt.title("Distribution of credit across links", {"wrap":True})
 
     # print(credit[:100])
-    plt.hist(credit, bins=50)
+    plt.hist(credit, bins=100, range=(0,10000))
+    # plt.hist(credit, bins=50)
     p = Path(fname).stem
     plt.savefig(base + '/' + p + '_CREIDIT_LINKS.png', dpi=300)
     plt.close()
@@ -41,17 +43,24 @@ def plot_credit_on_links(base: str, fname: str):
 def plot_connections_per_node(base: str, fname: str):
     connections = []
     with open(base + '/' + fname, 'r') as f:
+        i = 0
         for line in f:
+            i += 1
+            # skip header
+            if i < 8: continue
+
             # split line at ";"
             connections.append(len(line.split(";")))
 
     # plt.axis([0, 50, 0, 50])
-
+    # print(connections)
+    # plt.xscale('log')
     plt.xlabel("Connections per node")
     plt.ylabel("Number of nodes")
     plt.title("Distribution of node connections", {"wrap":True})
 
-    plt.hist(connections, bins=50, range=(0,50))
+    # plt.hist(connections, bins=50, range=(0,50))
+    plt.hist(connections, bins=100, range=(0,50))
     p = Path(fname).stem
     plt.savefig(base + '/' + p + '.png', dpi=300)
     plt.close()
@@ -93,7 +102,8 @@ def tx_plotter(base: str, fname: str, data_type: int, xlabel: str, ylabel: str, 
     plt.close()
 
 def tx_party_plotter(base: str, fname: str, data_type: int, xlabel: str, ylabel: str, title: str, save_path: str, bins=50, ranges=None):
-    bars = [0 for i in range(1000)]
+    s = 93502
+    bars = [0 for i in range(s)]
 
     types = {"time":0, "amount":1, "payer":2, "payee":3}
     link_val = types.get(data_type)
@@ -108,7 +118,11 @@ def tx_party_plotter(base: str, fname: str, data_type: int, xlabel: str, ylabel:
             # payer = link[2]
             # payee = link[3]
 
-            val = int(link[link_val])
+            try:
+                val = int(link[link_val])
+            except Exception:
+                print(link_val)
+
             bars[val] += 1
             # bars.append(float(val))
 
@@ -121,7 +135,7 @@ def tx_party_plotter(base: str, fname: str, data_type: int, xlabel: str, ylabel:
     # print(bars[:20])
     bars.sort(reverse=True)
     # print(bars)
-    plt.bar(range(1000), bars)
+    plt.bar(range(800), bars[:800])
     p = Path(fname).stem
     plt.savefig(base + '/' + p + save_path, dpi=300)
     plt.close()
