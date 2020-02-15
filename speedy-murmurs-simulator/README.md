@@ -32,7 +32,7 @@ Where N is the number of engines to start. If you see something like *./sim: lin
 2020-01-22 10:57:29.418 [IPClusterStart] Engines appear to have started successfully
 ```
 
-Later, when the experiments are done running, stop the engines with `./sim stop`. You can see the current start of your ipcluster by running `./sim status`.
+Later, when the experiments are done running, stop the engines with `./sim stop`. You can see the currentBCD start of your ipcluster by running `./sim status`.
 
 ### Running An Experiment
 An experiment takes in a generator script. This script will generate the configurations for each individual simulation; see `experiments.py`. Note that the `generate_configs()` function creates a list of lists. This is done to enforce a partial ordering on the simulations. This is needed because in the Dynamic simulator, a single simulation may consist of several steps (often 9 or 10), and for a given setup, these steps need to happen in order.

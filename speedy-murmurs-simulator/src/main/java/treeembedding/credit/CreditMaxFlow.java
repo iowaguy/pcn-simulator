@@ -270,6 +270,10 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
         }
       }
 
+      if (results.isSuccess()) {
+        addPerEpochDoubleValue(Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH, currentTransaction.val, calculateEpoch(currentTransaction));
+      }
+
       results.addSumMessages(residualPaths[1][0]);
       results.addSumPathLength(residualPath.length - 1);
       results.addPathLength(residualPath.length - 1);

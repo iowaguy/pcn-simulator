@@ -51,6 +51,13 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   Set<Integer> byzantineNodes;
   final Attack attack;
   Queue<Edge> zeroEdges;
+  private double[][] txStartEndTimes;
+
+  private Map<Metrics, List<Long>> longMetrics;
+  private Map<Metrics, int[]> perEpochMetrics;
+  private Map<Metrics, double[]> perEpochDoubleMetrics;
+
+  static final String CREDIT_MAX_FLOW = "CREDIT_MAX_FLOW";
 
   int[] getTransactionsPerEpoch() {
     return perEpochMetrics.get(Metrics.TRANSACTIONS);
@@ -67,20 +74,6 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   private int[] getPerEpochMetric(Metrics name) {
     return perEpochMetrics.get(name);
   }
-
-  private Map<Metrics, List<Long>> longMetrics;
-  private Map<Metrics, int[]> perEpochMetrics;
-
-  static final String CREDIT_MAX_FLOW = "CREDIT_MAX_FLOW";
-
-  private Map<Metrics, double[]> perEpochDoubleMetrics;
-
-//  private double[] successRatePerEpoch;
-//  private double[] averageSuccessfulPathLengthPerEpoch;
-//  private double[] blockedLinksRatioPerEpoch;
-//  private double[] totalBCDPerEpoch;
-
-  private double[][] txStartEndTimes;
 
   enum Metrics {
     SINGLE_PATHS_DEST_FOUND("_PATH_SINGLE_FOUND", "_PATH_SINGLE_FOUND_AV"), //distribution of single paths, only discovered paths
@@ -108,9 +101,10 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     SUCCESS_RATE_PER_EPOCH("_SUCC_RATIOS"),
     TRANSACTIONS,
     TRANSACTION_WEIGHTS,
-    BCD,
+    CREDIT_DEVIATION_PER_EPOCH("_CREDIT_DEVIATION_PER_EPOCH"),
     BCD_PER_EPOCH,
-    BCD_NORMALIZED("_BIDIRECTIONAL_CREDIT_DEPLETION");
+    BCD_NORMALIZED("_BIDIRECTIONAL_CREDIT_DEPLETION"),
+    TOTAL_CREDIT_TRANSACTED_PER_EPOCH("_TOTAL_CREDIT_TRANSACTED");
 
     final String fileSuffix;
     final String singleName;
@@ -155,7 +149,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   Distribution[] pathsPerTreeFound; //distribution of single paths per tree, only discovered paths
   Distribution[] pathsPerTreeNF; //distribution of single paths per tree, not found dest
 
-  private List<Map<String, LinkBCD>> bcdChanges; // changes to total BCD indexed by epoch
+  private List<List<LinkStats>> linkMetricChanges; // changes to link metrics indexed by epoch
 
   AbstractCreditNetworkBase(String key, Parameter[] parameters, double epoch, int numRoots,
                             String file, RunConfig runConfig) {
@@ -189,6 +183,8 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     perEpochDoubleMetrics = new HashMap<>();
     perEpochDoubleMetrics.put(Metrics.BCD_NORMALIZED, new double[numEpochs]);
     perEpochDoubleMetrics.put(Metrics.BCD_PER_EPOCH, new double[numEpochs]);
+    perEpochDoubleMetrics.put(Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH, new double[numEpochs]);
+    perEpochDoubleMetrics.put(Metrics.CREDIT_DEVIATION_PER_EPOCH, new double[numEpochs]);
 
     longMetrics = new ConcurrentHashMap<>(17);
     longMetrics.put(Metrics.MESSAGES_ALL, new ArrayList<>());
@@ -231,16 +227,16 @@ public abstract class AbstractCreditNetworkBase extends Metric {
 
     toRetry = new PriorityBlockingQueue<>();
 
-    bcdChanges = new ArrayList<>(numEpochs);
+    linkMetricChanges = new ArrayList<>();
     for (int i = 0; i < numEpochs; i++) {
-      bcdChanges.add(new ConcurrentHashMap<>());
+      linkMetricChanges.add(new ArrayList<>());
     }
   }
 
   void finalizeUpdateWeight(int src, int dst, double weightChange, int epochNumber)
           throws TransactionFailedException {
-    LinkBCD bcd = edgeweights.finalizeUpdateWeight(src, dst, weightChange);
-    bcdChanges.get(epochNumber).put(bcd.getName(), bcd);
+    LinkStats stats = edgeweights.finalizeUpdateWeight(src, dst, weightChange);
+    linkMetricChanges.get(epochNumber).add(stats);
   }
 
   static double calculateTotalBCD(CreditLinks edgeweights) {
@@ -256,7 +252,14 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     addPerEpochValue(name, 1, currentEpoch);
   }
 
-  synchronized void addPerEpochValue(Metrics name, double value, int currentEpoch) {
+  synchronized void addPerEpochDoubleValue(Metrics name, double value, int currentEpoch) {
+    perEpochDoubleMetrics.computeIfPresent(name, (k, v) -> {
+      v[currentEpoch] += value;
+      return v;
+    });
+  }
+
+  synchronized void addPerEpochValue(Metrics name, int value, int currentEpoch) {
     perEpochMetrics.computeIfPresent(name, (k, v) -> {
       v[currentEpoch] += value;
       return v;
@@ -452,13 +455,10 @@ public abstract class AbstractCreditNetworkBase extends Metric {
               this.key + "_TX_START_END_TIMES", folder);
     }
 
-    Metrics[] perEpochMetrics = {Metrics.SUCCESS_RATE_PER_EPOCH,
-            Metrics.AVG_SUCCESSFUL_PATH_LENGTH_PER_EPOCH,
-            Metrics.BLOCKED_LINKS_RATIO_PER_EPOCH,
-            Metrics.BCD_PER_EPOCH};
-    for (Metrics m :
-            perEpochMetrics) {
-      if (perEpochDoubleMetrics.get(m) != null) {
+    for (Metrics m : Metrics.values()) {
+      if (m.getSingleName().equals("") &&
+              !m.getFileSuffix().equals("") &&
+              perEpochDoubleMetrics.get(m) != null) {
         succ &= DataWriter.writeWithIndex(perEpochDoubleMetrics.get(m),
                 this.key + m.getFileSuffix(), folder);
       }
@@ -559,11 +559,17 @@ public abstract class AbstractCreditNetworkBase extends Metric {
 
       double runningBCDTotal = epochNumber == 0 ? 0 :
               perEpochDoubleMetrics.get(Metrics.BCD_PER_EPOCH)[epochNumber - 1];
-      for (Map.Entry<String, LinkBCD> m : bcdChanges.get(epochNumber).entrySet()) {
-        runningBCDTotal -= m.getValue().getPrevious();
-        runningBCDTotal += m.getValue().getCurrent();
+      double runningDeviationTotal = epochNumber == 0 ? 0 :
+              perEpochDoubleMetrics.get(Metrics.CREDIT_DEVIATION_PER_EPOCH)[epochNumber - 1];
+      for (LinkStats linkStats : linkMetricChanges.get(epochNumber)) {
+        runningBCDTotal -= linkStats.getPreviousBCD();
+        runningBCDTotal += linkStats.getCurrentBCD();
+
+        runningDeviationTotal -= linkStats.getPreviousDeviation();
+        runningDeviationTotal += linkStats.getCurrentDeviation();
       }
       updatePerEpochMetric(Metrics.BCD_PER_EPOCH, epochNumber, runningBCDTotal);
+      updatePerEpochMetric(Metrics.CREDIT_DEVIATION_PER_EPOCH, epochNumber, runningDeviationTotal);
     }
   }
 

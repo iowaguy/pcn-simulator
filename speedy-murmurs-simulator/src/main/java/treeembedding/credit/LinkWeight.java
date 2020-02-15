@@ -62,9 +62,10 @@ public class LinkWeight {
     return edge;
   }
 
-  private double getDeviation() {
+  public double getDeviation() {
     return Math.abs(this.current - this.initial);
   }
+
   double getBCD() {
     return getDeviation() * Math.abs(u + l) / (u);
   }
