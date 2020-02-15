@@ -61,7 +61,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   }
 
   int[] getBlockedLinksPerEpoch() {
-    return perEpochMetrics.get(Metrics.BLOCKED_LINKS);
+    return perEpochMetrics.get(Metrics.BLOCKED_LINKS_PER_EPOCH);
   }
 
   private int[] getPerEpochMetric(Metrics name) {
@@ -72,6 +72,15 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   private Map<Metrics, int[]> perEpochMetrics;
 
   static final String CREDIT_MAX_FLOW = "CREDIT_MAX_FLOW";
+
+  private Map<Metrics, double[]> perEpochDoubleMetrics;
+
+//  private double[] successRatePerEpoch;
+//  private double[] averageSuccessfulPathLengthPerEpoch;
+//  private double[] blockedLinksRatioPerEpoch;
+//  private double[] totalBCDPerEpoch;
+
+  private double[][] txStartEndTimes;
 
   enum Metrics {
     SINGLE_PATHS_DEST_FOUND("_PATH_SINGLE_FOUND", "_PATH_SINGLE_FOUND_AV"), //distribution of single paths, only discovered paths
@@ -91,13 +100,17 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     DELAY("_DELAY", "_DELAY_AV"), //distribution of hop delay
     DELAY_SUCCESS("_DELAY_SUCC", "_DELAY_SUCC_AV"), //distribution of hop delay, successful queries
     DELAY_FAIL("_DELAY_FAIL", "_DELAY_FAIL_AV"), //distribution of hop delay, failed queries
-    BLOCKED_LINKS,
+    AVG_SUCCESSFUL_PATH_LENGTH_PER_EPOCH("_AVG_SUCC_PATH_LENGTH_RATIOS"),
+    BLOCKED_LINKS_PER_EPOCH,
+    BLOCKED_LINKS_RATIO_PER_EPOCH("_BLOCKED_TXS_RATIO"),
     SUCCESSES,
     SUCCESS_RATE,
+    SUCCESS_RATE_PER_EPOCH("_SUCC_RATIOS"),
     TRANSACTIONS,
     TRANSACTION_WEIGHTS,
     BCD,
-    BCD_NORMALIZED;
+    BCD_PER_EPOCH,
+    BCD_NORMALIZED("_BIDIRECTIONAL_CREDIT_DEPLETION");
 
     final String fileSuffix;
     final String singleName;
@@ -112,6 +125,11 @@ public abstract class AbstractCreditNetworkBase extends Metric {
 
     Metrics() {
       this.fileSuffix = "";
+      this.singleName = "";
+    }
+
+    Metrics(String fileSuffix) {
+      this.fileSuffix = fileSuffix;
       this.singleName = "";
     }
 
@@ -131,13 +149,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   final int numRoots;
   double[] stab; //stabilization overhead over time (in #messages)
 
-  private Map<String, int[]> perEpochDoubleMetrics;
 
-  private double[] successRatePerEpoch;
-  private double[] averageSuccessfulPathLengthPerEpoch;
-  private double[] blockedLinksRatioPerEpoch;
-  private double[][] txStartEndTimes;
-  private double[] totalBCDPerEpoch;
 
   Distribution[] pathsPerTree; //distribution of single paths per tree
   Distribution[] pathsPerTreeFound; //distribution of single paths per tree, only discovered paths
@@ -172,7 +184,11 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     perEpochMetrics.put(Metrics.SUCCESSES, new int[numEpochs]);
     perEpochMetrics.put(Metrics.TRANSACTIONS, new int[numEpochs]);
     perEpochMetrics.put(Metrics.PATH_SUCCESS, new int[numEpochs]);
-    perEpochMetrics.put(Metrics.BLOCKED_LINKS, new int[numEpochs]);
+    perEpochMetrics.put(Metrics.BLOCKED_LINKS_PER_EPOCH, new int[numEpochs]);
+
+    perEpochDoubleMetrics = new HashMap<>();
+    perEpochDoubleMetrics.put(Metrics.BCD_NORMALIZED, new double[numEpochs]);
+    perEpochDoubleMetrics.put(Metrics.BCD_PER_EPOCH, new double[numEpochs]);
 
     longMetrics = new ConcurrentHashMap<>(17);
     longMetrics.put(Metrics.MESSAGES_ALL, new ArrayList<>());
@@ -219,8 +235,6 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     for (int i = 0; i < numEpochs; i++) {
       bcdChanges.add(new ConcurrentHashMap<>());
     }
-
-    totalBCDPerEpoch = new double[numEpochs];
   }
 
   void finalizeUpdateWeight(int src, int dst, double weightChange, int epochNumber)
@@ -438,30 +452,21 @@ public abstract class AbstractCreditNetworkBase extends Metric {
               this.key + "_TX_START_END_TIMES", folder);
     }
 
-    if (this.successRatePerEpoch != null) {
-      succ &= DataWriter.writeWithIndex(this.successRatePerEpoch,
-              this.key + "_SUCC_RATIOS", folder);
-    }
-
-    if (this.averageSuccessfulPathLengthPerEpoch != null) {
-      succ &= DataWriter.writeWithIndex(this.averageSuccessfulPathLengthPerEpoch,
-              this.key + "_AVG_SUCC_PATH_LENGTH_RATIOS", folder);
-    }
-
-    if (this.blockedLinksRatioPerEpoch != null) {
-      succ &= DataWriter.writeWithIndex(this.blockedLinksRatioPerEpoch,
-              this.key + "_BLOCKED_TXS_RATIO", folder);
-    }
-
-    if (this.totalBCDPerEpoch != null) {
-      succ &= DataWriter.writeWithIndex(this.totalBCDPerEpoch,
-              this.key + "_BIDIRECTIONAL_CREDIT_DEPLETION", folder);
+    Metrics[] perEpochMetrics = {Metrics.SUCCESS_RATE_PER_EPOCH,
+            Metrics.AVG_SUCCESSFUL_PATH_LENGTH_PER_EPOCH,
+            Metrics.BLOCKED_LINKS_RATIO_PER_EPOCH,
+            Metrics.BCD_PER_EPOCH};
+    for (Metrics m :
+            perEpochMetrics) {
+      if (perEpochDoubleMetrics.get(m) != null) {
+        succ &= DataWriter.writeWithIndex(perEpochDoubleMetrics.get(m),
+                this.key + m.getFileSuffix(), folder);
+      }
     }
 
     if (Config.getBoolean("SERIES_GRAPH_WRITE")) {
       (new GtnaGraphWriter()).writeWithProperties(graph, folder + "graph.txt");
     }
-
 
     return succ;
   }
@@ -524,26 +529,41 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     return this.edgeweights;
   }
 
+  private void updatePerEpochMetric(Metrics name, int currentEpoch, double value) {
+    perEpochDoubleMetrics.get(name)[currentEpoch] = value;
+  }
+
   void calculatePerEpochRatios() {
-    this.successRatePerEpoch = new double[getPerEpochMetric(Metrics.TRANSACTIONS).length];
-    this.averageSuccessfulPathLengthPerEpoch = new double[getPerEpochMetric(Metrics.PATH_SUCCESS).length];
-    this.blockedLinksRatioPerEpoch = new double[getPerEpochMetric(Metrics.TRANSACTIONS).length];
-    for (int epochNumber = 0; epochNumber < getPerEpochMetric(Metrics.TRANSACTIONS).length; epochNumber++) {
-      this.successRatePerEpoch[epochNumber] =
-              (double) getPerEpochMetric(Metrics.SUCCESSES)[epochNumber] /
-                      (double) getPerEpochMetric(Metrics.TRANSACTIONS)[epochNumber];
-      this.blockedLinksRatioPerEpoch[epochNumber] =
-              (double) getPerEpochMetric(Metrics.BLOCKED_LINKS)[epochNumber] /
-                      (double) getPerEpochMetric(Metrics.TRANSACTIONS)[epochNumber];
-      this.averageSuccessfulPathLengthPerEpoch[epochNumber] =
-              (double) getPerEpochMetric(Metrics.PATH_SUCCESS)[epochNumber] /
-                      (double) getPerEpochMetric(Metrics.SUCCESSES)[epochNumber];
-      double runningBCDTotal = epochNumber == 0 ? 0 : totalBCDPerEpoch[epochNumber - 1];
+    perEpochDoubleMetrics.put(Metrics.SUCCESS_RATE_PER_EPOCH,
+            new double[getPerEpochMetric(Metrics.TRANSACTIONS).length]);
+    perEpochDoubleMetrics.put(Metrics.AVG_SUCCESSFUL_PATH_LENGTH_PER_EPOCH,
+            new double[getPerEpochMetric(Metrics.PATH_SUCCESS).length]);
+    perEpochDoubleMetrics.put(Metrics.BLOCKED_LINKS_RATIO_PER_EPOCH,
+            new double[getPerEpochMetric(Metrics.TRANSACTIONS).length]);
+
+    for (int epochNumber = 0;
+         epochNumber < getPerEpochMetric(Metrics.TRANSACTIONS).length;
+         epochNumber++) {
+      double val = (double) getPerEpochMetric(Metrics.SUCCESSES)[epochNumber] /
+              (double) getPerEpochMetric(Metrics.TRANSACTIONS)[epochNumber];
+      updatePerEpochMetric(Metrics.SUCCESS_RATE_PER_EPOCH, epochNumber, val);
+
+
+      val = (double) getPerEpochMetric(Metrics.BLOCKED_LINKS_PER_EPOCH)[epochNumber] /
+              (double) getPerEpochMetric(Metrics.TRANSACTIONS)[epochNumber];
+      updatePerEpochMetric(Metrics.BLOCKED_LINKS_RATIO_PER_EPOCH, epochNumber, val);
+
+      val = (double) getPerEpochMetric(Metrics.PATH_SUCCESS)[epochNumber] /
+              (double) getPerEpochMetric(Metrics.SUCCESSES)[epochNumber];
+      updatePerEpochMetric(Metrics.AVG_SUCCESSFUL_PATH_LENGTH_PER_EPOCH, epochNumber, val);
+
+      double runningBCDTotal = epochNumber == 0 ? 0 :
+              perEpochDoubleMetrics.get(Metrics.BCD_PER_EPOCH)[epochNumber - 1];
       for (Map.Entry<String, LinkBCD> m : bcdChanges.get(epochNumber).entrySet()) {
         runningBCDTotal -= m.getValue().getPrevious();
         runningBCDTotal += m.getValue().getCurrent();
       }
-      totalBCDPerEpoch[epochNumber] = runningBCDTotal;
+      updatePerEpochMetric(Metrics.BCD_PER_EPOCH, epochNumber, runningBCDTotal);
     }
   }
 

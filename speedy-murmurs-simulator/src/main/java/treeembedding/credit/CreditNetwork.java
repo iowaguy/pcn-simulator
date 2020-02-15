@@ -548,7 +548,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     for (int treeIndex = 0; treeIndex < mins.length; treeIndex++) {
       NextHopPlusMetrics n = ra.getRoute(src, dest, treeIndex, g, nodes, exclude);
       paths[treeIndex] = n.getPath();
-      addPerEpochValue(Metrics.BLOCKED_LINKS, (double) n.getBlockedLinks(), calculateEpoch(cur));
+      addPerEpochValue(Metrics.BLOCKED_LINKS_PER_EPOCH, (double) n.getBlockedLinks(), calculateEpoch(cur));
 
       if (paths[treeIndex][paths[treeIndex].length - 1] == dest) {
         int currentNodeIndex = src;
@@ -764,7 +764,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
         }
         NextHopPlusMetrics n = this.ra.getRoute(s, d, pathIndex, g, nodes, exclude, edgeweights, vals[pathIndex]);
         paths[pathIndex] = n.getPath();
-        addPerEpochValue(Metrics.BLOCKED_LINKS, n.getBlockedLinks(), calculateEpoch(cur));
+        addPerEpochValue(Metrics.BLOCKED_LINKS_PER_EPOCH, n.getBlockedLinks(), calculateEpoch(cur));
 
         if (paths[pathIndex][paths[pathIndex].length - 1] == -1) {
           // could not find a path
