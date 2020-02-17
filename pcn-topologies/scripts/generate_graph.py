@@ -132,7 +132,7 @@ class TxDistro:
     # some pairs are more likely to transact that other pairs
 
     def __init__(self, value_distro, participant_distro, topology):
-        self.__tx_value_distribution_types = {'powerlaw':self.__sample_tx_pareto}
+        self.__tx_value_distribution_types = {'powerlaw':self.__sample_tx_pareto, 'constant':self.__sample_tx_constant}
         self.__tx_participant_distribution_types = {'random':self.__sample_random_nodes, 'powerlaw':self.__sample_pairs_pareto_dist}
         self.__value_distribution = value_distro
         self.__participant_distribution = participant_distro
@@ -152,6 +152,9 @@ class TxDistro:
 
         return out
 
+    def __sample_tx_constant(self, n):
+        return [1 for i in range(0, n)]
+    
     def __sample_tx_pareto(self, n):
         alpha=1.16 # from the pareto principle, i.e. 80/20 rule
         return [random.paretovariate(alpha) for i in range(0, n)]
