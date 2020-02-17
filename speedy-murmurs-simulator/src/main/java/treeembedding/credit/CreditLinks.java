@@ -109,13 +109,11 @@ public class CreditLinks extends GraphProperty {
     }
     LinkWeight weights = getWeights(src, dst);
 
-    LinkStats stats = new LinkStats();
-    stats.setPreviousBCD(weights.getBCD());
-    stats.setPreviousDeviation(weights.getDeviation());
 
     weights.finalizeUpdateWeight(weightChange, this.collateralization);
     setWeight(makeEdge(src, dst), weights);
-
+    LinkStats stats = new LinkStats();
+    stats.setName(weights.getEdge().toString());
     stats.setCurrentDeviation(weights.getDeviation());
     stats.setCurrentBCD(weights.getBCD());
 

@@ -53,10 +53,14 @@ class CreditNetworkTest {
   }
 
   AbstractCreditNetworkBase singlePathLinkUpdate(RoutingAlgorithm ra, String testDir) {
-    return singlePathLinkUpdate(ra, testDir, null);
+    return singlePathLinkUpdate(ra, testDir, null, -1);
   }
 
   AbstractCreditNetworkBase singlePathLinkUpdate(RoutingAlgorithm ra, String testDir, Attack attack) {
+    return singlePathLinkUpdate(ra, testDir, attack, -1);
+  }
+
+  AbstractCreditNetworkBase singlePathLinkUpdate(RoutingAlgorithm ra, String testDir, Attack attack, int epoch) {
     runConfig.setBasePath(TEST_DATA_BASE + testDir);
     runConfig.setRoutingAlgorithm(ra);
     runConfig.setTopologyPath("topology.graph");
@@ -73,7 +77,9 @@ class CreditNetworkTest {
     int step = runConfig.getStep();
     String graph = runConfig.getBasePath() + "/" + runConfig.getTopologyPath();
     String name = routingAlgorithm.getShortName() + "-P" + (step + 1);
-    double epoch = EPOCH * 1000;
+    if (epoch == -1) {
+      epoch = EPOCH * 1000;
+    }
     int max = 1;
     double req = EPOCH * 2;
     int[] roots = {2, 3};
@@ -104,6 +110,8 @@ class CreditNetworkTest {
       assertEquals(1, abc.getSuccessesPerEpoch()[0]);
       assertEquals(1, abc.getTransactionsPerEpoch()[0]);
       assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
+      assertEquals(10, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+      assertEquals(30, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
       assertEquals(90.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
       assertEquals(90.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
       assertEquals(90.0, edgeweights.getWeight(3, 5), ACCEPTABLE_ERROR);
@@ -132,6 +140,8 @@ class CreditNetworkTest {
       assertEquals(2, abc.getSuccessesPerEpoch()[0]);
       assertEquals(2, abc.getTransactionsPerEpoch()[0]);
       assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
+      assertEquals(30, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+      assertEquals(90, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
 
       assertEquals(70.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
       assertEquals(70.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
@@ -150,6 +160,8 @@ class CreditNetworkTest {
     assertEquals(76, abc.getTransactionsPerEpoch()[0]);
     assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
     assertEquals(456, AbstractCreditNetworkBase.calculateTotalBCD(edgeweights), ACCEPTABLE_ERROR);
+    assertEquals(76, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+    assertEquals(228, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
 
     assertEquals(24.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
@@ -181,6 +193,8 @@ class CreditNetworkTest {
     assertEquals(76, abc.getTransactionsPerEpoch()[0]);
     assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
     assertEquals(456, AbstractCreditNetworkBase.calculateTotalBCD(edgeweights), ACCEPTABLE_ERROR);
+    assertEquals(76, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+    assertEquals(228, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
 
     assertEquals(24.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(24.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
@@ -199,6 +213,8 @@ class CreditNetworkTest {
       assertEquals(2, abc.getTransactionsPerEpoch()[0]);
       assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
       assertEquals(180, AbstractCreditNetworkBase.calculateTotalBCD(edgeweights), ACCEPTABLE_ERROR);
+      assertEquals(30, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+      assertEquals(90, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
 
       assertEquals(90.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
       assertEquals(70.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
@@ -218,6 +234,8 @@ class CreditNetworkTest {
       assertEquals(2, abc.getSuccessesPerEpoch()[0]);
       assertEquals(2, abc.getTransactionsPerEpoch()[0]);
       assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
+      assertEquals(30, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+      assertEquals(30, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
 
       assertEquals(110.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
       assertEquals(110.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
@@ -246,6 +264,8 @@ class CreditNetworkTest {
     assertEquals(0, abc.getSuccessesPerEpoch()[0]);
     assertEquals(1, abc.getTransactionsPerEpoch()[0]);
     assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
+    assertEquals(0, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+    assertEquals(0, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
 
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(100.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
@@ -273,6 +293,8 @@ class CreditNetworkTest {
     assertEquals(0, abc.getSuccessesPerEpoch()[0]);
     assertEquals(1, abc.getTransactionsPerEpoch()[0]);
     assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
+    assertEquals(0, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+    assertEquals(0, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
 
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(100.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
@@ -305,6 +327,8 @@ class CreditNetworkTest {
     assertEquals(0, abc.getSuccessesPerEpoch()[0]);
     assertEquals(2, abc.getTransactionsPerEpoch()[0]);
     assertEquals(1, abc.getBlockedLinksPerEpoch()[0]);
+    assertEquals(0, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+    assertEquals(0, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
 
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
@@ -351,6 +375,8 @@ class CreditNetworkTest {
     assertEquals(1, abc.getSuccessesPerEpoch()[0]);
     assertEquals(2, abc.getTransactionsPerEpoch()[0]);
     assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
+    assertEquals(80, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+    assertEquals(240, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
 
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
@@ -399,6 +425,8 @@ class CreditNetworkTest {
     assertEquals(0, abc.getSuccessesPerEpoch()[0]);
     assertEquals(11, abc.getTransactionsPerEpoch()[0]);
     assertEquals(10, abc.getBlockedLinksPerEpoch()[0]);
+    assertEquals(0, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+    assertEquals(0, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
 
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
@@ -447,6 +475,8 @@ class CreditNetworkTest {
     assertEquals(0, abc.getSuccessesPerEpoch()[0]);
     assertEquals(2, abc.getTransactionsPerEpoch()[0]);
     assertEquals(1, abc.getBlockedLinksPerEpoch()[0]);
+    assertEquals(0, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+    assertEquals(0, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
 
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
@@ -494,6 +524,8 @@ class CreditNetworkTest {
     assertEquals(1, abc.getSuccessesPerEpoch()[0]);
     assertEquals(2, abc.getTransactionsPerEpoch()[0]);
     assertEquals(1, abc.getBlockedLinksPerEpoch()[0]);
+    assertEquals(21, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+    assertEquals(63, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
 
     assertEquals(79.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
@@ -539,6 +571,8 @@ class CreditNetworkTest {
     assertEquals(0, abc.getSuccessesPerEpoch()[0]);
     assertEquals(2, abc.getTransactionsPerEpoch()[0]);
     assertEquals(2, abc.getBlockedLinksPerEpoch()[0]);
+    assertEquals(0, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+    assertEquals(0, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
 
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(200.0, edgeweights.getWeights(0, 2).getUnlockedMax(), ACCEPTABLE_ERROR);
@@ -581,6 +615,8 @@ class CreditNetworkTest {
     assertEquals(1, abc.getSuccessesPerEpoch()[0]);
     assertEquals(2, abc.getTransactionsPerEpoch()[0]);
     assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
+    assertEquals(80, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+    assertEquals(240, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
 
     assertEquals(100.0, edgeweights.getWeight(0, 2), ACCEPTABLE_ERROR);
     assertEquals(20.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
@@ -625,6 +661,8 @@ class CreditNetworkTest {
     assertEquals(1, abc.getSuccessesPerEpoch()[0]);
     assertEquals(1, abc.getTransactionsPerEpoch()[0]);
     assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
+    assertEquals(1, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+    assertEquals(5, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
 
     assertEquals(9.0, edgeweights.getWeight(0, 1), ACCEPTABLE_ERROR);
     assertEquals(5.0, edgeweights.getWeight(0, 4), ACCEPTABLE_ERROR);
@@ -664,28 +702,83 @@ class CreditNetworkTest {
     assertEquals(2, abc.getSuccessesPerEpoch()[0]);
     assertEquals(2, abc.getTransactionsPerEpoch()[0]);
     assertEquals(1, abc.getBlockedLinksPerEpoch()[0]);
+    assertEquals(9, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+    assertEquals(45, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+    assertEquals(69.56103983719998, AbstractCreditNetworkBase.calculateTotalBCD(edgeweights), ACCEPTABLE_ERROR);
 
     assertEquals(9.0, edgeweights.getWeight(0, 1), ACCEPTABLE_ERROR);
     assertEquals(5.0, edgeweights.getWeight(0, 4), ACCEPTABLE_ERROR);
-    assertEquals(5.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR);
-    assertEquals(18.0, edgeweights.getWeight(1, 5), ACCEPTABLE_ERROR);
-    assertEquals(7.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR);
-    assertEquals(7.0, edgeweights.getWeight(2, 6), ACCEPTABLE_ERROR);
+    assertEquals(5.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR); // was: 12, dev=7, u=12, bcd=11.6666666667
+    assertEquals(18.0, edgeweights.getWeight(1, 5), ACCEPTABLE_ERROR); // was: 11, dev=7, u=11, bcd=12.7272727273
+    assertEquals(7.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR); // was: 15, dev=8, u=15, bcd=10.6666666667
+    assertEquals(7.0, edgeweights.getWeight(2, 6), ACCEPTABLE_ERROR); // was: 6, dev=1, u=14, bcd=1.4285714286
     assertEquals(11.0, edgeweights.getWeight(3, 7), ACCEPTABLE_ERROR);
-    assertEquals(14.0, edgeweights.getWeight(4, 5), ACCEPTABLE_ERROR);
+    assertEquals(14.0, edgeweights.getWeight(4, 5), ACCEPTABLE_ERROR); // was: 15, dev=1, u=15, bcd=1.3333333333
     assertEquals(9.0, edgeweights.getWeight(4, 8), ACCEPTABLE_ERROR);
-    assertEquals(4.0, edgeweights.getWeight(5, 6), ACCEPTABLE_ERROR);
-    assertEquals(20.0, edgeweights.getWeight(5, 9), ACCEPTABLE_ERROR);
-    assertEquals(15.0, edgeweights.getWeight(6, 7), ACCEPTABLE_ERROR);
-    assertEquals(6.0, edgeweights.getWeight(6, 10), ACCEPTABLE_ERROR);
-    assertEquals(4.0, edgeweights.getWeight(7, 11), ACCEPTABLE_ERROR);
+    assertEquals(4.0, edgeweights.getWeight(5, 6), ACCEPTABLE_ERROR); // was: 5, dev=1, u=15, bcd=1.3333333333
+    assertEquals(20.0, edgeweights.getWeight(5, 9), ACCEPTABLE_ERROR); // was: 13, dev=7, u=13, bcd=10.7692307692
+    assertEquals(15.0, edgeweights.getWeight(6, 7), ACCEPTABLE_ERROR); // was: 16, dev=1, u=16, bcd=1.25
+    assertEquals(6.0, edgeweights.getWeight(6, 10), ACCEPTABLE_ERROR); // was: 5, dev=1, u=15, bcd=1.3333333333
+    assertEquals(4.0, edgeweights.getWeight(7, 11), ACCEPTABLE_ERROR); // was: 5, dev=1, u=15, bcd=1.3333333333
     assertEquals(17.0, edgeweights.getWeight(8, 9), ACCEPTABLE_ERROR);
     assertEquals(11.0, edgeweights.getWeight(8, 12), ACCEPTABLE_ERROR);
-    assertEquals(0.0, edgeweights.getWeight(9, 10), ACCEPTABLE_ERROR);
-    assertEquals(20.0, edgeweights.getWeight(9, 13), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeight(9, 10), ACCEPTABLE_ERROR); // was: 1, dev=1, u=19, bcd=1.0526315789
+    assertEquals(20.0, edgeweights.getWeight(9, 13), ACCEPTABLE_ERROR); // was: 12, dev=8, u=12, bcd=13.3333333333
     assertEquals(19.0, edgeweights.getWeight(10, 11), ACCEPTABLE_ERROR);
     assertEquals(11.0, edgeweights.getWeight(10, 14), ACCEPTABLE_ERROR);
-    assertEquals(14.0, edgeweights.getWeight(11, 15), ACCEPTABLE_ERROR);
+    assertEquals(14.0, edgeweights.getWeight(11, 15), ACCEPTABLE_ERROR); // was: 15, dev=1, u=15, bcd=1.3333333333
+    assertEquals(5.0, edgeweights.getWeight(12, 13), ACCEPTABLE_ERROR);
+    assertEquals(5.0, edgeweights.getWeight(13, 14), ACCEPTABLE_ERROR);
+    assertEquals(3.0, edgeweights.getWeight(14, 15), ACCEPTABLE_ERROR);
+  }
+
+  @Test
+  void multipleEpochsSequentialMaxflowSmallTopology() {
+    String testDir = "/small-topology-multiple-epochs";
+    runConfig.setConcurrentTransactionsCount(1);
+    runConfig.setConcurrentTransactions(false);
+    //runConfig.setEpochLength(1);
+
+    AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.MAXFLOW_COLLATERALIZE, testDir, null, 1);
+    CreditLinks edgeweights = abc.getCreditLinks();
+
+    // Epoch 1
+    assertEquals(1, abc.getSuccessesPerEpoch()[0]);
+    assertEquals(1, abc.getTransactionsPerEpoch()[0]);
+    assertEquals(0, abc.getBlockedLinksPerEpoch()[0]);
+    assertEquals(1, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+    assertEquals(5, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[0], ACCEPTABLE_ERROR);
+
+    // Epoch 2
+    assertEquals(1, abc.getSuccessesPerEpoch()[1]);
+    assertEquals(1, abc.getTransactionsPerEpoch()[1]);
+    assertEquals(1, abc.getBlockedLinksPerEpoch()[1]);
+    assertEquals(8, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.TOTAL_CREDIT_TRANSACTED_PER_EPOCH)[1], ACCEPTABLE_ERROR);
+    assertEquals(45, abc.getPerEpochDoubleMetric(AbstractCreditNetworkBase.Metrics.CREDIT_DEVIATION_PER_EPOCH)[1], ACCEPTABLE_ERROR);
+
+    assertEquals(69.56103983719998, AbstractCreditNetworkBase.calculateTotalBCD(edgeweights), ACCEPTABLE_ERROR);
+
+    assertEquals(9.0, edgeweights.getWeight(0, 1), ACCEPTABLE_ERROR);
+    assertEquals(5.0, edgeweights.getWeight(0, 4), ACCEPTABLE_ERROR);
+    assertEquals(5.0, edgeweights.getWeight(1, 2), ACCEPTABLE_ERROR); // was: 12, dev=7, u=12, bcd=11.6666666667
+    assertEquals(18.0, edgeweights.getWeight(1, 5), ACCEPTABLE_ERROR); // was: 11, dev=7, u=11, bcd=12.7272727273
+    assertEquals(7.0, edgeweights.getWeight(2, 3), ACCEPTABLE_ERROR); // was: 15, dev=8, u=15, bcd=10.6666666667
+    assertEquals(7.0, edgeweights.getWeight(2, 6), ACCEPTABLE_ERROR); // was: 6, dev=1, u=14, bcd=1.4285714286
+    assertEquals(11.0, edgeweights.getWeight(3, 7), ACCEPTABLE_ERROR);
+    assertEquals(14.0, edgeweights.getWeight(4, 5), ACCEPTABLE_ERROR); // was: 15, dev=1, u=15, bcd=1.3333333333
+    assertEquals(9.0, edgeweights.getWeight(4, 8), ACCEPTABLE_ERROR);
+    assertEquals(4.0, edgeweights.getWeight(5, 6), ACCEPTABLE_ERROR); // was: 5, dev=1, u=15, bcd=1.3333333333
+    assertEquals(20.0, edgeweights.getWeight(5, 9), ACCEPTABLE_ERROR); // was: 13, dev=7, u=13, bcd=10.7692307692
+    assertEquals(15.0, edgeweights.getWeight(6, 7), ACCEPTABLE_ERROR); // was: 16, dev=1, u=16, bcd=1.25
+    assertEquals(6.0, edgeweights.getWeight(6, 10), ACCEPTABLE_ERROR); // was: 5, dev=1, u=15, bcd=1.3333333333
+    assertEquals(4.0, edgeweights.getWeight(7, 11), ACCEPTABLE_ERROR); // was: 5, dev=1, u=15, bcd=1.3333333333
+    assertEquals(17.0, edgeweights.getWeight(8, 9), ACCEPTABLE_ERROR);
+    assertEquals(11.0, edgeweights.getWeight(8, 12), ACCEPTABLE_ERROR);
+    assertEquals(0.0, edgeweights.getWeight(9, 10), ACCEPTABLE_ERROR); // was: 1, dev=1, u=19, bcd=1.0526315789
+    assertEquals(20.0, edgeweights.getWeight(9, 13), ACCEPTABLE_ERROR); // was: 12, dev=8, u=12, bcd=13.3333333333
+    assertEquals(19.0, edgeweights.getWeight(10, 11), ACCEPTABLE_ERROR);
+    assertEquals(11.0, edgeweights.getWeight(10, 14), ACCEPTABLE_ERROR);
+    assertEquals(14.0, edgeweights.getWeight(11, 15), ACCEPTABLE_ERROR); // was: 15, dev=1, u=15, bcd=1.3333333333
     assertEquals(5.0, edgeweights.getWeight(12, 13), ACCEPTABLE_ERROR);
     assertEquals(5.0, edgeweights.getWeight(13, 14), ACCEPTABLE_ERROR);
     assertEquals(3.0, edgeweights.getWeight(14, 15), ACCEPTABLE_ERROR);

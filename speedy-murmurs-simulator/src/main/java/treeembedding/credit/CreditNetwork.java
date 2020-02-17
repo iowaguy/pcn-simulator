@@ -143,8 +143,6 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       log.error(e.getMessage());
     }
     currentTransaction.endTime = (double) System.nanoTime();
-//    results.setTx(currentTransaction);
-
     currentTransaction.addPath(results.getSumPathLength());
     currentTransaction.addMes(results.getRes4());
 
@@ -340,7 +338,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       this.stab_av = this.stab_av + stab[i];
     }
 
-    calculatePerEpochRatios();
+    calculateTotalMetrics();
 
     this.stab_av = this.stab_av / (double) stab.length;
     this.passRootAll = this.passRootAll / this.rootPath;
