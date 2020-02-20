@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import logging
 import random
 import math
+import numpy as np
 
 node_count = 'node_count'
 tx_count = 'tx_count'
@@ -54,7 +55,7 @@ class Topology:
         random_edges_per_node=2
         return nx.powerlaw_cluster_graph(nodes, random_edges_per_node, probability_of_triangle)
 
-    def full_knowledge_edge_weight_gen(self, tx_list, routingalgo=nx.shortest_path, value_multiplier=1.0):
+    def full_knowledge_edge_weight_gen(self, tx_list, routingalgo=nx.shortest_path, value_multiplier=1.0, mult_probability=1.):
         max_weight = {}
         cur_weight = {}
 
@@ -84,7 +85,9 @@ class Topology:
                 max_weight[(node1, node2)] = max(max_weight[(node1, node2)], cur_weight[(node1, node2)])
 
         for k in max_weight:
-            max_weight[k] = max_weight[k]*value_multiplier
+            # do a biased coin flip, if result is 1, use multiplier
+            if np.random.binomial(1, mult_probability) == 1:
+                max_weight[k] = max_weight[k]*value_multiplier
 
         self.__link_weights = max_weight
         return max_weight
@@ -132,8 +135,8 @@ class TxDistro:
     # some pairs are more likely to transact that other pairs
 
     def __init__(self, value_distro, participant_distro, topology):
-        self.__tx_value_distribution_types = {'powerlaw':self.__sample_tx_pareto, 'constant':self.__sample_tx_constant}
-        self.__tx_participant_distribution_types = {'random':self.__sample_random_nodes, 'powerlaw':self.__sample_pairs_pareto_dist}
+        self.__tx_value_distribution_types = {'powerlaw':self.__sample_tx_pareto, 'constant':self.__sample_tx_constant, 'exponential':self.__sample_tx_exponential, 'poisson':self.__sample_tx_poisson}
+        self.__tx_participant_distribution_types = {'random':self.__sample_random_nodes, 'powerlaw':self.__sample_pairs_pareto_dist, 'poisson':self.__sample_pairs_poisson_dist}
         self.__value_distribution = value_distro
         self.__participant_distribution = participant_distro
         self.__topology = topology
@@ -152,6 +155,12 @@ class TxDistro:
 
         return out
 
+    def __sample_tx_poisson(self, n):
+        return np.random.poisson(10, n)
+
+    def __sample_tx_exponential(self, n):
+        return np.random.exponential(10, n)
+        
     def __sample_tx_constant(self, n):
         return [1 for i in range(0, n)]
     
@@ -162,16 +171,29 @@ class TxDistro:
     def __sample_random_nodes(self):
         return random.sample(self.__topology.graph.nodes, 2)
 
-    def __sample_pairs_pareto_dist(self):
-        source = self.__sample_pareto_dist(self.__source_nodes_distro, max=5)
-        dest = self.__sample_pareto_dist(self.__dest_nodes_distro, max=5)
+    def __sample_pairs(self, func):
+        source = func(self.__source_nodes_distro, max=5)
+        dest = func(self.__dest_nodes_distro, max=5)
 
         logging.debug(f"dest={dest}; source={source}")
         while dest == source:
-            dest = self.__sample_pareto_dist(self.__dest_nodes_distro, max=5)
+            dest = func(self.__dest_nodes_distro, max=5)
             logging.debug(f"dest={dest}; source={source}")
 
         return (source, dest)
+    
+    def __sample_pairs_pareto_dist(self):
+        return self.__sample_pairs(self.__sample_pareto_dist)
+
+    def __sample_pairs_poisson_dist(self):
+        return self.__sample_pairs(self.__sample_poisson_dist)
+
+    def __sample_poisson_dist(self, l, max=None):
+        l = list(l)
+        lam=len(l)/2
+
+        num = np.random.poisson(lam)
+        return l[num]
 
     def __sample_pareto_dist(self, l, max=None):
         l = list(l)
@@ -269,7 +291,7 @@ if __name__ == '__main__':
     txs = txdist.sample(configs[tx_count])
 
     if 'value_multiplier' in configs:
-        topo.full_knowledge_edge_weight_gen(txs, value_multiplier=configs['value_multiplier'])
+        topo.full_knowledge_edge_weight_gen(txs, value_multiplier=configs['value_multiplier'], mult_probability=configs.get('multiplier_probability', 1))
     else:
         topo.full_knowledge_edge_weight_gen(txs)
 
