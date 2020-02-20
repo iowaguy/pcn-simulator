@@ -91,7 +91,8 @@ def start(configs):
     print(logfile, flush=True)
     #print("TEST", flush=True, file=open(logfile, 'a'))
     start = time.time()
-    ipyclient = ipyparallel.Client(profile_dir=str(Path.home()) + '/.ipython/' + socket.gethostname())
+#    ipyclient = ipyparallel.Client(profile_dir=str(Path.home()) + '/.ipython/' + socket.gethostname())
+    ipyclient = ipyparallel.Client()
     ipyclient[:].apply_sync(setup)
 
     with ipyclient[:].sync_imports(local=True):

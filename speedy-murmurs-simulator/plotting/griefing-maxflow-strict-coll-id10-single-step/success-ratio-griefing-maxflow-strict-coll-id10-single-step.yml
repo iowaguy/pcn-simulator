@@ -1,0 +1,52 @@
+## Experiments required to plot this
+# dynamic-mfcs-griefing-attackers-5%
+# dynamic-mfcs-griefing-attackers-10%
+# dynamic-mfcs-griefing-attackers-20%
+# dynamic-mfcs-griefing-attackers-30%
+
+xmin: 0
+xmax: 700
+running_avg: 20
+plotname: "Griefing; 25 concurrent txs; 20ms delay; Ford-Fulkerson; Strict collateral; 10k nodes; scale-free network; 2 connections/node; Full knowledge assignment; 1M Txs; single step"
+# data set #10
+xlabel: "Time Epochs"
+ylabel: "Success Ratio"
+legend_loc:
+  - 0.63
+  - 0.10
+base: ../data
+lines:
+  - line:
+      name: "0% Attackers"
+      base: dynamic-id10-dynamic-mfcs-griefing-attackers-5%/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize-3-1-1-lat1ms-concurrent-25-griefing-griefing-20ms
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+
+  - line:
+      name: "5% Attackers"
+      base: dynamic-id10-dynamic-mfcs-griefing-attackers-5%/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize-3-1-1-lat1ms-concurrent-25-griefing-random-500-griefing-20ms
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+
+  - line:
+      name: "10% Attackers"
+      base: dynamic-id10-dynamic-mfcs-griefing-attackers-10%/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize-3-1-1-lat1ms-concurrent-25-griefing-random-1000-griefing-20ms
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+
+  - line:
+      name: "20% Attackers"
+      base: dynamic-id10-dynamic-mfcs-griefing-attackers-20%/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize-3-1-1-lat1ms-concurrent-25-griefing-random-2000-griefing-20ms
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+
+  - line:
+      name: "30% Attackers"
+      base: dynamic-id10-dynamic-mfcs-griefing-attackers-30%/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize-3-1-1-lat1ms-concurrent-25-griefing-random-3000-griefing-20ms
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt

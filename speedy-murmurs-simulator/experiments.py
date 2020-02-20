@@ -36,7 +36,7 @@ def generate_configs(data_set_list, routing_algorithms, epoch_lengths_list, expe
                      attempts=1, num_steps=8, force_overwrite=False, iterations=1,
                      simulation_type="dynamic", trees=3, concurrent_transactions_count=1,
                      network_latency_ms=0, attack_type=None, attacker_selection=None,
-                     attackers=0, receiver_delay_ms=0):
+                     attackers=[0], receiver_delay_ms=[0]):
 
     # if there is only one transaction at a time, transactions are not concurrent
     concurrent_transactions = concurrent_transactions_count != 1
@@ -45,34 +45,36 @@ def generate_configs(data_set_list, routing_algorithms, epoch_lengths_list, expe
         l = []
         for i in range(0, len(data_set_list)):
             for alg in routing_algorithms:
-                if num_steps == 1:
-                    tran_set = ""
-                else:
-                    tran_set = "-" + str(step + 1)
+                for att in attackers:
+                    for rec in receiver_delay_ms:
+                        if num_steps == 1:
+                            tran_set = ""
+                        else:
+                            tran_set = "-" + str(step + 1)
 
-                config_formatted = config.format(alg=alg,
-                                  tran_set=tran_set,
-                                  step=step,
-                                  data_set=data_set_list[i],
-                                  epoch=epoch_lengths_list[i],
-                                  new_links=tran_set,
-                                  attempts=attempts,
-                                  experiment_name=experiment_name,
-                                  force_overwrite=force_overwrite,
-                                  iterations=iterations,
-                                  simulation_type=simulation_type,
-                                  trees=trees,
-                                  concurrent_transactions=concurrent_transactions,
-                                  concurrent_transactions_count=concurrent_transactions_count,
-                                  network_latency_ms=network_latency_ms)
-                if attack_type:
-                    attack_config_formatted = attack_config.format(attack_type=attack_type,
-                                                         attacker_selection=attacker_selection,
-                                                         num_attackers=attackers,
-                                                         receiver_delay_ms=receiver_delay_ms)
-                    config_formatted+=attack_config_formatted
+                        config_formatted = config.format(alg=alg,
+                                                         tran_set=tran_set,
+                                                         step=step,
+                                                         data_set=data_set_list[i],
+                                                         epoch=epoch_lengths_list[i],
+                                                         new_links=tran_set,
+                                                         attempts=attempts,
+                                                         experiment_name=experiment_name,
+                                                         force_overwrite=force_overwrite,
+                                                         iterations=iterations,
+                                                         simulation_type=simulation_type,
+                                                         trees=trees,
+                                                         concurrent_transactions=concurrent_transactions,
+                                                         concurrent_transactions_count=concurrent_transactions_count,
+                                                         network_latency_ms=network_latency_ms)
+                        if attack_type:
+                            attack_config_formatted = attack_config.format(attack_type=attack_type,
+                                                                           attacker_selection=attacker_selection,
+                                                                           num_attackers=att,
+                                                                           receiver_delay_ms=rec)
+                            config_formatted+=attack_config_formatted
 
-                l.append(common.parse_config(config_formatted))
+                        l.append(common.parse_config(config_formatted))
         config_dict_list.append(l)
     return config_dict_list
 
@@ -314,69 +316,203 @@ def get_experiments():
             "network_latency_ms":5
         },
         ######################
-        "dynamic-baseline-sequential-single-step-id10-mfct-lat0ms" : {
+        "dynamic-mfcs-griefing-attackers-0%" : {
             "num_steps":1,
-            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
-            "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "network_latency_ms":0
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
+            "concurrent_transactions_count":100,
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing",
+            "attacker_selection":"random",
+            "attackers":0,
+            "receiver_delay_ms":100
         },
-        "dynamic-baseline-sequential-single-step-id10-mfct-lat1ms" : {
+        "dynamic-mfcs-griefing-attackers-5%" : {
             "num_steps":1,
-            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
-            "routing_algorithms":[common.maxflow_collateralize_total],
-            "epoch_lengths_list":[1250],
-            "network_latency_ms":1
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
+            "concurrent_transactions_count":100,
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing",
+            "attacker_selection":"random",
+            "attackers":[500],
+            "receiver_delay_ms":[100]
+        },
+        "dynamic-mfcs-griefing-attackers-10%" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
+            "concurrent_transactions_count":100,
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing",
+            "attacker_selection":"random",
+            "attackers":[1000],
+            "receiver_delay_ms":[100]
+        },
+        "dynamic-mfcs-griefing-attackers-20%" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
+            "concurrent_transactions_count":100,
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing",
+            "attacker_selection":"random",
+            "attackers":[2000],
+            "receiver_delay_ms":[100]
+        },
+        "dynamic-mfcs-griefing-attackers-30%" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
+            "concurrent_transactions_count":100,
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing",
+            "attacker_selection":"random",
+            "attackers":[3000],
+            "receiver_delay_ms":[100]
         },
         ######################
-        "dynamic-mfc-griefing-attackers-5%" : {
+        "dynamic-mfcs-griefing-attackers-0%-concurrent-txs-1000" : {
             "num_steps":1,
-            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
-            "concurrent_transactions_count":25,
-            "routing_algorithms":[common.maxflow],
-            "epoch_lengths_list":[1250],
-            "network_latency_ms":5,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
+            "concurrent_transactions_count":1000,
+            "routing_algorithms":[common.maxflow,common.speedymurmurs],
+            "epoch_lengths_list":[1250,1250],
+            "network_latency_ms":1,
             "attack_type":"griefing",
             "attacker_selection":"random",
-            "attackers":500,
-            "receiver_delay_ms":10
+            "attackers":[0],
+            "receiver_delay_ms":[1000]
         },
-        "dynamic-mfc-griefing-attackers-10%" : {
+
+        "dynamic-mfcs-griefing-attackers-5%-concurrent-txs-1000" : {
             "num_steps":1,
-            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
-            "concurrent_transactions_count":25,
-            "routing_algorithms":[common.maxflow],
-            "epoch_lengths_list":[1250],
-            "network_latency_ms":5,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
+            "concurrent_transactions_count":1000,
+            "routing_algorithms":[common.maxflow,common.speedymurmurs],
+            "epoch_lengths_list":[1250,1250],
+            "network_latency_ms":1,
             "attack_type":"griefing",
             "attacker_selection":"random",
-            "attackers":1000,
-            "receiver_delay_ms":10
+            "attackers":[500],
+            "receiver_delay_ms":[1000]
         },
-        "dynamic-mfc-griefing-attackers-20%" : {
+        "dynamic-mfcs-griefing-attackers-10%-concurrent-txs-1000" : {
             "num_steps":1,
-            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
-            "concurrent_transactions_count":25,
-            "routing_algorithms":[common.maxflow],
-            "epoch_lengths_list":[1250],
-            "network_latency_ms":5,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
+            "concurrent_transactions_count":1000,
+            "routing_algorithms":[common.maxflow,common.speedymurmurs],
+            "epoch_lengths_list":[1250,1250],
+            "network_latency_ms":1,
             "attack_type":"griefing",
             "attacker_selection":"random",
-            "attackers":2000,
-            "receiver_delay_ms":10
+            "attackers":[1000],
+            "receiver_delay_ms":[1000]
         },
-        "dynamic-mfc-griefing-attackers-30%" : {
+        "dynamic-mfcs-griefing-attackers-20%-concurrent-txs-1000" : {
             "num_steps":1,
-            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
-            "concurrent_transactions_count":25,
-            "routing_algorithms":[common.maxflow],
-            "epoch_lengths_list":[1250],
-            "network_latency_ms":5,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
+            "concurrent_transactions_count":1000,
+            "routing_algorithms":[common.maxflow,common.speedymurmurs],
+            "epoch_lengths_list":[1250,1250],
+            "network_latency_ms":1,
             "attack_type":"griefing",
             "attacker_selection":"random",
-            "attackers":3000,
-            "receiver_delay_ms":10
+            "attackers":[2000],
+            "receiver_delay_ms":[1000]
         },
+        "dynamic-mfcs-griefing-attackers-30%-concurrent-txs-1000" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
+            "concurrent_transactions_count":1000,
+            "routing_algorithms":[common.maxflow,common.speedymurmurs],
+            "epoch_lengths_list":[1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing",
+            "attacker_selection":"random",
+            "attackers":[3000],
+            "receiver_delay_ms":[1000]
+        },
+        ######################
+        "dynamic-mfcs-griefing-success-attackers-0%" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5","id12-synthetic-nodes-10k-txs-constant-1m-scalefree-less-connected"],
+            "concurrent_transactions_count":1000,
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[1250,1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[0],
+            "receiver_delay_ms":[1000]
+        },
+        "dynamic-mfcs-griefing-success-attackers-5%" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5","id12-synthetic-nodes-10k-txs-constant-1m-scalefree-less-connected"],
+            "concurrent_transactions_count":1000,
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[1250,1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[500],
+            "receiver_delay_ms":[1000]
+        },
+        "dynamic-mfcs-griefing-success-attackers-10%" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5","id12-synthetic-nodes-10k-txs-constant-1m-scalefree-less-connected"],
+            "concurrent_transactions_count":1000,
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[1250,1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[1000],
+            "receiver_delay_ms":[1000]
+        },
+        "dynamic-mfcs-griefing-success-attackers-20%" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5","id12-synthetic-nodes-10k-txs-constant-1m-scalefree-less-connected"],
+            "concurrent_transactions_count":1000,
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[1250,1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[2000],
+            "receiver_delay_ms":[1000]
+        },
+        "dynamic-mfcs-griefing-success-attackers-30%" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5","id12-synthetic-nodes-10k-txs-constant-1m-scalefree-less-connected"],
+            "concurrent_transactions_count":1000,
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[1250,1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[3000],
+            "receiver_delay_ms":[1000]
+        },
+        ########################
+        "dynamic-mfcs-sm-griefing-success-attackers-variable" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5","id12-synthetic-nodes-10k-txs-constant-1m-scalefree-less-connected"],
+            "concurrent_transactions_count":1000,
+            "routing_algorithms":[common.maxflow,common.speedymurmurs],
+            "epoch_lengths_list":[1250,1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[0, 500, 1000, 2000, 3000],
+            "receiver_delay_ms":[1000, 5000, 10000, 30000]
+        },
+        ########################
         "ripple_dynamic" : {
             "data_set_list":["id3-measured-nodes-93502-txs-1m-ripple-dynamic"],
             "routing_algorithms":[common.speedymurmurs,

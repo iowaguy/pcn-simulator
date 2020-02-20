@@ -1,0 +1,54 @@
+## Experiments required to plot this
+# dynamic-mfcs-griefing-attackers-5%-concurrent-txs-1000
+# dynamic-mfcs-griefing-attackers-10%-concurrent-txs-1000
+# dynamic-mfcs-griefing-attackers-20%-concurrent-txs-1000
+# dynamic-mfcs-griefing-attackers-30%-concurrent-txs-1000
+
+xmin: 0
+xmax: 700
+ymin: 0
+ymax: 30
+running_avg: 20
+plotname: "Griefing; 1000 concurrent txs; 1000ms delay; Ford-Fulkerson; strict collateral; 10k nodes; scale-free network; 2 connections/node; Full knowledge assignment; 1M Txs; single step"
+# data set #10
+xlabel: "Time Epochs"
+ylabel: "Path Length Avg for Successful Txs"
+base: ../data
+legend_loc:
+  - 0.63
+  - 0.70
+lines:
+  - line:
+      name: "0% Attackers"
+      base: dynamic-id10-dynamic-mfcs-griefing-attackers-0%-concurrent-txs-1000/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize-3-1-1-lat1ms-concurrent-1000-griefing-1000ms
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-pathLSuccAvg.txt
+
+  - line:
+      name: "5% Attackers"
+      base: dynamic-id10-dynamic-mfcs-griefing-attackers-5%-concurrent-txs-1000/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize-3-1-1-lat1ms-concurrent-1000-griefing-random-500-griefing-1000ms
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-pathLSuccAvg.txt
+
+  - line:
+      name: "10% Attackers"
+      base: dynamic-id10-dynamic-mfcs-griefing-attackers-10%-concurrent-txs-1000/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize-3-1-1-lat1ms-concurrent-1000-griefing-random-1000-griefing-1000ms
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-pathLSuccAvg.txt
+
+  - line:
+      name: "20% Attackers"
+      base: dynamic-id10-dynamic-mfcs-griefing-attackers-20%-concurrent-txs-1000/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize-3-1-1-lat1ms-concurrent-1000-griefing-random-2000-griefing-1000ms
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-pathLSuccAvg.txt
+
+  - line:
+      name: "30% Attackers"
+      base: dynamic-id10-dynamic-mfcs-griefing-attackers-30%-concurrent-txs-1000/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize-3-1-1-lat1ms-concurrent-1000-griefing-random-3000-griefing-1000ms
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-pathLSuccAvg.txt

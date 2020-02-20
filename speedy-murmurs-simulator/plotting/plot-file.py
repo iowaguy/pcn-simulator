@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import simulation_utils as su
 import yaml
 from typing import List, Dict
+from pathlib import Path
 
 def get_plottable_list(line_config: Dict, xs: int, running_avg=None, basepath='') -> List[float]:
     base = line_config['base']
@@ -53,4 +54,5 @@ if __name__ == "__main__":
     plt.ylabel(config['ylabel'])
     plt.title(config.get('plotname',""), {"wrap":True})
     plt.legend(loc=(legendx, legendy), scatterpoints=10)
-    plt.savefig('plots/' + sys.argv[1][:-4]+'.png', dpi=300)
+    f = Path(sys.argv[1]).stem
+    plt.savefig('plots/' + f + '.png', dpi=300)

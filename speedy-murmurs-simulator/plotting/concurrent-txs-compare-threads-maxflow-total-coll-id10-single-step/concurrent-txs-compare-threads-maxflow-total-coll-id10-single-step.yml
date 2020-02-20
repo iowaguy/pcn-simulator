@@ -17,12 +17,12 @@ legend_loc:
   - 0.10
 base: ../data
 lines:
-  # - line:
-  #     name: sequential txs
-  #     base: dynamic-id10-dynamic-baseline-sequential-single-step-id10-mfct-mfcs-sm/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize_total-3-1-1-lat5ms/
-  #     algo: maxflow
-  #     files:
-  #       - READABLE_FILE_M_COLL_TOT-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
+  - line:
+      name: sequential txs
+      base: dynamic-id10-dynamic-baseline-sequential-single-step-id10-mfct-mfcs-sm/dynamic-id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected-maxflow_collateralize_total-3-1-1-lat5ms/
+      algo: maxflow
+      files:
+        - READABLE_FILE_M_COLL_TOT-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-succR.txt
 
   - line:
       name: 10 concurrent txs

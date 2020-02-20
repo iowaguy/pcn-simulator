@@ -2,10 +2,11 @@
 
 LOG_DIR=logs
 EXPERIMENT_LOG=${LOG_DIR}/experiment-`hostname`-`date +%m-%d-%y-%H:%M:%S`.out
-IPCLUSTER_DIR=${HOME}/.ipython/`hostname`/
+IPYTHON_HOME=${HOME}/.ipython
+IPCLUSTER_DIR=${IPYTHON_HOME}/`hostname`/
 SCRIPTS_DIR="scripts"
 usage() {
-  echo "Usage: $0 [start|stop|status]" 1>&2
+  echo "Usage: $0 [start|stop|status|experiment|controller|engines]" 1>&2
   exit 1
 }
 
@@ -15,9 +16,11 @@ stop_proc() {
 }
 
 stop() {
-  ipcluster stop --IPClusterApp.ipython_dir=${IPCLUSTER_DIR}
-  echo "ipcluster killed."
+#  ipcluster stop #--IPClusterApp.ipython_dir=${IPCLUSTER_DIR}
+#  echo "ipcluster killed."
 
+  stop_proc ipcontroller
+  stop_proc ipengine
   stop_proc ipyparallel
   stop_proc ipcluster
   stop_proc experiment
@@ -40,6 +43,20 @@ status() {
   fi
 
   exit 0
+}
+
+controller() {
+  nohup ipcontroller --ip='*' &> logs/controller.log &
+#  exec tail -f logs/controller.log
+  exit 0
+}
+
+engines() {
+  ENGINES=$1
+  for i in `seq $ENGINES`; do  
+      nohup ipengine &> logs/engine-${i}.log &
+  done
+  exec tail -f logs/engine-${ENGINES}.log
 }
 
 start() {
@@ -85,6 +102,12 @@ while :; do
       ;;
     single)
       single "$2"
+      ;;
+    controller)
+      controller
+      ;;
+    engines)
+      engines "$2"
       ;;
     *)
       usage
