@@ -502,15 +502,15 @@ def get_experiments():
         ########################
         "dynamic-mfcs-sm-griefing-success-attackers-variable" : {
             "num_steps":1,
-            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5","id12-synthetic-nodes-10k-txs-constant-1m-scalefree-less-connected"],
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5","id12-synthetic-nodes-10k-txs-constant-1m-scalefree-less-connected","id13-synthetic-nodes-10k-txs-poisson-1m-scalefree2","id14-synthetic-nodes-10k-txs-exponential-1m-scalefree2","id15-synthetic-nodes-10k-txs-poisson-1m-scalefree2-mult-0.5-prob-0.5"],
             "concurrent_transactions_count":1000,
             "routing_algorithms":[common.maxflow,common.speedymurmurs],
-            "epoch_lengths_list":[1250,1250,1250],
+            "epoch_lengths_list":[1250,1250,1250,1250,1250,1250],
             "network_latency_ms":1,
             "attack_type":"griefing_success",
             "attacker_selection":"random",
             "attackers":[0, 500, 1000, 2000, 3000],
-            "receiver_delay_ms":[1000, 5000, 10000, 30000]
+            "receiver_delay_ms":[30000]
         },
         ########################
         "ripple_dynamic" : {
@@ -520,7 +520,7 @@ def get_experiments():
             "epoch_lengths_list":[165552.45497208898],
         },
         
-        
+
     }
 
     return experiments
