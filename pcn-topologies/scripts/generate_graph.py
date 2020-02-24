@@ -135,8 +135,8 @@ class TxDistro:
     # some pairs are more likely to transact that other pairs
 
     def __init__(self, value_distro, participant_distro, topology):
-        self.__tx_value_distribution_types = {'powerlaw':self.__sample_tx_pareto, 'constant':self.__sample_tx_constant, 'exponential':self.__sample_tx_exponential, 'poisson':self.__sample_tx_poisson}
-        self.__tx_participant_distribution_types = {'random':self.__sample_random_nodes, 'powerlaw':self.__sample_pairs_pareto_dist, 'poisson':self.__sample_pairs_poisson_dist}
+        self.__tx_value_distribution_types = {'powerlaw':self.__sample_tx_pareto, 'constant':self.__sample_tx_constant, 'exponential':self.__sample_tx_exponential, 'poisson':self.__sample_tx_poisson, 'normal':self.__sample_tx_normal}
+        self.__tx_participant_distribution_types = {'random':self.__sample_random_nodes, 'powerlaw':self.__sample_pairs_pareto_dist, 'poisson':self.__sample_pairs_poisson_dist, 'normal':self.__sample_pairs_normal_dist}
         self.__value_distribution = value_distro
         self.__participant_distribution = participant_distro
         self.__topology = topology
@@ -157,6 +157,9 @@ class TxDistro:
 
     def __sample_tx_poisson(self, n):
         return np.random.poisson(10, n)
+
+    def __sample_tx_normal(self, n):
+        return np.random.normal(10, 10, n)
 
     def __sample_tx_exponential(self, n):
         return np.random.exponential(10, n)
@@ -187,6 +190,27 @@ class TxDistro:
 
     def __sample_pairs_poisson_dist(self):
         return self.__sample_pairs(self.__sample_poisson_dist)
+
+    def __sample_pairs_normal_dist(self):
+        return self.__sample_pairs(self.__sample_normal_dist)
+
+    def __sample_normal_dist(self, l, max=None):
+        l = list(l)
+        bucket_width = 5.0/len(l)
+        loc=len(l)/2
+
+        # sample number, need to subtract 1 so that distro starts at zero.
+        # pareto normally starts at one.
+        num = np.random.normal(loc, 10)
+
+        while max and max < num:
+            num = np.random.normal(loc, 10)
+
+        # find corresponding bucket
+        bucket = math.floor(num/bucket_width)
+        logging.debug(f"num={num}; bucket-width={bucket_width}; bucket={bucket}; node={l[bucket]}")
+        return l[bucket]
+
 
     def __sample_poisson_dist(self, l, max=None):
         l = list(l)
