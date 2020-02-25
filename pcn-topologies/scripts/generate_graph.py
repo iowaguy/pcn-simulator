@@ -196,20 +196,20 @@ class TxDistro:
 
     def __sample_normal_dist(self, l, max=None):
         l = list(l)
-        bucket_width = 5.0/len(l)
         loc=len(l)/2
 
-        # sample number, need to subtract 1 so that distro starts at zero.
-        # pareto normally starts at one.
-        num = np.random.normal(loc, 10)
-
-        while max and max < num:
-            num = np.random.normal(loc, 10)
-
-        # find corresponding bucket
-        bucket = math.floor(num/bucket_width)
-        logging.debug(f"num={num}; bucket-width={bucket_width}; bucket={bucket}; node={l[bucket]}")
-        return l[bucket]
+        num = np.random.normal(loc, 2000)
+        while num < 0 or num > len(l):
+            num = np.random.normal(loc, 2000)
+        # print(len(l))
+        # print(bucket_width)
+        # print(num)
+        # # find corresponding bucket
+        node = math.floor(num)
+        # print(bucket)
+        logging.debug(f"num={num};  node={node}")
+        #return l[bucket]
+        return node
 
 
     def __sample_poisson_dist(self, l, max=None):
