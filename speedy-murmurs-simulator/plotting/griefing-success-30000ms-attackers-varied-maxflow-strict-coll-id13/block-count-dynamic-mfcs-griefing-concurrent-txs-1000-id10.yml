@@ -1,0 +1,51 @@
+## Experiments required to plot this
+# dynamic-id13-dynamic-mfcs-sm-griefing-success-attackers-variable
+
+xmin: 0
+xmax: 700
+ymin: 0
+ymax: 100
+running_avg: 20
+plotname: "Griefing w/ success; 1000 concurrent txs; 1000ms delay; Ford-Fulkerson; Strict collateral; 10k nodes; scale-free network; 2 connections/node; Full knowledge assignment; 1M Txs; single step"
+# data set #10
+xlabel: "Time Epochs"
+ylabel: "Blocked Links Per Transaction"
+legend_loc:
+  - 0.63
+  - 0.10
+base: ../data
+lines:
+  - line:
+      name: "0% Attackers"
+      base: dynamic-id13-dynamic-mfcs-sm-griefing-success-attackers-variable/dynamic-id13-synthetic-nodes-10k-txs-poisson-1m-scalefree2-maxflow_collateralize-3-1-1-lat1ms-concurrent-1000-griefing_success-30000ms
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-blockedLinksPerTX.txt
+
+  - line:
+      name: "5% Attackers"
+      base: dynamic-id13-dynamic-mfcs-sm-griefing-success-attackers-variable/dynamic-id13-synthetic-nodes-10k-txs-poisson-1m-scalefree2-maxflow_collateralize-3-1-1-lat1ms-concurrent-1000-griefing_success-random-500-griefing_success-30000ms
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-blockedLinksPerTX.txt
+
+  - line:
+      name: "10% Attackers"
+      base: dynamic-id13-dynamic-mfcs-sm-griefing-success-attackers-variable/dynamic-id13-synthetic-nodes-10k-txs-poisson-1m-scalefree2-maxflow_collateralize-3-1-1-lat1ms-concurrent-1000-griefing_success-random-1000-griefing_success-30000ms
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-blockedLinksPerTX.txt
+
+  - line:
+      name: "20% Attackers"
+      base: dynamic-id13-dynamic-mfcs-sm-griefing-success-attackers-variable/dynamic-id13-synthetic-nodes-10k-txs-poisson-1m-scalefree2-maxflow_collateralize-3-1-1-lat1ms-concurrent-1000-griefing_success-random-2000-griefing_success-30000ms
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-blockedLinksPerTX.txt
+
+  - line:
+      name: "30% Attackers"
+      base: dynamic-id13-dynamic-mfcs-sm-griefing-success-attackers-variable/dynamic-id13-synthetic-nodes-10k-txs-poisson-1m-scalefree2-maxflow_collateralize-3-1-1-lat1ms-concurrent-1000-griefing_success-random-3000-griefing_success-30000ms
+      algo: maxflow
+      files:
+        - READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/cnet-blockedLinksPerTX.txt
