@@ -1,0 +1,73 @@
+ignore_keys:
+- filename
+plot_params:
+- plot:
+    filename: cnet-bcd.txt
+    legend_loc:
+    - 0.63
+    - 0.1
+    running_avg: 20
+    xlabel: Time Epochs
+    xmax: 700
+    xmin: 0
+    ylabel: Blocked Links Per Transaction
+    ymax: 100
+    ymin: 0
+- plot:
+    filename: cnet-totalCreditTransacted.txt 
+    legend_loc:
+    - 0.63
+    - 0.1
+    running_avg: 20
+    xlabel: Time Epochs
+    xmax: 700
+    xmin: 0
+    ylabel: Total Credit Transacted
+    ymax: 10000
+    ymin: 0
+- plot:
+    filename: cnet-creditDeviation.txt 
+    legend_loc:
+    - 0.63
+    - 0.1
+    running_avg: 20
+    xlabel: Time Epochs
+    xmax: 700
+    xmin: 0
+    ylabel: Credit Deviation
+    ymax: 1000000000
+    ymin: 0
+- plot:
+    filename: cnet-succR.txt 
+    legend_loc:
+    - 0.63
+    - 0.1
+    running_avg: 20
+    xlabel: Time Epochs
+    xmax: 700
+    xmin: 0
+    ylabel: Success Ratio
+- plot:
+    filename: cnet-bcd.txt   
+    legend_loc:
+    - 0.63
+    - 0.1
+    running_avg: 20
+    xlabel: Time Epochs
+    xmax: 700
+    xmin: 0
+    ylabel: Bidirectional Credit Depletion (BCD)
+    ymax: 10000000
+    ymin: 0
+- plot:
+    filename: cnet-pathL.txt 
+    legend_loc:
+    - 0.63
+    - 0.1
+    running_avg: 20
+    xlabel: Time Epochs
+    xmax: 700
+    xmin: 0
+    ylabel: Average Path Length
+    ymax: 20
+    ymin: 0
