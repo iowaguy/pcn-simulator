@@ -512,6 +512,20 @@ def get_experiments():
             "attackers":[0, 500, 1000, 2000, 3000],
             "receiver_delay_ms":[30000]
         },
+        #########################
+        "dynamic-mfcs-sm-griefing-success-attackers-variable-10000txs" : {
+            "num_steps":1,
+            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5","id15-synthetic-nodes-10k-txs-poisson-1m-scalefree2-mult-0.5-prob-0.5","id16-synthetic-nodes-10k-txs-normal-1m-scalefree-less-connected","id17-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":10000,
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[1250,1250,1250,1250,1250,1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[0, 500, 1000, 2000, 3000],
+            "receiver_delay_ms":[30000]
+        },
+        
         ########################
         "ripple_dynamic" : {
             "data_set_list":["id3-measured-nodes-93502-txs-1m-ripple-dynamic"],
