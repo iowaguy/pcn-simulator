@@ -2,7 +2,7 @@ ignore_keys:
 - filename
 plot_params:
 - plot:
-    filename: cnet-bcd.txt
+    filename: cnet-blockedLinksPerTX.txt
     legend_loc:
     - 0.63
     - 0.1
@@ -60,7 +60,7 @@ plot_params:
     ymax: 10000000
     ymin: 0
 - plot:
-    filename: cnet-pathL.txt 
+    filename: cnet-pathLSuccAvg.txt
     legend_loc:
     - 0.63
     - 0.1
