@@ -4,6 +4,7 @@ import time
 import os
 import json
 import copy
+import shutil
 
 if len(sys.argv) < 3:
     print('Usage: python3 plot-creator.py [path_to_plot_templates.yml] [path_to_plot_data.yml]')
@@ -50,6 +51,10 @@ for plot in plots["plot_params"]:
 
 # Create a directory to store the plot yml files in
 os.mkdir(dir_name)
+
+# Copy template to new dir
+shutil.copy(sys.argv[2], dir_name + '/template.yml')
+
 for filename in plot_data:
     with open(f'{filename}.yml', 'w') as file:
         yaml.dump(plot_data[filename], file)

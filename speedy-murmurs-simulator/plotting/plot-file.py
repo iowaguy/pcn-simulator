@@ -54,5 +54,7 @@ if __name__ == "__main__":
     plt.ylabel(config['ylabel'])
     plt.title(config.get('plotname',""), {"wrap":True})
     plt.legend(loc=(legendx, legendy), scatterpoints=10)
-    f = Path(sys.argv[1]).stem
-    plt.savefig('plots/' + f + '.png', dpi=300)
+    p = Path(sys.argv[1])
+    d = p.parts[-2]
+    f = p.stem
+    plt.savefig(d + '/' + f + '.png', dpi=300)
