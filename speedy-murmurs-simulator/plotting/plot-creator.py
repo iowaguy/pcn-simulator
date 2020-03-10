@@ -2,6 +2,12 @@ import sys
 import yaml
 import time
 import os
+import json
+import copy
+
+if len(sys.argv) < 3:
+    print('Usage: python3 plot-creator.py [path_to_plot_templates.yml] [path_to_plot_data.yml]')
+    exit(1)
 
 def get_file_contents(filepath):
     with open(filepath) as file:
@@ -9,7 +15,6 @@ def get_file_contents(filepath):
         return contents
 
 # Has information about the different plots needed
-# Format expected is as follows:
 plots = get_file_contents(sys.argv[1])
 
 # Has information about where to get the data for each line for the plots above
@@ -33,13 +38,15 @@ for plot in plots["plot_params"]:
         if key not in ignore_keys:
             plot_data[filename][key] = p[key]
     # TODO: assumes no {each_step}
-    for key in plot_line_details:
+    pld_copy = copy.deepcopy(plot_line_details)
+    for key in pld_copy:
         if key == 'lines':
             # Add filename to each of the line 
-            for i in range(0, len(plot_line_details[key])):
-                plot_line_details[key][i]['line']['files'] = []
-                plot_line_details[key][i]['line']['files'].append(p['filename'])
-        plot_data[filename][key] = plot_line_details[key]
+            for i in range(0, len(pld_copy[key])):
+                pld_copy[key][i]['line']['files'] = []
+                pld_copy[key][i]['line']['files'].append(p['filename'])
+        plot_data[filename][key] = pld_copy[key]
+
 
 # Create a directory to store the plot yml files in
 os.mkdir(dir_name)
