@@ -4,7 +4,7 @@ import sys
 
 config = '''
 attempts: {attempts}
-base: /net/data/pcnliquid/pcn-topologies/datasets/{data_set}
+base: ../../pcn-topologies/datasets/{data_set}
 data_set_name: {data_set}
 experiment_name: {experiment_name}
 force_overwrite: {force_overwrite}
