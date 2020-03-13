@@ -47,7 +47,6 @@ class CreditNetworkTest {
     runConfig.setConcurrentTransactions(true);
     runConfig.setConcurrentTransactionsCount(50);
     runConfig.setNetworkLatencyMs(50);
-    runConfig.setRunDirPath(TEST_DATA_BASE + "/output-data");
     runConfig.setLogLevel("ERROR");
     Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", Boolean.toString(false));
   }

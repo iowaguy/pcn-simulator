@@ -63,8 +63,6 @@ public class Dynamic {
       return;
     }
 
-    runConfig.setRunDirPath(runDirPath);
-
     // General parameters
     Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", Boolean.toString(!runConfig.isForceOverwrite()));
     Config.overwrite("MAIN_DATA_FOLDER", runDirPath);

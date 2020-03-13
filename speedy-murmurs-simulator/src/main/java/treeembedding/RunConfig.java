@@ -1,23 +1,19 @@
 package treeembedding;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import treeembedding.byzantine.Attack;
 import treeembedding.byzantine.AttackType;
 import treeembedding.byzantine.AttackerSelection;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RunConfig {
-  @JsonProperty("data_set_name")
-  private String dataSetName;
-
   @JsonProperty("base")
   private String basePath;
 
   @JsonProperty("topology")
   private String topologyPath;
-
-  @JsonProperty("link_weights")
-  private String linkWeightsPath;
 
   @JsonProperty("transaction_set")
   private String transactionPath;
@@ -52,8 +48,6 @@ public class RunConfig {
   @JsonProperty("network_latency_ms")
   private int networkLatencyMs;
 
-  private String runDirPath;
-
   @JsonProperty("concurrent_transactions_count")
   private int concurrentTransactionsCount;
 
@@ -62,9 +56,6 @@ public class RunConfig {
 
   @JsonProperty("log_level")
   private String logLevel;
-
-  @JsonProperty("experiment_name")
-  private String experimentName;
 
   @JsonProperty("epoch_length")
   private double epochLength;
@@ -78,10 +69,6 @@ public class RunConfig {
     } else {
       return epochLength;
     }
-  }
-
-  public void setEpochLength(double epochLength) {
-    this.epochLength = epochLength;
   }
 
   public int getTransactionDelayMs() {
@@ -136,14 +123,6 @@ public class RunConfig {
     return concurrentTransactions;
   }
 
-  public String getRunDirPath() {
-    return runDirPath;
-  }
-
-  public void setRunDirPath(String runDirPath) {
-    this.runDirPath = runDirPath;
-  }
-
   public int getStep() {
     return step;
   }
@@ -158,14 +137,6 @@ public class RunConfig {
 
   public void setIterations(int iterations) {
     this.iterations = iterations;
-  }
-
-  public String getDataSetName() {
-    return dataSetName;
-  }
-
-  public void setDataSetName(String dataSetName) {
-    this.dataSetName = dataSetName;
   }
 
   public String getBasePath() {
@@ -190,10 +161,6 @@ public class RunConfig {
 
   public void setTransactionPath(String transactionPath) {
     this.transactionPath = transactionPath;
-  }
-
-  public SimulationTypes getSimulationType() {
-    return simulationType;
   }
 
   public void setSimulationType(SimulationTypes simulationType) {
