@@ -462,10 +462,10 @@ public abstract class AbstractCreditNetworkBase extends Metric {
       }
     }
 
-    if (this.txStartEndTimes != null) {
-      succ &= DataWriter.writeWithoutIndex(this.txStartEndTimes,
-              this.key + "_TX_START_END_TIMES", folder);
-    }
+//    if (this.txStartEndTimes != null) {
+//      succ &= DataWriter.writeWithoutIndex(this.txStartEndTimes,
+//              this.key + "_TX_START_END_TIMES", folder);
+//    }
 
     for (Metrics m : Metrics.values()) {
       if (m.getSingleName().equals("") &&
