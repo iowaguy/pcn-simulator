@@ -856,19 +856,21 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       }
     }
 
-    for (int treeIndex = 0; treeIndex < paths.length; treeIndex++) {
+    int[][] reversedPaths = reversePaths(paths);
+
+    for (int treeIndex = 0; treeIndex < reversedPaths.length; treeIndex++) {
       if (vals[treeIndex] != 0) {
-        int currentNodeIndex = paths[treeIndex][0];
-        for (int nodeIndex = 1; nodeIndex < paths[treeIndex].length; nodeIndex++) {
+        int currentNodeIndex = reversedPaths[treeIndex][0];
+        for (int nodeIndex = 1; nodeIndex < reversedPaths[treeIndex].length; nodeIndex++) {
           simulateNetworkLatency();
 
-          int nextNodeIndex = paths[treeIndex][nodeIndex];
-          Edge edge = CreditLinks.makeEdge(currentNodeIndex, nextNodeIndex);
+          int previousNodeIndex = reversedPaths[treeIndex][nodeIndex];
+          Edge edge = CreditLinks.makeEdge(currentNodeIndex, previousNodeIndex);
 
           if (log.isInfoEnabled()) {
-            log.info("Finalize: cur=" + currentNodeIndex + "; next=" + nextNodeIndex + "; val=" + vals[treeIndex]);
+            log.info("Finalize: cur=" + currentNodeIndex + "; prev=" + previousNodeIndex + "; val=" + vals[treeIndex]);
           }
-          finalizeUpdateWeight(currentNodeIndex, nextNodeIndex, vals[treeIndex],
+          finalizeUpdateWeight(previousNodeIndex, currentNodeIndex, vals[treeIndex],
                   calculateEpoch(currentTransaction));
 
           if (edgeModifications.containsKey(edge)) {
@@ -877,10 +879,10 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
           }
 
           if (runConfig.getRoutingAlgorithm() != RoutingAlgorithm.MAXFLOW &&
-                  edgeweights.isZero(currentNodeIndex, nextNodeIndex)) {
+                  edgeweights.isZero(previousNodeIndex, currentNodeIndex)) {
             this.zeroEdges.add(edge);
           }
-          currentNodeIndex = nextNodeIndex;
+          currentNodeIndex = previousNodeIndex;
 
         }
       }

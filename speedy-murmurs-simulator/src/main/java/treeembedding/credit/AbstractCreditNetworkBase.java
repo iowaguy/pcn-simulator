@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -539,6 +540,38 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   // used for unit tests
   CreditLinks getCreditLinks() {
     return this.edgeweights;
+  }
+
+  protected List<int[]> reversePaths(List<int[]> forwardPaths) {
+    List<int[]> ret = new LinkedList<>();
+
+    for (int[] fPath : forwardPaths) {
+      ret.add(reversePath(fPath));
+    }
+
+    return ret;
+  }
+
+  protected int[][] reversePaths(int[][] forwardPaths) {
+    // init 2d arrary
+    int[][] ret = new int[forwardPaths.length][];
+    for (int i = 0; i < ret.length; i++) {
+      ret[i] = new int[forwardPaths[i].length];
+    }
+
+    for (int i = 0; i < forwardPaths.length; i++) {
+      ret[i] = reversePath(forwardPaths[i]);
+    }
+
+    return ret;
+  }
+
+  private int[] reversePath(int[] fPath) {
+    int[] rPath = new int[fPath.length];
+    for (int i = fPath.length - 1; i >= 0; i--) {
+      rPath[rPath.length - i - 1] = fPath[i];
+    }
+    return rPath;
   }
 
   private void updatePerEpochMetric(Metrics name, int currentEpoch, double value) {

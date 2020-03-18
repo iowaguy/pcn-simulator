@@ -200,6 +200,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
     List<Double> transactionVals = new LinkedList<>();
 
     // loop until a flow has been found for the full transaction amount, or there are no more residual paths
+    // the is the probing/path finding phase
     while (((currentTransaction.val > 0 && totalflow < currentTransaction.val) ||
             (currentTransaction.val < 0 && totalflow > currentTransaction.val)) &&
             (residualPaths = findResidualFlow(edgeweights, g.getNodes(), currentTransaction)).length > 1) {
@@ -275,6 +276,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
       results.addPathLength(residualPath.length - 1);
     }
 
+    // check if the sum of the flows contains sufficient weight
     double totalPaymentPossible = transactionVals.stream().mapToDouble(d -> d).sum();
     if (totalPaymentPossible < (currentTransaction.val - LinkWeight.EPSILON)) {
       transactionFailed(edgeweights, edgeModifications);
@@ -302,21 +304,24 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
       }
     }
 
-    for (int pathIndex = 0; pathIndex < paths.size(); pathIndex++) {
+    List<int[]> reversedPaths = reversePaths(paths);
+
+    // finalize the payments in reverse order
+    for (int pathIndex = 0; pathIndex < reversedPaths.size(); pathIndex++) {
       if (transactionVals.get(pathIndex) != 0) {
-        int currentNodeIndex = paths.get(pathIndex)[0];
-        for (int nodeIndex = 1; nodeIndex < paths.get(pathIndex).length; nodeIndex++) {
+        int currentNodeIndex = reversedPaths.get(pathIndex)[0];
+        for (int nodeIndex = 1; nodeIndex < reversedPaths.get(pathIndex).length; nodeIndex++) {
           simulateNetworkLatency();
 
-          int nextNodeIndex = paths.get(pathIndex)[nodeIndex];
-          Edge edge = CreditLinks.makeEdge(currentNodeIndex, nextNodeIndex);
+          int previousNodeIndex = reversedPaths.get(pathIndex)[nodeIndex];
+          Edge edge = CreditLinks.makeEdge(currentNodeIndex, previousNodeIndex);
 
           if (log.isInfoEnabled()) {
-            log.info("Finalize: cur=" + currentNodeIndex + "; next=" + nextNodeIndex +
+            log.info("Finalize: cur=" + currentNodeIndex + "; previous=" + previousNodeIndex +
                     "; val=" + transactionVals.get(pathIndex));
           }
           try {
-            finalizeUpdateWeight(currentNodeIndex, nextNodeIndex, transactionVals.get(pathIndex),
+            finalizeUpdateWeight(previousNodeIndex, currentNodeIndex, transactionVals.get(pathIndex),
                     calculateEpoch(currentTransaction));
           } catch (TransactionFailedException e) {
             transactionFailed(edgeweights, edgeModifications);
@@ -329,7 +334,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
             edgeModifications.get(edge).remove(transactionVals.get(pathIndex));
           }
 
-          currentNodeIndex = nextNodeIndex;
+          currentNodeIndex = previousNodeIndex;
 
         }
       }
