@@ -284,26 +284,6 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
       return results;
     }
 
-    // payment griefing attack logic
-    for (int[] path : paths) {
-      if (attack != null && (attack.getType() == AttackType.GRIEFING ||
-              attack.getType() == AttackType.GRIEFING_SUCCESS)) {
-        int destination = path[path.length - 1];
-        if (this.byzantineNodes.contains(destination)) {
-          try {
-            Thread.sleep(attack.getReceiverDelayMs());
-          } catch (InterruptedException e) {
-            // don't worry about it
-          }
-          if (attack.getType() == AttackType.GRIEFING) {
-            transactionFailed(edgeweights, edgeModifications);
-            results.setSuccess(false);
-            return results;
-          }
-        }
-      }
-    }
-
     List<int[]> reversedPaths = reversePaths(paths);
 
     // finalize the payments in reverse order
@@ -320,6 +300,24 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
             log.info("Finalize: cur=" + currentNodeIndex + "; previous=" + previousNodeIndex +
                     "; val=" + transactionVals.get(pathIndex));
           }
+
+          // payment griefing attack logic
+          if (attack != null && (attack.getType() == AttackType.GRIEFING ||
+                  attack.getType() == AttackType.GRIEFING_SUCCESS)) {
+            if (this.byzantineNodes.contains(currentNodeIndex)) {
+              try {
+                Thread.sleep(attack.getReceiverDelayMs());
+              } catch (InterruptedException e) {
+                // don't worry about it
+              }
+              if (attack.getType() == AttackType.GRIEFING) {
+                transactionFailed(edgeweights, edgeModifications);
+                results.setSuccess(false);
+                return results;
+              }
+            }
+          }
+
           try {
             finalizeUpdateWeight(previousNodeIndex, currentNodeIndex, transactionVals.get(pathIndex),
                     calculateEpoch(currentTransaction));

@@ -835,27 +835,6 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       throw new TransactionFailedException("Transaction values cannot be null");
     }
 
-    // payment griefing attack logic
-    for (int[] path : paths) {
-      if (attack != null && (attack.getType() == AttackType.GRIEFING ||
-              attack.getType() == AttackType.GRIEFING_SUCCESS)) {
-        int destination = path[path.length - 1];
-        if (this.byzantineNodes.contains(destination)) {
-          try {
-            Thread.sleep(attack.getReceiverDelayMs());
-          } catch (InterruptedException e) {
-            // don't worry about it
-          }
-
-          if (attack.getType() == AttackType.GRIEFING) {
-            transactionFailed(edgeweights, edgeModifications);
-            throw new TransactionFailedException("This payment was griefed");
-          }
-
-        }
-      }
-    }
-
     int[][] reversedPaths = reversePaths(paths);
 
     for (int treeIndex = 0; treeIndex < reversedPaths.length; treeIndex++) {
@@ -866,6 +845,23 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
           int previousNodeIndex = reversedPaths[treeIndex][nodeIndex];
           Edge edge = CreditLinks.makeEdge(currentNodeIndex, previousNodeIndex);
+
+          // payment griefing attack logic
+          if (attack != null && (attack.getType() == AttackType.GRIEFING ||
+                  attack.getType() == AttackType.GRIEFING_SUCCESS)) {
+            if (this.byzantineNodes.contains(currentNodeIndex)) {
+              try {
+                Thread.sleep(attack.getReceiverDelayMs());
+              } catch (InterruptedException e) {
+                // don't worry about it
+              }
+
+              if (attack.getType() == AttackType.GRIEFING) {
+                transactionFailed(edgeweights, edgeModifications);
+                throw new TransactionFailedException("This payment was griefed");
+              }
+            }
+          }
 
           if (log.isInfoEnabled()) {
             log.info("Finalize: cur=" + currentNodeIndex + "; prev=" + previousNodeIndex + "; val=" + vals[treeIndex]);
