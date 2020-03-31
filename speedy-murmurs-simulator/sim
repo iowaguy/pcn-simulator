@@ -5,6 +5,7 @@ EXPERIMENT_LOG=${LOG_DIR}/experiment-`hostname`-`date +%m-%d-%y-%H:%M:%S`.out
 IPYTHON_HOME=${HOME}/.ipython
 IPCLUSTER_DIR=${IPYTHON_HOME}/`hostname`/
 SCRIPTS_DIR="scripts"
+
 usage() {
   echo "Usage: $0 [start|stop|status|experiment|controller|engines]" 1>&2
   exit 1
@@ -47,16 +48,16 @@ status() {
 
 controller() {
   nohup ipcontroller --ip='*' &> logs/controller.log &
-#  exec tail -f logs/controller.log
+  #exec tail -f logs/controller.log
   exit 0
 }
 
 engines() {
   ENGINES=$1
   for i in `seq $ENGINES`; do  
-      nohup ipengine &> logs/engine-${i}.log &
+      nohup ipengine &> logs/engine-$(hostname)-${i}.log &
   done
-  exec tail -f logs/engine-${ENGINES}.log
+  exec tail -f logs/engine-$(hostname)-${ENGINES}.log
 }
 
 start() {

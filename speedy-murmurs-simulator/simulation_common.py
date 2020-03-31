@@ -81,8 +81,12 @@ def __get_input_data_dir_path(config_dict):
 
 def parse_node_count(config_dict):
     input_data_path = __get_input_data_dir_path(config_dict)
-    return int(linecache.getline(input_data_path + '/' + config_dict['topology'], 4))
 
+    try:
+        return int(linecache.getline(input_data_path + '/' + config_dict['topology'], 4))
+    except:
+        raise Exception("Are you sure that data file exists and is formatted correctly?")
+    
 def get_dynamic_data_path_config(config_dict):
     algo = config_dict["routing_algorithm"]
     count = config_dict['step']

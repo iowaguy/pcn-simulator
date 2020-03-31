@@ -3,6 +3,7 @@ import attack_common
 import sys
 
 config = '''
+notes: {notes}
 attempts: {attempts}
 base: ../../pcn-topologies/datasets/{data_set}
 data_set_name: {data_set}
@@ -20,7 +21,7 @@ concurrent_transactions: {concurrent_transactions}
 concurrent_transactions_count: {concurrent_transactions_count}
 network_latency_ms: {network_latency_ms}
 epoch_length: {epoch}
-log_level: warn
+log_level: error
 '''
 
 attack_config = '''
@@ -36,7 +37,7 @@ def generate_configs(data_set_list, routing_algorithms, epoch_lengths_list, expe
                      attempts=1, num_steps=8, force_overwrite=False, iterations=1,
                      simulation_type="dynamic", trees=3, concurrent_transactions_count=1,
                      network_latency_ms=0, attack_type=None, attacker_selection=None,
-                     attackers=[0], receiver_delay_ms=[0]):
+                     attackers=[0], receiver_delay_ms=[0], notes=""):
 
     # if there is only one transaction at a time, transactions are not concurrent
     concurrent_transactions = concurrent_transactions_count != 1
@@ -66,7 +67,8 @@ def generate_configs(data_set_list, routing_algorithms, epoch_lengths_list, expe
                                                          trees=trees,
                                                          concurrent_transactions=concurrent_transactions,
                                                          concurrent_transactions_count=concurrent_transactions_count,
-                                                         network_latency_ms=network_latency_ms)
+                                                         network_latency_ms=network_latency_ms,
+                                                         notes=notes)
                         if attack_type:
                             attack_config_formatted = attack_config.format(attack_type=attack_type,
                                                                            attacker_selection=attacker_selection,
@@ -518,18 +520,22 @@ def get_experiments():
             "receiver_delay_ms":[30000]
         },
         #########################
-        "dynamic-mfcs-sm-griefing-success-attackers-variable-10000txs" : {
-            "num_steps":1,
-            "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5","id15-synthetic-nodes-10k-txs-poisson-1m-scalefree2-mult-0.5-prob-0.5","id16-synthetic-nodes-10k-txs-normal-1m-scalefree-less-connected","id17-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5"],
-            "concurrent_transactions_count":10000,
-            "routing_algorithms":[common.maxflow],
-            "epoch_lengths_list":[1250,1250,1250,1250,1250,1250,1250],
-            "network_latency_ms":1,
-            "attack_type":"griefing_success",
-            "attacker_selection":"random",
-            "attackers":[0, 500, 1000, 2000, 3000],
-            "receiver_delay_ms":[30000]
-        },
+        # "dynamic-mfcs-sm-griefing-success-attackers-variable-10000txs" : {
+        #     "num_steps":1,
+        #     "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected",
+        #                      "id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5",
+        #                      "id15-synthetic-nodes-10k-txs-poisson-1m-scalefree2-mult-0.5-prob-0.5",
+        #                      "id16-synthetic-nodes-10k-txs-normal-1m-scalefree-less-connected",
+        #                      "id17-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5"],
+        #     "concurrent_transactions_count":10000,
+        #     "routing_algorithms":[common.maxflow],
+        #     "epoch_lengths_list":[1250,1250,1250,1250,1250,1250,1250],
+        #     "network_latency_ms":1,
+        #     "attack_type":"griefing_success",
+        #     "attacker_selection":"random",
+        #     "attackers":[0, 500, 1000, 2000, 3000],
+        #     "receiver_delay_ms":[30000]
+        # },
         
         ########################
         "ripple_dynamic" : {
@@ -537,6 +543,67 @@ def get_experiments():
             "routing_algorithms":[common.speedymurmurs,
                                   common.silentwhispers],
             "epoch_lengths_list":[165552.45497208898],
+        },
+        ########################        
+        "2" : {
+            "notes" : "Reducing jvm stack space per thread",
+            "num_steps":1,
+            "data_set_list":["id17-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5",
+                             "id18-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":10000,
+            "routing_algorithms":[common.maxflow,
+                                  common.speedymurmurs],
+            "epoch_lengths_list":[1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[0, 500, 4000],
+            "receiver_delay_ms":[30000]
+        },
+        "3" : {
+            "notes" : "Increase JVM stack a little bit and rerun",
+            "num_steps":1,
+            "data_set_list":["id17-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5",
+                             "id18-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":10000,
+            "routing_algorithms":[common.maxflow,
+                                  common.speedymurmurs],
+            "epoch_lengths_list":[1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[0, 500, 5000],
+            "receiver_delay_ms":[30000]
+        },
+        "4" : {
+            "notes" : "Attackers will greif payment if they are *anywhere* on the path",
+            "num_steps":1,
+            "data_set_list":["id17-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5",
+                             "id18-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":10000,
+            "routing_algorithms":[common.maxflow,
+                                  common.speedymurmurs],
+            "epoch_lengths_list":[1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[0, 500, 5000],
+            "receiver_delay_ms":[30000]
+        },
+        "5" : {
+            "notes" : "Change JVM stack size back to default",
+            "num_steps":1,
+            "data_set_list":["id17-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5",
+                             "id18-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":10000,
+            "routing_algorithms":[common.maxflow,
+                                  common.speedymurmurs],
+            "epoch_lengths_list":[1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[0, 500, 5000],
+            "receiver_delay_ms":[30000]
         }
     }
 

@@ -11,7 +11,7 @@ plot_params:
     xmax: 700
     xmin: 0
     ylabel: Blocked Links Per Transaction
-    ymax: 100
+    ymax: 1500
     ymin: 0
 - plot:
     filename: cnet-totalCreditTransacted.txt 
@@ -23,7 +23,7 @@ plot_params:
     xmax: 700
     xmin: 0
     ylabel: Total Credit Transacted
-    ymax: 10000
+    ymax: 15000
     ymin: 0
 - plot:
     filename: cnet-creditDeviation.txt 
@@ -35,7 +35,7 @@ plot_params:
     xmax: 700
     xmin: 0
     ylabel: Credit Deviation
-    ymax: 1000000000
+    ymax: 200000000
     ymin: 0
 - plot:
     filename: cnet-succR.txt 
@@ -47,18 +47,18 @@ plot_params:
     xmax: 700
     xmin: 0
     ylabel: Success Ratio
-- plot:
-    filename: cnet-bcd.txt   
-    legend_loc:
-    - 0.63
-    - 0.1
-    running_avg: 20
-    xlabel: Time Epochs
-    xmax: 700
-    xmin: 0
-    ylabel: Bidirectional Credit Depletion (BCD)
-    ymax: 10000000
-    ymin: 0
+# - plot:
+#     filename: cnet-bcd.txt   
+#     legend_loc:
+#     - 0.63
+#     - 0.1
+#     running_avg: 20
+#     xlabel: Time Epochs
+#     xmax: 700
+#     xmin: 0
+#     ylabel: Bidirectional Credit Depletion (BCD)
+#     ymax: 10000000
+#     ymin: 0
 - plot:
     filename: cnet-pathLSuccAvg.txt
     legend_loc:
@@ -69,5 +69,5 @@ plot_params:
     xmax: 700
     xmin: 0
     ylabel: Average Path Length
-    ymax: 20
+    ymax: 30
     ymin: 0
