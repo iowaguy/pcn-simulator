@@ -55,7 +55,7 @@ class Topology:
         random_edges_per_node=2
         return nx.powerlaw_cluster_graph(nodes, random_edges_per_node, probability_of_triangle)
 
-    def full_knowledge_edge_weight_gen(self, tx_list, routingalgo=nx.shortest_path, value_multiplier=1.0, mult_probability=1.):
+    def full_knowledge_edge_weight_gen(self, tx_list, routingalgo=nx.shortest_path, value_multiplier=1.0, mult_probability=1.0, tx_inclusion_probability=1.0):
         max_weight = {}
         cur_weight = {}
 
@@ -66,6 +66,10 @@ class Topology:
             cur_weight[(source, dest)] = 0
 
         for source, dest, val in tx_list:
+            # do a biased coin flip, if result is 1, include this transaction in the weight assignment
+            if tx_inclusion_probability != 1.0 and np.random.binomial(1, tx_inclusion_probability) == 0:
+                continue
+
             logging.debug("Searching for path...")
             r_i = routingalgo(self.__graph, source=source, target=dest)
 
@@ -85,8 +89,8 @@ class Topology:
                 max_weight[(node1, node2)] = max(max_weight[(node1, node2)], cur_weight[(node1, node2)])
 
         for k in max_weight:
-            # do a biased coin flip, if result is 1, use multiplier
-            if np.random.binomial(1, mult_probability) == 1:
+            # do a biased coin flip, if result is 1 and multiplier is not 1.0, use multiplier
+            if np.random.binomial(1, mult_probability) == 1 and value_multiplier != 1.0:
                 max_weight[k] = max_weight[k]*value_multiplier
 
         self.__link_weights = max_weight
@@ -315,7 +319,9 @@ if __name__ == '__main__':
     txs = txdist.sample(configs[tx_count])
 
     if 'value_multiplier' in configs:
-        topo.full_knowledge_edge_weight_gen(txs, value_multiplier=configs['value_multiplier'], mult_probability=configs.get('multiplier_probability', 1))
+        topo.full_knowledge_edge_weight_gen(txs, value_multiplier=configs.get('value_multiplier', 1),
+                                            mult_probability=configs.get('multiplier_probability', 1),
+                                            tx_inclusion_probability=configs.get('tx_inclusion_probability', 1))
     else:
         topo.full_knowledge_edge_weight_gen(txs)
 
