@@ -208,6 +208,13 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
         log.debug("Found residual flow of length " + residualPaths[0].length);
       }
 
+      // handle case where there were no residual flows
+      if (residualPaths[0][0] == -1) {
+        transactionFailed(edgeweights, edgeModifications);
+        results.setSuccess(false);
+        return results;
+      }
+
       //potential flow along this path
       double minAlongPath = Double.MAX_VALUE;
       int[] residualPath = residualPaths[0];
@@ -363,6 +370,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
 
       int[] allOutgoingNeighbors = nodes[currentNode].getOutgoingEdges();
       for (int neighbor : allOutgoingNeighbors) {
+        // skip neighbor if it was the previous hop
         if (previousHops[currentNode][0] == neighbor) continue;
 
         // if the neighbor has not been inspected yet, and has some outgoing credit available
@@ -392,7 +400,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
         }
       }
     }
-    return new int[][]{new int[]{mes}};
+    return new int[][]{new int[]{-1}, new int[]{mes}};
   }
 
   @Override
