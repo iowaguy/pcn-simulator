@@ -604,6 +604,20 @@ def get_experiments():
             "attacker_selection":"random",
             "attackers":[0, 500, 5000],
             "receiver_delay_ms":[30000]
+        },
+        "6" : {
+            "notes" : "Try attack on new data set where credit is only assigned for 80% of transactions",
+            "num_steps":1,
+            "data_set_list":["id19-synthetic-nodes-10k-txs-normal-1m-scalefree2-txinclusion-0.8"],
+            "concurrent_transactions_count":10000,
+            "routing_algorithms":[common.maxflow,
+                                  common.speedymurmurs],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[0, 500, 5000],
+            "receiver_delay_ms":[30000]
         }
     }
 
