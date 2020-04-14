@@ -26,12 +26,12 @@ def plot_credit_on_links(base: str, fname: str):
                 credit.append(max_credit)
 
 
-    plt.xlabel("Credit per link")
-    plt.ylabel("Number of links")
-    plt.title("Distribution of credit across links", {"wrap":True})
+    plt.xlabel("Initial balance")
+    plt.ylabel("Number of channels")
+    # plt.title("Distribution of credit across links", {"wrap":True})
 
     # print(credit[:100])
-    plt.hist(credit, bins=100, range=(0,10000))
+    plt.hist(credit, bins=100, range=(0,6000))
     # plt.hist(credit, bins=50)
     p = Path(fname).stem
     plt.savefig(base + '/' + p + '_CREDIT_LINKS.png', dpi=300)
@@ -57,7 +57,7 @@ def plot_connections_per_node(base: str, fname: str):
     # plt.xscale('log')
     plt.xlabel("Connections per node")
     plt.ylabel("Number of nodes")
-    plt.title("Number of node connections", {"wrap":True})
+    # plt.title("Number of node connections", {"wrap":True})
 
     # plt.hist(connections, bins=50, range=(0,50))
     plt.hist(connections, bins=100, range=(0,50))
@@ -130,7 +130,7 @@ def tx_party_plotter(base: str, fname: str, data_type: int, xlabel: str, ylabel:
 
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.title(title, {"wrap":True})
+    # plt.title(title, {"wrap":True})
 
     # print(credit[:100])
     # print(bars[:20])
@@ -143,7 +143,7 @@ def tx_party_plotter(base: str, fname: str, data_type: int, xlabel: str, ylabel:
 
 
 def plot_tx_size(base: str, fname: str):
-    tx_plotter(base, fname, "amount", "Credit per transaction", "Number of transactions", "Distribution of credit across transactions", "_value_dist.png", range=(0,100))
+    tx_plotter(base, fname, "amount", "v_i", "Number of transactions", "Distribution of transactions values", "_value_dist.png", range=(0,100))
 
 
 def plot_tx_payer_dist(base: str, fname: str):
@@ -151,7 +151,7 @@ def plot_tx_payer_dist(base: str, fname: str):
 
 
 def plot_tx_payee_dist(base: str, fname: str):
-    tx_party_plotter(base, fname, "payee", "Transaction sender", "Number of transactions", "Distribution of transactions across receivers", "_payee_dist.png")
+    tx_party_plotter(base, fname, "payee", "Transaction recipient", "Number of transactions", "Distribution of transactions across receivers", "_payee_dist.png")
 
 
 # plots:
