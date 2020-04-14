@@ -1,0 +1,6 @@
+#!/bin/bash
+
+
+for ds in $(ls -1 ../datasets/ | grep -v README); do
+  ./plot_data_sets.py -base ../datasets/${ds}
+done

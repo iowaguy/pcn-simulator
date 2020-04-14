@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from typing import List, Dict
 from pathlib import Path
 
-
 # plot the distribution of credit on links
 def plot_credit_on_links(base: str, fname: str):
     credit = []
@@ -35,12 +34,13 @@ def plot_credit_on_links(base: str, fname: str):
     plt.hist(credit, bins=100, range=(0,10000))
     # plt.hist(credit, bins=50)
     p = Path(fname).stem
-    plt.savefig(base + '/' + p + '_CREIDIT_LINKS.png', dpi=300)
+    plt.savefig(base + '/' + p + '_CREDIT_LINKS.png', dpi=300)
     plt.close()
 
 
 # plot the distribution of connections per node
 def plot_connections_per_node(base: str, fname: str):
+    xaxis = 50
     connections = []
     with open(base + '/' + fname, 'r') as f:
         i = 0
@@ -57,7 +57,7 @@ def plot_connections_per_node(base: str, fname: str):
     # plt.xscale('log')
     plt.xlabel("Connections per node")
     plt.ylabel("Number of nodes")
-    plt.title("Distribution of node connections", {"wrap":True})
+    plt.title("Number of node connections", {"wrap":True})
 
     # plt.hist(connections, bins=50, range=(0,50))
     plt.hist(connections, bins=100, range=(0,50))
@@ -102,7 +102,8 @@ def tx_plotter(base: str, fname: str, data_type: int, xlabel: str, ylabel: str, 
     plt.close()
 
 def tx_party_plotter(base: str, fname: str, data_type: int, xlabel: str, ylabel: str, title: str, save_path: str, bins=50, ranges=None):
-    s = 93502
+    # s = 93502
+    s = 100000
     bars = [0 for i in range(s)]
 
     types = {"time":0, "amount":1, "payer":2, "payee":3}
@@ -120,10 +121,10 @@ def tx_party_plotter(base: str, fname: str, data_type: int, xlabel: str, ylabel:
 
             try:
                 val = int(link[link_val])
+                bars[val] += 1
             except Exception:
                 print(link_val)
 
-            bars[val] += 1
             # bars.append(float(val))
 
 

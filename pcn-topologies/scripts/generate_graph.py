@@ -8,6 +8,9 @@ import logging
 import random
 import math
 import numpy as np
+import plot_data_sets as dsplot
+from pathlib import Path
+import shutil
 
 node_count = 'node_count'
 tx_count = 'tx_count'
@@ -15,6 +18,7 @@ tx_value_distro = 'tx_value_distribution'
 tx_participant_distro = 'tx_participant_distribution'
 base_topology = 'base_topology'
 log_level = 'log_level'
+dataset_base = '../datasets'
 
 class Topology:
     def __init__(self, base_topology, nodes):
@@ -293,7 +297,8 @@ def rounddown(x):
     return math.floor(x * 10) / 10.0
 
 if __name__ == '__main__':
-    with open(sys.argv[1], 'r') as stream:
+    spec_file = sys.argv[1]
+    with open(spec_file, 'r') as stream:
         try:
             configs = yaml.safe_load(stream)
         except yaml.YAMLError as e:
@@ -329,3 +334,20 @@ if __name__ == '__main__':
     convert_credit_links_to_gtna(topo)
     convert_txs_to_gtna(txs)
     # topo.show()
+
+    new_dataset_path = dataset_base + '/' + configs.get('name')
+    Path(new_dataset_path).mkdir(parents=True, exist_ok=True)
+
+    for i in range(1, 11):
+        open(f"{new_dataset_path}/newlinks-{i}.txt", 'a').close()
+
+    open(f"{new_dataset_path}/newlinks.txt", 'a').close()
+
+    files_to_move = ["topology.graph", "topology.graph_CREDIT_LINKS", "transactions.txt"]
+    for fname in files_to_move:
+        shutil.move(fname, f"{new_dataset_path}/{fname}")
+
+    shutil.copy(spec_file, f"{new_dataset_path}/{spec_file}")
+
+    dsplot.plot_graph(new_dataset_path)
+    dsplot.plot_txs(new_dataset_path)
