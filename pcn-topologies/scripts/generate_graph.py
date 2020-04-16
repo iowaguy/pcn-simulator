@@ -167,7 +167,7 @@ class TxDistro:
         return np.random.poisson(10, n)
 
     def __sample_tx_normal(self, n):
-        return np.random.normal(10, 10, n)
+        return np.random.normal(30, 10, n)
 
     def __sample_tx_exponential(self, n):
         return np.random.exponential(10, n)
@@ -339,7 +339,9 @@ if __name__ == '__main__':
     Path(new_dataset_path).mkdir(parents=True, exist_ok=True)
 
     for i in range(1, 11):
-        open(f"{new_dataset_path}/newlinks-{i}.txt", 'a').close()
+        new_file = f"{new_dataset_path}/newlinks-{i}.txt"
+        open(new_file, 'a').close()
+        # shutil.move(new_file, f"{new_dataset_path}/{fname}")
 
     open(f"{new_dataset_path}/newlinks.txt", 'a').close()
 
