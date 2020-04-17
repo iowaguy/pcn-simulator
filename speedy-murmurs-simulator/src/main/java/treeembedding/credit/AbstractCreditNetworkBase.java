@@ -418,7 +418,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     return list.stream().mapToLong(l -> l).toArray();
   }
 
-  private void incrementCount(List<Long> values, int index) {
+  private synchronized void incrementCount(List<Long> values, int index) {
     if (index < values.size()) {
       values.set(index, values.get(index) + 1);
     } else {

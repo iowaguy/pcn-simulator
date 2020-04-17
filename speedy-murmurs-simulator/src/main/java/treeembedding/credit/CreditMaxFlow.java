@@ -32,8 +32,6 @@ import treeembedding.byzantine.AttackType;
 import treeembedding.credit.exceptions.InsufficientFundsException;
 import treeembedding.credit.exceptions.TransactionFailedException;
 
-import static treeembedding.credit.AbstractCreditNetworkBase.Metrics.MESSAGES_ALL;
-
 
 public class CreditMaxFlow extends AbstractCreditNetworkBase {
   //input parameters
@@ -132,7 +130,7 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
     distributions.put(Metrics.PATH, new Distribution(convertListToLongArray(Metrics.PATH), totalTransactionAttemptCount));
     distributions.put(Metrics.MESSAGES, new Distribution(convertListToLongArray(Metrics.MESSAGES), totalTransactionAttemptCount));
     distributions.put(Metrics.PATHS_ALL, new Distribution(convertListToLongArray(Metrics.PATHS_ALL), transactions.size()));
-    distributions.put(MESSAGES_ALL, new Distribution(convertListToLongArray(MESSAGES_ALL), transactions.size()));
+    distributions.put(Metrics.MESSAGES_ALL, new Distribution(convertListToLongArray(Metrics.MESSAGES_ALL), transactions.size()));
     distributions.put(Metrics.PATH_SUCCESS, new Distribution(convertListToLongArray(Metrics.PATH_SUCCESS), (int) this.success));
     distributions.put(Metrics.MESSAGES_SUCCESS, new Distribution(convertListToLongArray(Metrics.MESSAGES_SUCCESS), (int) this.success));
     distributions.put(Metrics.PATH_FAIL, new Distribution(convertListToLongArray(Metrics.PATH_FAIL), transactions.size() - (int) this.success));
