@@ -629,6 +629,6 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     double randomVariation = ThreadLocalRandom.current().nextDouble(variationPercentage) - variationPercentage / 2;
 
     // multiply delayTime by that amount
-    return (int) (randomVariation + 1) * attack.getReceiverDelayMs();
+    return (int) ((randomVariation + 1) * attack.getReceiverDelayMs());
   }
 }
