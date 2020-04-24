@@ -25,6 +25,7 @@ plot_params:
     ylabel: Total Credit Transacted
     ymax: 15000
     ymin: 0
+    cumsum: True
 - plot:
     filename: cnet-creditDeviation.txt 
     legend_loc:

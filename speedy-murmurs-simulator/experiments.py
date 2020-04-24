@@ -21,6 +21,7 @@ concurrent_transactions: {concurrent_transactions}
 concurrent_transactions_count: {concurrent_transactions_count}
 network_latency_ms: {network_latency_ms}
 epoch_length: {epoch}
+jvm_options: {jvm_opts}
 log_level: error
 '''
 
@@ -37,7 +38,7 @@ def generate_configs(data_set_list, routing_algorithms, epoch_lengths_list, expe
                      attempts=1, num_steps=8, force_overwrite=False, iterations=1,
                      simulation_type="dynamic", trees=3, concurrent_transactions_count=1,
                      network_latency_ms=0, attack_type=None, attacker_selection=None,
-                     attackers=[0], receiver_delay_ms=[0], notes=""):
+                     attackers=[0], receiver_delay_ms=[0], notes="", jvm_options='-showversion'):
 
     # if there is only one transaction at a time, transactions are not concurrent
     concurrent_transactions = concurrent_transactions_count != 1
@@ -68,6 +69,7 @@ def generate_configs(data_set_list, routing_algorithms, epoch_lengths_list, expe
                                                          concurrent_transactions=concurrent_transactions,
                                                          concurrent_transactions_count=concurrent_transactions_count,
                                                          network_latency_ms=network_latency_ms,
+                                                         jvm_opts=jvm_options,
                                                          notes=notes)
                         if attack_type:
                             attack_config_formatted = attack_config.format(attack_type=attack_type,
@@ -618,6 +620,97 @@ def get_experiments():
             "attacker_selection":"random",
             "attackers":[0, 500, 5000],
             "receiver_delay_ms":[30000]
+        },
+        "7" : {
+            "notes" : "The ripple tests should be available for posterity",
+            "data_set_list":["id3-measured-nodes-93502-txs-1m-ripple-dynamic"],
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[165552.45497208898],
+        },
+        "8" : {
+            "notes" : "Try three new datasets",
+            "num_steps":1,
+            "data_set_list":["id20-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2",
+                             "id21-synthetic-poisson-nodes-10k-txs-normal-1m-scalefree2",
+                             "id22-synthetic-poisson-nodes-10k-txs-constant-1m-scalefree2"],
+            "concurrent_transactions_count":10000,
+            "routing_algorithms":[common.maxflow,
+                                  common.speedymurmurs],
+            "epoch_lengths_list":[1250,1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[0, 500, 5000],
+            "receiver_delay_ms":[30000]
+        },
+        "9" : {
+            "notes" : "Attempt to get rid of spike in success ratio by increasing JVM max heap size",
+            "num_steps":1,
+            "data_set_list":["id20-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2"],
+            "concurrent_transactions_count":10000,
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":1,
+            "jvm_options": "-Xmx64g",
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[0, 500, 5000],
+            "receiver_delay_ms":[30000]
+        },
+        "10" : {
+            "notes" : "Next attempt to get rid of spike in success ratio by increasing JVM max heap size",
+            "num_steps":1,
+            "data_set_list":["id20-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2"],
+            "concurrent_transactions_count":10000,
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":1,
+            "jvm_options": "-XX:+AggressiveHeap",
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[5000],
+            "receiver_delay_ms":[30000]
+        },
+        "11" : {
+            "notes" : "Next attempt to get rid of spike in success ratio by increasing JVM per thread stack size",
+            "num_steps":1,
+            "data_set_list":["id20-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2"],
+            "concurrent_transactions_count":10000,
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":1,
+            "jvm_options": "-Xss2048k",
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[0, 500, 5000],
+            "receiver_delay_ms":[30000]
+        },
+        "12" : {
+            "notes" : "Do sensitivity on the delay, see if spike in succR is related",
+            "num_steps":1,
+            "data_set_list":["id20-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2"],
+            "concurrent_transactions_count":10000,
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[5000],
+            "receiver_delay_ms":[1000, 10000, 20000, 30000]
+        },
+        "13" : {
+            "notes" : "Try new data sets with multipliers on balances",
+            "num_steps":1,
+            "data_set_list":["id23-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2-mult-0.5-prob-0.5",
+                             "id24-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2-mult-0.5"],
+            "concurrent_transactions_count":10000,
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1250,1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[0, 500, 5000],
+            "receiver_delay_ms":[10000]
         }
     }
 

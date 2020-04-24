@@ -8,6 +8,7 @@ import simulation_utils as su
 import yaml
 from typing import List, Dict
 from pathlib import Path
+import pandas as pd
 
 def get_plottable_list(line_config: Dict, xs: int, running_avg=None, basepath='') -> List[float]:
     base = line_config['base']
@@ -22,14 +23,7 @@ def get_plottable_list(line_config: Dict, xs: int, running_avg=None, basepath=''
     else:
         return su.dict_to_list(full_dict, xs)
 
-if __name__ == "__main__":
-    with open(sys.argv[1], 'r') as c:
-        try:
-            config = yaml.safe_load(c)
-        except yaml.YAMLError as exc:
-            print(exc)
-            exit()
-
+def plot_direct(config):
     xmax = config['xmax']
     xmin = config['xmin']
 
@@ -58,3 +52,45 @@ if __name__ == "__main__":
     d = p.parts[-2]
     f = p.stem
     plt.savefig(d + '/' + f + '.png', dpi=300)
+
+def plot_cumsum(config):
+    # do cumsum in pandas
+    dfs = []
+    plt.figure()
+    basepath = config.get('base', '')
+    if not config.get("cumsum", False):
+        return
+
+    for line in config['lines']:
+        l = line['line']
+        filebase = l['base']
+        for f in l['files']:
+            path = basepath + '/' + filebase + '/' + f
+            new_df = pd.read_csv(path, header=None, delim_whitespace=True)
+            dfs.append(new_df)
+            new_df[1].cumsum().plot(label=l['name'])
+
+    p = Path(sys.argv[1])
+    d = p.parts[-2]
+    f = p.stem
+
+    legendx = config['legend_loc'][0]
+    legendy = config['legend_loc'][1]
+    plt.xlabel(config['xlabel'])
+    plt.ylabel(config['ylabel'] + " cumulative")
+    plt.title(config.get('plotname',""), {"wrap":True})
+    plt.legend(loc=(legendx, legendy), scatterpoints=10)
+
+    plt.savefig(d + '/' + f + '-cumulative.png', dpi=300)
+
+
+if __name__ == "__main__":
+    with open(sys.argv[1], 'r') as c:
+        try:
+            config = yaml.safe_load(c)
+        except yaml.YAMLError as exc:
+            print(exc)
+            exit()
+
+    plot_direct(config)
+    plot_cumsum(config)
