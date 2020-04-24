@@ -18,5 +18,6 @@ speedy-murmurs-simulator/target/*
 **/__pycache__/
 *~
 speedy-murmurs-simulator/logs/*
+speedy-murmurs-simulator/plotting/archived/*
 */nohup*.out
 **.png

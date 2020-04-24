@@ -22,6 +22,7 @@ concurrent_transactions_count: {concurrent_transactions_count}
 network_latency_ms: {network_latency_ms}
 epoch_length: {epoch}
 jvm_options: {jvm_opts}
+receiver_delay_variability: {receiver_delay_var}
 log_level: error
 '''
 
@@ -38,7 +39,8 @@ def generate_configs(data_set_list, routing_algorithms, epoch_lengths_list, expe
                      attempts=1, num_steps=8, force_overwrite=False, iterations=1,
                      simulation_type="dynamic", trees=3, concurrent_transactions_count=1,
                      network_latency_ms=0, attack_type=None, attacker_selection=None,
-                     attackers=[0], receiver_delay_ms=[0], notes="", jvm_options='-showversion'):
+                     attackers=[0], receiver_delay_ms=[0], notes="", jvm_options='-showversion',
+                     receiver_delay_variability=0):
 
     # if there is only one transaction at a time, transactions are not concurrent
     concurrent_transactions = concurrent_transactions_count != 1
@@ -70,6 +72,7 @@ def generate_configs(data_set_list, routing_algorithms, epoch_lengths_list, expe
                                                          concurrent_transactions_count=concurrent_transactions_count,
                                                          network_latency_ms=network_latency_ms,
                                                          jvm_opts=jvm_options,
+                                                         receiver_delay_var=receiver_delay_variability,
                                                          notes=notes)
                         if attack_type:
                             attack_config_formatted = attack_config.format(attack_type=attack_type,
@@ -710,6 +713,20 @@ def get_experiments():
             "attack_type":"griefing_success",
             "attacker_selection":"random",
             "attackers":[0, 500, 5000],
+            "receiver_delay_ms":[10000]
+        },
+        "14" : {
+            "notes" : "Build randomness into attack delays",
+            "num_steps":1,
+            "data_set_list":["id23-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":10000,
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[0, 500, 5000],
+            "receiver_delay_variability": 50,
             "receiver_delay_ms":[10000]
         }
     }

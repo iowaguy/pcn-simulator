@@ -74,7 +74,7 @@ experiment() {
   fi
   nohup python experiments.py "${EXPERIMENT_TYPE}" &> "${EXPERIMENT_LOG}" &
   sleep 1
-  if [ "$EXPERIMENT_TYPE" -ne "list" ]; then
+  if [ "$EXPERIMENT_TYPE" != "list" ]; then
     echo "Experiment started" > $(head -n1 ${EXPERIMENT_LOG})
   fi
   echo "${EXPERIMENT_LOG}"
