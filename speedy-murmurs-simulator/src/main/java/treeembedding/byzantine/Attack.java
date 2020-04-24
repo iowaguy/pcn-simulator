@@ -1,5 +1,6 @@
 package treeembedding.byzantine;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Set;
@@ -8,6 +9,7 @@ import java.util.Vector;
 import gtna.graph.Node;
 import treeembedding.credit.Transaction;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Attack {
   @JsonProperty("attackers")
   private int numAttackers;
@@ -21,8 +23,19 @@ public class Attack {
   @JsonProperty("receiver_delay_ms")
   private int receiverDelayMs;
 
+  @JsonProperty("receiver_delay_variability")
+  private int receiverDelayVariability;
+
   @JsonProperty("selected_byzantine_nodes")
   private Set<Integer> selectedByzantineNodes;
+
+  public int getReceiverDelayVariability() {
+    return receiverDelayVariability;
+  }
+
+  public void setReceiverDelayVariability(int receiverDelayVariability) {
+    this.receiverDelayVariability = receiverDelayVariability;
+  }
 
   public Set<Integer> generateAttackers(Node[] allNodes, Vector<Transaction> transactions) {
     ByzantineNodeSelection byz = selection.getSelectionType();

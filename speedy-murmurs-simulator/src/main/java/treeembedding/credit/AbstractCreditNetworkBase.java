@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadLocalRandom;
 
 import gtna.graph.Edge;
 import gtna.graph.Graph;
@@ -617,4 +618,17 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     }
   }
 
+  int calculateDelayTime(Attack attack) {
+    if (attack.getReceiverDelayVariability() == 0) {
+      return attack.getReceiverDelayMs();
+    }
+
+    double variationPercentage = (attack.getReceiverDelayVariability() + 1) / 100.0;
+
+    // gen random number from 0 to attackDelayVariability, and subtract half
+    double randomVariation = ThreadLocalRandom.current().nextDouble(variationPercentage) - variationPercentage / 2;
+
+    // multiply delayTime by that amount
+    return (int) (randomVariation + 1) * attack.getReceiverDelayMs();
+  }
 }

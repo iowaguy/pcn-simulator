@@ -851,7 +851,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
                   attack.getType() == AttackType.GRIEFING_SUCCESS)) {
             if (this.byzantineNodes.contains(currentNodeIndex)) {
               try {
-                Thread.sleep(attack.getReceiverDelayMs());
+                Thread.sleep(calculateDelayTime(attack));
               } catch (InterruptedException e) {
                 // don't worry about it
               }
