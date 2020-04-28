@@ -204,7 +204,8 @@ class TxDistro:
 
     def __sample_normal_dist(self, l, max=None):
         l = list(l)
-        loc=len(l)/2
+        bp=2
+        loc=len(l)/bp
 
         num = np.random.normal(loc, 2000)
         while num < 0 or num > len(l):
@@ -222,7 +223,8 @@ class TxDistro:
 
     def __sample_poisson_dist(self, l, max=None):
         l = list(l)
-        lam=len(l)/2
+        bp=2
+        lam=len(l)/bp
 
         num = np.random.poisson(lam)
         return l[num]
@@ -230,7 +232,8 @@ class TxDistro:
     def __sample_pareto_dist(self, l, max=None):
         l = list(l)
         alpha=1.16 # from the pareto principle, i.e. 80/20 rule
-        bucket_width = 5.0/len(l)
+        bp=5.0
+        bucket_width = bp/len(l)
 
         # sample number, need to subtract 1 so that distro starts at zero.
         # pareto normally starts at one.
