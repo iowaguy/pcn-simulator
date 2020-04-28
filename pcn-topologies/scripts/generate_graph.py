@@ -21,7 +21,9 @@ log_level = 'log_level'
 dataset_base = '../datasets'
 
 class Topology:
-    def __init__(self, base_topology, nodes):
+    def __init__(self, base_topology, nodes, connection_parameter):
+        # number of edges to connect to existing nodes
+        self.__connection_parameter = connection_parameter
         self.__base_topolgies = {'hybrid':self.__gen_hybrid_topology, 'smallworld':self.__gen_smallworld_topology, 'random':self.__gen_random_topology, 'scalefree':self.__gen_scalefree_topology}
         self.__graph = self.__base_topolgies[base_topology](nodes)
         self.__link_weights = None
@@ -50,9 +52,7 @@ class Topology:
         return nx.erdos_renyi_graph(nodes, p)
 
     def __gen_scalefree_topology(self, nodes):
-        # number of edges to connect to existing nodes
-        num_new_edges=2
-        return nx.barabasi_albert_graph(nodes, num_new_edges)
+        return nx.barabasi_albert_graph(nodes, self.__connection_parameter)
 
     def __gen_hybrid_topology(self, nodes):
         probability_of_triangle=1.0
@@ -312,7 +312,7 @@ if __name__ == '__main__':
     else:
         logging.basicConfig(level=logging.ERROR)
 
-    topo = Topology(configs[base_topology], configs[node_count])
+    topo = Topology(configs[base_topology], configs[node_count], configs.get('connection_parameter', 2))
     txdist = TxDistro(configs[tx_value_distro], configs[tx_participant_distro], topo)
 
 
