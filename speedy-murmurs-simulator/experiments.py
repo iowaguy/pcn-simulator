@@ -1,7 +1,6 @@
 import simulation_common as common
 import attack_common
 import sys
-import json
 
 config = '''
 notes: {notes}
@@ -780,5 +779,4 @@ if __name__ == "__main__":
         exit()
 
     configs = get_experiment_config(exp_name)
-    # attack_common.start(configs)
-    print(json.dumps(configs))
+    attack_common.start(configs)
