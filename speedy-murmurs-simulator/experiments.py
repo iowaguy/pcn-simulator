@@ -1,28 +1,29 @@
 import simulation_common as common
 import attack_common
 import sys
+import json
 
 config = '''
 notes: {notes}
 attempts: {attempts}
-base: ../../pcn-topologies/datasets/{data_set}
-data_set_name: {data_set}
+base: ../../pcn-topologies/datasets/{data_set_name}
+data_set_name: {data_set_name}
 experiment_name: {experiment_name}
 force_overwrite: {force_overwrite}
-step: {step}
+step: 0
 iterations: {iterations}
-routing_algorithm: "{alg}"
+routing_algorithm: "{routing_algorithm}"
 simulation_type: {simulation_type}
 topology: topology.graph
-transaction_set: transactions{tran_set}.txt
+transaction_set: transactions.txt
 trees: {trees}
-new_links_path: newlinks{new_links}.txt
+new_links_path: newlinks.txt
 concurrent_transactions: {concurrent_transactions}
 concurrent_transactions_count: {concurrent_transactions_count}
 network_latency_ms: {network_latency_ms}
-epoch_length: {epoch}
-jvm_options: {jvm_opts}
-receiver_delay_variability: {receiver_delay_var}
+epoch_length: {epoch_length}
+jvm_options: {jvm_options}
+receiver_delay_variability: {receiver_delay_variability}
 log_level: error
 '''
 
@@ -30,60 +31,60 @@ attack_config = '''
 attack_properties:
   attack_type: {attack_type}
   attacker_selection: {attacker_selection}
-  attackers: {num_attackers}
+  attackers: {attackers}
   receiver_delay_ms: {receiver_delay_ms}
 '''
 
+def do_replacement(experiment_name, i, config_dict,
+                   routing_algorithm,
+                   attackers,
+                   receiver_delay_ms, concurrent_transactions_count):
+    config_formatted = config.format(
+        data_set_name=config_dict['data_set_list'][i],
+        epoch_length=config_dict['epoch_lengths_list'][i],
+        attempts=config_dict.get('attempts',1),
+        force_overwrite=config_dict.get('force_overwrite', False),
+        iterations=config_dict.get('iterations', 1),
+        simulation_type=config_dict.get('simulation_type', 'dynamic'),
+        trees=config_dict.get('trees', 3),
+        network_latency_ms=config_dict.get('network_latency_ms', 0),
+        jvm_options=config_dict.get('jvm_options', '-showversion'),
+        receiver_delay_variability=config_dict.get('receiver_delay_variability', 0),
+        notes=config_dict.get('notes', ''),
+        experiment_name=experiment_name,
+        routing_algorithm=routing_algorithm,
+        attackers=attackers,
+        receiver_delay_ms=receiver_delay_ms,
+        concurrent_transactions_count=concurrent_transactions_count,
+
+        # if there is only one transaction at a time, transactions are not concurrent
+        concurrent_transactions=(concurrent_transactions_count != 1))
+
+    if config_dict.get('attack_type', None):
+        attack_config_formatted = attack_config.format(
+            attack_type=config_dict.get('attack_type', None),
+            attacker_selection=config_dict.get('attacker_selection', None),
+            attackers=attackers,
+            receiver_delay_ms=receiver_delay_ms)
+
+        config_formatted+=attack_config_formatted
+
+    return common.parse_config(config_formatted)
+
 # epoch_lengths_list: a list of the epoch lengths for each data set, indexes should match. See RunConfig.java to learn what the properties mean.
-def generate_configs(data_set_list, routing_algorithms, epoch_lengths_list, experiment_name,
-                     attempts=1, num_steps=8, force_overwrite=False, iterations=1,
-                     simulation_type="dynamic", trees=3, concurrent_transactions_count=1,
-                     network_latency_ms=0, attack_type=None, attacker_selection=None,
-                     attackers=[0], receiver_delay_ms=[0], notes="", jvm_options='-showversion',
-                     receiver_delay_variability=0):
+def generate_configs(experiment_name, config_dict):
+    l = [do_replacement(experiment_name, i, config_dict,
+                        routing_algorithm=alg,
+                        attackers=att, receiver_delay_ms=rec,
+                        concurrent_transactions_count=c_txs)
 
-    # if there is only one transaction at a time, transactions are not concurrent
-    concurrent_transactions = concurrent_transactions_count != 1
-    config_dict_list = []
-    for step in range(0, num_steps+1):
-        l = []
-        for i in range(0, len(data_set_list)):
-            for alg in routing_algorithms:
-                for att in attackers:
-                    for rec in receiver_delay_ms:
-                        if num_steps == 1:
-                            tran_set = ""
-                        else:
-                            tran_set = "-" + str(step + 1)
+         for i in range(0, len(config_dict['data_set_list']))
+         for alg in config_dict['routing_algorithms']
+         for att in config_dict.get('attackers', [0])
+         for rec in config_dict.get('receiver_delay_ms', [0])
+         for c_txs in config_dict.get('concurrent_transactions_count', [1])]
 
-                        config_formatted = config.format(alg=alg,
-                                                         tran_set=tran_set,
-                                                         step=step,
-                                                         data_set=data_set_list[i],
-                                                         epoch=epoch_lengths_list[i],
-                                                         new_links=tran_set,
-                                                         attempts=attempts,
-                                                         experiment_name=experiment_name,
-                                                         force_overwrite=force_overwrite,
-                                                         iterations=iterations,
-                                                         simulation_type=simulation_type,
-                                                         trees=trees,
-                                                         concurrent_transactions=concurrent_transactions,
-                                                         concurrent_transactions_count=concurrent_transactions_count,
-                                                         network_latency_ms=network_latency_ms,
-                                                         jvm_opts=jvm_options,
-                                                         receiver_delay_var=receiver_delay_variability,
-                                                         notes=notes)
-                        if attack_type:
-                            attack_config_formatted = attack_config.format(attack_type=attack_type,
-                                                                           attacker_selection=attacker_selection,
-                                                                           num_attackers=att,
-                                                                           receiver_delay_ms=rec)
-                            config_formatted+=attack_config_formatted
-
-                        l.append(common.parse_config(config_formatted))
-        config_dict_list.append(l)
-    return config_dict_list
+    return [l]
 
 def get_experiments():
     experiments = {
@@ -110,25 +111,25 @@ def get_experiments():
         },
         "dynamic-variable-conurrent-txs-10-id8-mfct" : {
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
-            "concurrent_transactions_count":10,
+            "concurrent_transactions_count":[10],
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250]
         },
         "dynamic-variable-conurrent-txs-25-id8-mfct" : {
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
-            "concurrent_transactions_count":25,
+            "concurrent_transactions_count":[25],
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250]
         },
         "dynamic-variable-conurrent-txs-50-id8-mfct" : {
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
-            "concurrent_transactions_count":50,
+            "concurrent_transactions_count":[50],
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250]
         },
         "dynamic-variable-conurrent-txs-100-id8-mfct" : {
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
-            "concurrent_transactions_count":100,
+            "concurrent_transactions_count":[100],
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250]
         },
@@ -141,28 +142,28 @@ def get_experiments():
         },
         "dynamic-variable-conurrent-txs-100-single-step-id8-mfct" : {
             "num_steps":1,
-            "concurrent_transactions_count":100,
+            "concurrent_transactions_count":[100],
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250]
         },
         "dynamic-variable-conurrent-txs-50-single-step-id8-mfct" : {
             "num_steps":1,
-            "concurrent_transactions_count":50,
+            "concurrent_transactions_count":[50],
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250]
         },
         "dynamic-variable-conurrent-txs-25-single-step-id8-mfct" : {
             "num_steps":1,
-            "concurrent_transactions_count":25,
+            "concurrent_transactions_count":[25],
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250]
         },
         "dynamic-variable-conurrent-txs-10-single-step-id8-mfct" : {
             "num_steps":1,
-            "concurrent_transactions_count":10,
+            "concurrent_transactions_count":[10],
             "data_set_list":["id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250]
@@ -176,28 +177,28 @@ def get_experiments():
         },
         "dynamic-variable-conurrent-txs-100-single-step-id0-mf-mfct" : {
             "num_steps":1,
-            "concurrent_transactions_count":100,
+            "concurrent_transactions_count":[100],
             "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
             "routing_algorithms":[common.maxflow, common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250]
         },
         "dynamic-variable-conurrent-txs-50-single-step-id0-mf-mfct" : {
             "num_steps":1,
-            "concurrent_transactions_count":50,
+            "concurrent_transactions_count":[50],
             "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
             "routing_algorithms":[common.maxflow, common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250]
         },
         "dynamic-variable-conurrent-txs-25-single-step-id0-mf-mfct" : {
             "num_steps":1,
-            "concurrent_transactions_count":25,
+            "concurrent_transactions_count":[25],
             "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
             "routing_algorithms":[common.maxflow, common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250]
         },
         "dynamic-variable-conurrent-txs-10-single-step-id0-mf-mfct" : {
             "num_steps":1,
-            "concurrent_transactions_count":10,
+            "concurrent_transactions_count":[10],
             "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
             "routing_algorithms":[common.maxflow, common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250]
@@ -212,7 +213,7 @@ def get_experiments():
         },
         "dynamic-variable-concurrent-txs-10-single-step-id0-mfct" : {
             "num_steps":1,
-            "concurrent_transactions_count":10,
+            "concurrent_transactions_count":[10],
             "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250],
@@ -220,7 +221,7 @@ def get_experiments():
         },
         "dynamic-variable-concurrent-txs-25-single-step-id0-mfct" : {
             "num_steps":1,
-            "concurrent_transactions_count":25,
+            "concurrent_transactions_count":[25],
             "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250],
@@ -228,7 +229,7 @@ def get_experiments():
         },
         "dynamic-variable-concurrent-txs-50-single-step-id0-mfct" : {
             "num_steps":1,
-            "concurrent_transactions_count":50,
+            "concurrent_transactions_count":[50],
             "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250],
@@ -236,7 +237,7 @@ def get_experiments():
         },
         "dynamic-variable-concurrent-txs-100-single-step-id0-mfct" : {
             "num_steps":1,
-            "concurrent_transactions_count":100,
+            "concurrent_transactions_count":[100],
             "data_set_list":["id0-synthetic-nodes-100k-txs-1m-scalefree"],
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250],
@@ -252,7 +253,7 @@ def get_experiments():
         },
         "dynamic-variable-concurrent-txs-10-single-step-id1-mfct" : {
             "num_steps":1,
-            "concurrent_transactions_count":10,
+            "concurrent_transactions_count":[10],
             "data_set_list":["id1-synthetic-nodes-10k-txs-100k-scalefree"],
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250],
@@ -260,7 +261,7 @@ def get_experiments():
         },
         "dynamic-variable-concurrent-txs-25-single-step-id1-mfct" : {
             "num_steps":1,
-            "concurrent_transactions_count":25,
+            "concurrent_transactions_count":[25],
             "data_set_list":["id1-synthetic-nodes-10k-txs-100k-scalefree"],
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250],
@@ -268,7 +269,7 @@ def get_experiments():
         },
         "dynamic-variable-concurrent-txs-50-single-step-id1-mfct" : {
             "num_steps":1,
-            "concurrent_transactions_count":50,
+            "concurrent_transactions_count":[50],
             "data_set_list":["id1-synthetic-nodes-10k-txs-100k-scalefree"],
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250],
@@ -276,7 +277,7 @@ def get_experiments():
         },
         "dynamic-variable-concurrent-txs-100-single-step-id1-mfct" : {
             "num_steps":1,
-            "concurrent_transactions_count":100,
+            "concurrent_transactions_count":[100],
             "data_set_list":["id1-synthetic-nodes-10k-txs-100k-scalefree"],
             "routing_algorithms":[common.maxflow_collateralize_total],
             "epoch_lengths_list":[1250],
@@ -292,7 +293,7 @@ def get_experiments():
         },
         "dynamic-variable-concurrent-txs-10-single-step-id10-mfct-mfcs-sm" : {
             "num_steps":1,
-            "concurrent_transactions_count":10,
+            "concurrent_transactions_count":[10],
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
             "routing_algorithms":[common.maxflow_collateralize_total, common.maxflow, common.speedymurmurs],
             "epoch_lengths_list":[1250],
@@ -300,7 +301,7 @@ def get_experiments():
         },
         "dynamic-variable-concurrent-txs-25-single-step-id10-mfct-mfcs-sm" : {
             "num_steps":1,
-            "concurrent_transactions_count":25,
+            "concurrent_transactions_count":[25],
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
             "routing_algorithms":[common.maxflow_collateralize_total, common.maxflow, common.speedymurmurs],
             "epoch_lengths_list":[1250],
@@ -308,7 +309,7 @@ def get_experiments():
         },
         "dynamic-variable-concurrent-txs-50-single-step-id10-mfct-mfcs-sm" : {
             "num_steps":1,
-            "concurrent_transactions_count":50,
+            "concurrent_transactions_count":[50],
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
             "routing_algorithms":[common.maxflow_collateralize_total, common.maxflow, common.speedymurmurs],
             "epoch_lengths_list":[1250],
@@ -316,7 +317,7 @@ def get_experiments():
         },
         "dynamic-variable-concurrent-txs-100-single-step-id10-mfct-mfcs-sm" : {
             "num_steps":1,
-            "concurrent_transactions_count":100,
+            "concurrent_transactions_count":[100],
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected"],
             "routing_algorithms":[common.maxflow_collateralize_total, common.maxflow, common.speedymurmurs],
             "epoch_lengths_list":[1250],
@@ -326,7 +327,7 @@ def get_experiments():
         "dynamic-mfcs-griefing-attackers-0%" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
-            "concurrent_transactions_count":100,
+            "concurrent_transactions_count":[100],
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
@@ -338,7 +339,7 @@ def get_experiments():
         "dynamic-mfcs-griefing-attackers-5%" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
-            "concurrent_transactions_count":100,
+            "concurrent_transactions_count":[100],
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
@@ -350,7 +351,7 @@ def get_experiments():
         "dynamic-mfcs-griefing-attackers-10%" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
-            "concurrent_transactions_count":100,
+            "concurrent_transactions_count":[100],
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
@@ -362,7 +363,7 @@ def get_experiments():
         "dynamic-mfcs-griefing-attackers-20%" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
-            "concurrent_transactions_count":100,
+            "concurrent_transactions_count":[100],
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
@@ -374,7 +375,7 @@ def get_experiments():
         "dynamic-mfcs-griefing-attackers-30%" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
-            "concurrent_transactions_count":100,
+            "concurrent_transactions_count":[100],
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
@@ -387,7 +388,7 @@ def get_experiments():
         "dynamic-mfcs-griefing-attackers-0%-concurrent-txs-1000" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
-            "concurrent_transactions_count":1000,
+            "concurrent_transactions_count":[1000],
             "routing_algorithms":[common.maxflow,common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
@@ -400,7 +401,7 @@ def get_experiments():
         "dynamic-mfcs-griefing-attackers-5%-concurrent-txs-1000" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
-            "concurrent_transactions_count":1000,
+            "concurrent_transactions_count":[1000],
             "routing_algorithms":[common.maxflow,common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
@@ -412,7 +413,7 @@ def get_experiments():
         "dynamic-mfcs-griefing-attackers-10%-concurrent-txs-1000" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
-            "concurrent_transactions_count":1000,
+            "concurrent_transactions_count":[1000],
             "routing_algorithms":[common.maxflow,common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
@@ -424,7 +425,7 @@ def get_experiments():
         "dynamic-mfcs-griefing-attackers-20%-concurrent-txs-1000" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
-            "concurrent_transactions_count":1000,
+            "concurrent_transactions_count":[1000],
             "routing_algorithms":[common.maxflow,common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
@@ -436,7 +437,7 @@ def get_experiments():
         "dynamic-mfcs-griefing-attackers-30%-concurrent-txs-1000" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5"],
-            "concurrent_transactions_count":1000,
+            "concurrent_transactions_count":[1000],
             "routing_algorithms":[common.maxflow,common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
@@ -449,7 +450,7 @@ def get_experiments():
         "dynamic-mfcs-griefing-success-attackers-0%" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5","id12-synthetic-nodes-10k-txs-constant-1m-scalefree-less-connected"],
-            "concurrent_transactions_count":1000,
+            "concurrent_transactions_count":[1000],
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250,1250],
             "network_latency_ms":1,
@@ -461,7 +462,7 @@ def get_experiments():
         "dynamic-mfcs-griefing-success-attackers-5%" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5","id12-synthetic-nodes-10k-txs-constant-1m-scalefree-less-connected"],
-            "concurrent_transactions_count":1000,
+            "concurrent_transactions_count":[1000],
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250,1250],
             "network_latency_ms":1,
@@ -473,7 +474,7 @@ def get_experiments():
         "dynamic-mfcs-griefing-success-attackers-10%" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5","id12-synthetic-nodes-10k-txs-constant-1m-scalefree-less-connected"],
-            "concurrent_transactions_count":1000,
+            "concurrent_transactions_count":[1000],
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250,1250],
             "network_latency_ms":1,
@@ -485,7 +486,7 @@ def get_experiments():
         "dynamic-mfcs-griefing-success-attackers-20%" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5","id12-synthetic-nodes-10k-txs-constant-1m-scalefree-less-connected"],
-            "concurrent_transactions_count":1000,
+            "concurrent_transactions_count":[1000],
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250,1250],
             "network_latency_ms":1,
@@ -497,7 +498,7 @@ def get_experiments():
         "dynamic-mfcs-griefing-success-attackers-30%" : {
             "num_steps":1,
             "data_set_list":["id10-synthetic-nodes-10k-txs-1m-scalefree-less-connected","id8-synthetic-nodes-10k-txs-1m-scalefree-less-connected-mult-0.5","id12-synthetic-nodes-10k-txs-constant-1m-scalefree-less-connected"],
-            "concurrent_transactions_count":1000,
+            "concurrent_transactions_count":[1000],
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250,1250],
             "network_latency_ms":1,
@@ -515,7 +516,7 @@ def get_experiments():
                 "id14-synthetic-nodes-10k-txs-exponential-1m-scalefree2",
                 "id15-synthetic-nodes-10k-txs-poisson-1m-scalefree2-mult-0.5-prob-0.5"
             ],
-            "concurrent_transactions_count":1000,
+            "concurrent_transactions_count":[1000],
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250,1250,1250],
             "network_latency_ms":1,
@@ -555,7 +556,7 @@ def get_experiments():
             "num_steps":1,
             "data_set_list":["id17-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5",
                              "id18-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5"],
-            "concurrent_transactions_count":10000,
+            "concurrent_transactions_count":[10000],
             "routing_algorithms":[common.maxflow,
                                   common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
@@ -570,7 +571,7 @@ def get_experiments():
             "num_steps":1,
             "data_set_list":["id17-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5",
                              "id18-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5"],
-            "concurrent_transactions_count":10000,
+            "concurrent_transactions_count":[10000],
             "routing_algorithms":[common.maxflow,
                                   common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
@@ -585,7 +586,7 @@ def get_experiments():
             "num_steps":1,
             "data_set_list":["id17-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5",
                              "id18-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5"],
-            "concurrent_transactions_count":10000,
+            "concurrent_transactions_count":[10000],
             "routing_algorithms":[common.maxflow,
                                   common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
@@ -600,7 +601,7 @@ def get_experiments():
             "num_steps":1,
             "data_set_list":["id17-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5",
                              "id18-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5"],
-            "concurrent_transactions_count":10000,
+            "concurrent_transactions_count":[10000],
             "routing_algorithms":[common.maxflow,
                                   common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
@@ -614,7 +615,7 @@ def get_experiments():
             "notes" : "Try attack on new data set where credit is only assigned for 80% of transactions",
             "num_steps":1,
             "data_set_list":["id19-synthetic-nodes-10k-txs-normal-1m-scalefree2-txinclusion-0.8"],
-            "concurrent_transactions_count":10000,
+            "concurrent_transactions_count":[10000],
             "routing_algorithms":[common.maxflow,
                                   common.speedymurmurs],
             "epoch_lengths_list":[1250],
@@ -636,7 +637,7 @@ def get_experiments():
             "data_set_list":["id20-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2",
                              "id21-synthetic-poisson-nodes-10k-txs-normal-1m-scalefree2",
                              "id22-synthetic-poisson-nodes-10k-txs-constant-1m-scalefree2"],
-            "concurrent_transactions_count":10000,
+            "concurrent_transactions_count":[10000],
             "routing_algorithms":[common.maxflow,
                                   common.speedymurmurs],
             "epoch_lengths_list":[1250,1250,1250],
@@ -650,7 +651,7 @@ def get_experiments():
             "notes" : "Attempt to get rid of spike in success ratio by increasing JVM max heap size",
             "num_steps":1,
             "data_set_list":["id20-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2"],
-            "concurrent_transactions_count":10000,
+            "concurrent_transactions_count":[10000],
             "routing_algorithms":[common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":1,
@@ -664,7 +665,7 @@ def get_experiments():
             "notes" : "Next attempt to get rid of spike in success ratio by increasing JVM max heap size",
             "num_steps":1,
             "data_set_list":["id20-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2"],
-            "concurrent_transactions_count":10000,
+            "concurrent_transactions_count":[10000],
             "routing_algorithms":[common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":1,
@@ -678,7 +679,7 @@ def get_experiments():
             "notes" : "Next attempt to get rid of spike in success ratio by increasing JVM per thread stack size",
             "num_steps":1,
             "data_set_list":["id20-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2"],
-            "concurrent_transactions_count":10000,
+            "concurrent_transactions_count":[10000],
             "routing_algorithms":[common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":1,
@@ -692,7 +693,7 @@ def get_experiments():
             "notes" : "Do sensitivity on the delay, see if spike in succR is related",
             "num_steps":1,
             "data_set_list":["id20-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2"],
-            "concurrent_transactions_count":10000,
+            "concurrent_transactions_count":[10000],
             "routing_algorithms":[common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":1,
@@ -706,7 +707,7 @@ def get_experiments():
             "num_steps":1,
             "data_set_list":["id23-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2-mult-0.5-prob-0.5",
                              "id24-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2-mult-0.5"],
-            "concurrent_transactions_count":10000,
+            "concurrent_transactions_count":[10000],
             "routing_algorithms":[common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
@@ -719,7 +720,7 @@ def get_experiments():
             "notes" : "Build randomness into attack delays",
             "num_steps":1,
             "data_set_list":["id23-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2-mult-0.5-prob-0.5"],
-            "concurrent_transactions_count":10000,
+            "concurrent_transactions_count":[10000],
             "routing_algorithms":[common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":1,
@@ -728,13 +729,42 @@ def get_experiments():
             "attackers":[0, 500, 5000],
             "receiver_delay_variability": 50,
             "receiver_delay_ms":[10000]
+        },
+        "15" : {
+            "notes" : "Vary number of concurrent transactions",
+            "num_steps":1,
+            "data_set_list":["id23-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":[2000, 4000, 8000, 10000],
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1250],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[5000],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000]
+        },
+        "16" : {
+            "notes" : "Change epoch size to 1",
+            "num_steps":1,
+            "data_set_list":["id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":[1000, 10000],
+            "routing_algorithms":[common.maxflow,
+                                  common.speedymurmurs],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":1,
+            "attack_type":"griefing_success",
+            "attacker_selection":"random",
+            "attackers":[0, 5000],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000]
         }
     }
 
     return experiments
 
-def get_experiment_config(exp_name):
-    return generate_configs(experiment_name=exp_name, **get_experiments().get(exp_name))
+def get_experiment_config(experiment_name):
+    return generate_configs(experiment_name, get_experiments().get(exp_name))
 
 if __name__ == "__main__":
     exp_name = sys.argv[1]
@@ -748,4 +778,5 @@ if __name__ == "__main__":
         exit()
 
     configs = get_experiment_config(exp_name)
-    attack_common.start(configs)
+    # attack_common.start(configs)
+    print(json.dumps(configs))
