@@ -35,10 +35,9 @@ attack_properties:
   receiver_delay_ms: {receiver_delay_ms}
 '''
 
-def do_replacement(experiment_name, i, config_dict,
-                   routing_algorithm,
-                   attackers,
-                   receiver_delay_ms, concurrent_transactions_count):
+def do_replacement(experiment_name, i, config_dict, routing_algorithm,
+                   attackers, receiver_delay_ms, concurrent_transactions_count,
+                   attack_type):
     config_formatted = config.format(
         data_set_name=config_dict['data_set_list'][i],
         epoch_length=config_dict['epoch_lengths_list'][i],
@@ -60,9 +59,9 @@ def do_replacement(experiment_name, i, config_dict,
         # if there is only one transaction at a time, transactions are not concurrent
         concurrent_transactions=(concurrent_transactions_count != 1))
 
-    if config_dict.get('attack_type', None):
+    if attack_type:
         attack_config_formatted = attack_config.format(
-            attack_type=config_dict.get('attack_type', None),
+            attack_type=attack_type,
             attacker_selection=config_dict.get('attacker_selection', None),
             attackers=attackers,
             receiver_delay_ms=receiver_delay_ms)
@@ -76,13 +75,16 @@ def generate_configs(experiment_name, config_dict):
     l = [do_replacement(experiment_name, i, config_dict,
                         routing_algorithm=alg,
                         attackers=att, receiver_delay_ms=rec,
-                        concurrent_transactions_count=c_txs)
+                        concurrent_transactions_count=c_txs,
+                        attack_type=attack_type)
 
          for i in range(0, len(config_dict['data_set_list']))
          for alg in config_dict['routing_algorithms']
          for att in config_dict.get('attackers', [0])
          for rec in config_dict.get('receiver_delay_ms', [0])
-         for c_txs in config_dict.get('concurrent_transactions_count', [1])]
+         for c_txs in config_dict.get('concurrent_transactions_count', [1])
+         for attack_type in config_dict.get('attack_type', None)
+    ]
 
     return [l]
 
@@ -331,7 +333,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing",
+            "attack_type":["griefing"],
             "attacker_selection":"random",
             "attackers":0,
             "receiver_delay_ms":100
@@ -343,7 +345,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing",
+            "attack_type":["griefing"],
             "attacker_selection":"random",
             "attackers":[500],
             "receiver_delay_ms":[100]
@@ -355,7 +357,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing",
+            "attack_type":["griefing"],
             "attacker_selection":"random",
             "attackers":[1000],
             "receiver_delay_ms":[100]
@@ -367,7 +369,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing",
+            "attack_type":["griefing"],
             "attacker_selection":"random",
             "attackers":[2000],
             "receiver_delay_ms":[100]
@@ -379,7 +381,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing",
+            "attack_type":["griefing"],
             "attacker_selection":"random",
             "attackers":[3000],
             "receiver_delay_ms":[100]
@@ -392,7 +394,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow,common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing",
+            "attack_type":["griefing"],
             "attacker_selection":"random",
             "attackers":[0],
             "receiver_delay_ms":[1000]
@@ -405,7 +407,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow,common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing",
+            "attack_type":["griefing"],
             "attacker_selection":"random",
             "attackers":[500],
             "receiver_delay_ms":[1000]
@@ -417,7 +419,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow,common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing",
+            "attack_type":["griefing"],
             "attacker_selection":"random",
             "attackers":[1000],
             "receiver_delay_ms":[1000]
@@ -429,7 +431,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow,common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing",
+            "attack_type":["griefing"],
             "attacker_selection":"random",
             "attackers":[2000],
             "receiver_delay_ms":[1000]
@@ -441,7 +443,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow,common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing",
+            "attack_type":["griefing"],
             "attacker_selection":"random",
             "attackers":[3000],
             "receiver_delay_ms":[1000]
@@ -454,7 +456,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[0],
             "receiver_delay_ms":[1000]
@@ -466,7 +468,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[500],
             "receiver_delay_ms":[1000]
@@ -478,7 +480,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[1000],
             "receiver_delay_ms":[1000]
@@ -490,7 +492,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[2000],
             "receiver_delay_ms":[1000]
@@ -502,7 +504,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[3000],
             "receiver_delay_ms":[1000]
@@ -520,7 +522,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1250,1250,1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing",
+            "attack_type":["griefing"],
             "attacker_selection":"random",
             "attackers":[0, 500, 1000, 2000, 3000],
             "receiver_delay_ms":[30000]
@@ -537,7 +539,7 @@ def get_experiments():
         #     "routing_algorithms":[common.maxflow],
         #     "epoch_lengths_list":[1250,1250,1250,1250,1250,1250,1250],
         #     "network_latency_ms":1,
-        #     "attack_type":"griefing_success",
+        #     "attack_type":["griefing_success"],
         #     "attacker_selection":"random",
         #     "attackers":[0, 500, 1000, 2000, 3000],
         #     "receiver_delay_ms":[30000]
@@ -561,7 +563,7 @@ def get_experiments():
                                   common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[0, 500, 4000],
             "receiver_delay_ms":[30000]
@@ -576,7 +578,7 @@ def get_experiments():
                                   common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[0, 500, 5000],
             "receiver_delay_ms":[30000]
@@ -591,7 +593,7 @@ def get_experiments():
                                   common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[0, 500, 5000],
             "receiver_delay_ms":[30000]
@@ -606,7 +608,7 @@ def get_experiments():
                                   common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[0, 500, 5000],
             "receiver_delay_ms":[30000]
@@ -620,7 +622,7 @@ def get_experiments():
                                   common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":1,
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[0, 500, 5000],
             "receiver_delay_ms":[30000]
@@ -642,7 +644,7 @@ def get_experiments():
                                   common.speedymurmurs],
             "epoch_lengths_list":[1250,1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[0, 500, 5000],
             "receiver_delay_ms":[30000]
@@ -656,7 +658,7 @@ def get_experiments():
             "epoch_lengths_list":[1250],
             "network_latency_ms":1,
             "jvm_options": "-Xmx64g",
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[0, 500, 5000],
             "receiver_delay_ms":[30000]
@@ -670,7 +672,7 @@ def get_experiments():
             "epoch_lengths_list":[1250],
             "network_latency_ms":1,
             "jvm_options": "-XX:+AggressiveHeap",
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[5000],
             "receiver_delay_ms":[30000]
@@ -684,7 +686,7 @@ def get_experiments():
             "epoch_lengths_list":[1250],
             "network_latency_ms":1,
             "jvm_options": "-Xss2048k",
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[0, 500, 5000],
             "receiver_delay_ms":[30000]
@@ -697,7 +699,7 @@ def get_experiments():
             "routing_algorithms":[common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":1,
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[5000],
             "receiver_delay_ms":[1000, 10000, 20000, 30000]
@@ -711,7 +713,7 @@ def get_experiments():
             "routing_algorithms":[common.speedymurmurs],
             "epoch_lengths_list":[1250,1250],
             "network_latency_ms":1,
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[0, 500, 5000],
             "receiver_delay_ms":[10000]
@@ -724,7 +726,7 @@ def get_experiments():
             "routing_algorithms":[common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":1,
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[0, 500, 5000],
             "receiver_delay_variability": 50,
@@ -738,7 +740,7 @@ def get_experiments():
             "routing_algorithms":[common.speedymurmurs],
             "epoch_lengths_list":[1250],
             "network_latency_ms":1,
-            "attack_type":"griefing_success",
+            "attack_type":["griefing_success"],
             "attacker_selection":"random",
             "attackers":[5000],
             "receiver_delay_variability": 0,
@@ -753,10 +755,10 @@ def get_experiments():
                                   common.speedymurmurs],
             "epoch_lengths_list":[1],
             "network_latency_ms":1,
-            "attack_type":"griefing_success",
+            "attack_type":["griefing", "griefing_success", "drop_all"],
             "attacker_selection":"random",
             "attackers":[0, 5000],
-            "receiver_delay_variability": 0,
+            "receiver_delay_variability": 50,
             "receiver_delay_ms":[10000]
         }
     }
