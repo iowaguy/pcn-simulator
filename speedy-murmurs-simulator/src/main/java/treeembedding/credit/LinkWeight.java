@@ -259,6 +259,8 @@ public class LinkWeight {
       } else {
         this.pendingTransactions.remove(weightChange);
       }
+    } else if (undo) {
+      return;
     } else {
       throw new TransactionFailedException("Cannot finalize a transaction that wasn't prepared");
     }

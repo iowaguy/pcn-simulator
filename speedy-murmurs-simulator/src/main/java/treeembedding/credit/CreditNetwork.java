@@ -140,7 +140,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     } catch (TransactionFailedException e) {
       results = new TransactionResults();
       results.setSuccess(false);
-      log.error(e.getMessage());
+      log.info(e.getMessage());
     }
     currentTransaction.endTime = (double) System.nanoTime();
     currentTransaction.addPath(results.getSumPathLength());
