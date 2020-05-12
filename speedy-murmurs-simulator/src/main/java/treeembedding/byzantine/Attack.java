@@ -3,6 +3,7 @@ package treeembedding.byzantine;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 
@@ -44,8 +45,13 @@ public class Attack {
     } else if (byz instanceof RandomByzantineNodeSelection) {
       byz.setNumByzantineNodes(numAttackers);
     } else if (byz instanceof SpecificByzantineNodeSelection) {
-      byz.setNumByzantineNodes(selectedByzantineNodes.size());
-      byz.setSelectedByzantineNodes(selectedByzantineNodes);
+      if (selectedByzantineNodes == null) {
+        byz.setNumByzantineNodes(0);
+        byz.setSelectedByzantineNodes(new HashSet<>());
+      } else {
+        byz.setNumByzantineNodes(selectedByzantineNodes.size());
+        byz.setSelectedByzantineNodes(selectedByzantineNodes);
+      }
     } else {
       byz = new NoByzantineNodeSelection();
     }
