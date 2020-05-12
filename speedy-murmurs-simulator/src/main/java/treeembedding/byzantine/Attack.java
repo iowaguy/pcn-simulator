@@ -44,7 +44,7 @@ public class Attack {
     } else if (byz instanceof RandomByzantineNodeSelection) {
       byz.setNumByzantineNodes(numAttackers);
     } else if (byz instanceof SpecificByzantineNodeSelection) {
-      byz.setNumByzantineNodes(numAttackers);
+      byz.setNumByzantineNodes(selectedByzantineNodes.size());
       byz.setSelectedByzantineNodes(selectedByzantineNodes);
     } else {
       byz = new NoByzantineNodeSelection();
