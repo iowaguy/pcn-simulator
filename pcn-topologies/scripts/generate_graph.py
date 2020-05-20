@@ -40,15 +40,15 @@ class Topology:
 
     def __gen_smallworld_topology(self, nodes):
         # Each node is joined with its k nearest neighbors in a ring topology
-        k = 5
+        k = self.__connection_parameter['k']
 
         # The probability of rewiring each edge
-        p = 0.5
-        return nx.watts_strogatz_graph(nodes, k, p)
+        p = self.__connection_parameter['p']
+        return nx.connected_watts_strogatz_graph(nodes, k, p)
 
     def __gen_random_topology(self, nodes):
         # probability for edge creation
-        p = 0.5
+        p = self.__connection_parameter
         return nx.erdos_renyi_graph(nodes, p)
 
     def __gen_scalefree_topology(self, nodes):
