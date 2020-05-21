@@ -192,7 +192,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     this.graph = g;
     //init: construct trees (currently randomly) and init variables
 
-    Treeembedding embed = new Treeembedding("T", 150, roots, MultipleSpanningTree.Direct.TWOPHASE);
+    Treeembedding embed = new Treeembedding("T", 200, roots, MultipleSpanningTree.Direct.TWOPHASE);
     if (!g.hasProperty("SPANNINGTREE_0")) {
       g = embed.transform(g);
     }

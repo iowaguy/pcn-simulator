@@ -1,53 +1,58 @@
 ignore_keys:
 - filename
 plot_params:
-- plot:
-    filename: cnet-blockedLinksPerTX.txt
-    legend_loc:
-    - 0.63
-    - 0.1
-    running_avg: 20
-    xlabel: Time Epochs
-    xmax: 700
-    xmin: 0
-    ylabel: Blocked Links Per Transaction
-    ymax: 1500
-    ymin: 0
+# - plot:
+#     filename: cnet-blockedLinksPerTX.txt
+#     legend_loc:
+#     - 0.63
+#     - 0.1
+#     running_avg: 20
+#     xlabel: Time Epochs
+#     xmax: 700
+#     xmin: 0
+#     ylabel: Blocked Links Per Transaction
+#     ymax: 1500
+#     ymin: 0
 - plot:
     filename: cnet-totalCreditTransacted.txt 
     legend_loc:
-    - 0.63
-    - 0.1
-    running_avg: 20
+    - 0
+    - 0.70
+    # - 0.13
+    # - 0.75
+
+    running_avg: 1500
     xlabel: Time Epochs
-    xmax: 700
+    #xmax: 700
     xmin: 0
-    ylabel: Total Credit Transacted
-    ymax: 15000
+    ylabel: Successful Transaction Values
+    #ymax: 15000
     ymin: 0
     cumsum: True
-- plot:
-    filename: cnet-creditDeviation.txt 
-    legend_loc:
-    - 0.63
-    - 0.1
-    running_avg: 20
-    xlabel: Time Epochs
-    xmax: 700
-    xmin: 0
-    ylabel: Credit Deviation
-    ymax: 200000000
-    ymin: 0
+# - plot:
+#     filename: cnet-creditDeviation.txt 
+#     legend_loc:
+#     - 0.63
+#     - 0.1
+#     running_avg: 20
+#     xlabel: Time Epochs
+#     xmax: 700
+#     xmin: 0
+#     ylabel: Credit Deviation
+#     ymax: 200000000
+#     ymin: 0
 - plot:
     filename: cnet-succR.txt 
     legend_loc:
     - 0.63
-    - 0.1
-    running_avg: 20
+    - 0.70
+    running_avg: 1500
     xlabel: Time Epochs
-    xmax: 700
+    #xmax: 700
     xmin: 0
     ylabel: Success Ratio
+    ymax: 1.0
+    ymin: 0.0
 # - plot:
 #     filename: cnet-bcd.txt   
 #     legend_loc:
@@ -63,11 +68,11 @@ plot_params:
 - plot:
     filename: cnet-pathLSuccAvg.txt
     legend_loc:
-    - 0.63
-    - 0.1
-    running_avg: 20
+    - 0.13
+    - 0.75
+    running_avg: 1500
     xlabel: Time Epochs
-    xmax: 700
+    #xmax: 700
     xmin: 0
     ylabel: Average Path Length
     ymax: 30

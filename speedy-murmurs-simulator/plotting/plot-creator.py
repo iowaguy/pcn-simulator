@@ -59,4 +59,4 @@ for filename in plot_data:
     with open(f'{filename}.yml', 'w') as file:
         yaml.dump(plot_data[filename], file)
 
-print(f'The plot files can be found inside: {dir_name}')
+print(f'{dir_name}')

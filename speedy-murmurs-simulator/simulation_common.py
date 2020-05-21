@@ -69,8 +69,11 @@ def get_output_base_path(config_dict):
         dir += f'-concurrent-{config_dict["concurrent_transactions_count"]}'
 
     if "attack_properties" in config_dict:
-        if config_dict["attack_properties"]["attackers"] != 0:
-            dir += f'-{config_dict["attack_properties"]["attack_type"]}-{config_dict["attack_properties"]["attacker_selection"]}-{config_dict["attack_properties"]["attackers"]}'
+        if config_dict["attack_properties"].get("attackers"):
+            dir += f'-{config_dict["attack_properties"]["attack_type"]}-{config_dict["attack_properties"]["attacker_selection"]}-{config_dict["attack_properties"].get("attackers")}'
+        elif config_dict["attack_properties"].get("selected_byzantine_nodes"):
+            dir += f'-{config_dict["attack_properties"]["attack_type"]}-{config_dict["attack_properties"]["attacker_selection"]}-{len(config_dict["attack_properties"].get("selected_byzantine_nodes"))}'
+
         if config_dict["attack_properties"]["receiver_delay_ms"] != 0:
             dir += f'-{config_dict["attack_properties"]["attack_type"]}-{config_dict["attack_properties"]["receiver_delay_ms"]}ms'
 
