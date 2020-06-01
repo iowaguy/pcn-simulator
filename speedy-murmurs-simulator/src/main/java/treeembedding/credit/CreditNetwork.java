@@ -57,7 +57,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
   private final Partitioner part; //method to partition overall transaction value on paths
   private final int[] roots; // spanning tree roots
   private final int maxTries;
-  private Queue<double[]> newLinks;
+  private final Queue<double[]> newLinks;
 
   private final boolean update;
 
@@ -70,7 +70,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
   private final ExecutorService executor;
 
-  private RoutingAlgorithm algo;
+  private final RoutingAlgorithm algo;
 
   public CreditNetwork(String file, String name, double epoch, RoutingAlgorithm algo,
                        double requeueInt, Partitioner part, int[] roots, int max, String links,
@@ -235,7 +235,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
         if (!this.dynRepair) {
           // if the epoch has changed and there are no dynamic repairs, wait until async
           // transactions are done, then rebalance
-          blockUntilAsyncTransactionsComplete(pendingTransactions);
+          //blockUntilAsyncTransactionsComplete(pendingTransactions);
 
           log.debug("Recompute spanning tree");
           for (int i = 0; i < roots.length; i++) {
