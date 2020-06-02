@@ -260,32 +260,32 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       pendingTransactions.add(futureResults);
 
       //4 post-processing: remove edges set to 0, update spanning tree if dynRepair
-      lastEpoch = currentEpoch;
-      if (this.dynRepair && zeroEdges != null) {
-        for (int j = 0; j < this.roots.length; j++) {
-          SpanningTree sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + j);
-          while (!this.zeroEdges.isEmpty()) {
-            Edge e = this.zeroEdges.remove();
-            int s = e.getSrc();
-            int t = e.getDst();
-            int cut = -1;
-            if (sp.getParent(s) == t) {
-              cut = s;
-            }
-            if (sp.getParent(t) == s) {
-              cut = t;
-            }
-            if (cut != -1) {
-              if (log.isDebugEnabled()) {
-                log.debug("Repair tree " + j + " at expired edge (" + s + "," + t + ")");
-              }
-              TreeCoordinates coords = (TreeCoordinates) g.getProperty("TREE_COORDINATES_" + j);
-              stabilizationMessages = stabilizationMessages + this.repairTree(nodes, sp, coords,
-                      cut, edgeweights);
-            }
-          }
-        }
-      }
+//      lastEpoch = currentEpoch;
+//      if (this.dynRepair && zeroEdges != null) {
+//        for (int j = 0; j < this.roots.length; j++) {
+//          SpanningTree sp = (SpanningTree) g.getProperty("SPANNINGTREE_" + j);
+//          while (!this.zeroEdges.isEmpty()) {
+//            Edge e = this.zeroEdges.remove();
+//            int s = e.getSrc();
+//            int t = e.getDst();
+//            int cut = -1;
+//            if (sp.getParent(s) == t) {
+//              cut = s;
+//            }
+//            if (sp.getParent(t) == s) {
+//              cut = t;
+//            }
+//            if (cut != -1) {
+//              if (log.isDebugEnabled()) {
+//                log.debug("Repair tree " + j + " at expired edge (" + s + "," + t + ")");
+//              }
+//              TreeCoordinates coords = (TreeCoordinates) g.getProperty("TREE_COORDINATES_" + j);
+//              stabilizationMessages = stabilizationMessages + this.repairTree(nodes, sp, coords,
+//                      cut, edgeweights);
+//            }
+//          }
+//        }
+//      }
     }
     this.executor.shutdown();
     // don't want metrics to be computed before all transactions are done
