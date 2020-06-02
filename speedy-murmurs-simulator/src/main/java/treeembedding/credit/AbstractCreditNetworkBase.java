@@ -49,15 +49,15 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   Map<Metrics, Distribution> distributions;
   double[] passRoot;
   CreditLinks edgeweights;
-  private int networkLatency;
+  private final int networkLatency;
   Set<Integer> byzantineNodes;
   final Attack attack;
   Queue<Edge> zeroEdges;
-  private double[][] txStartEndTimes;
+  private final double[][] txStartEndTimes;
 
-  private Map<Metrics, List<Long>> longMetrics;
-  private Map<Metrics, int[]> perEpochMetrics;
-  private Map<Metrics, double[]> perEpochDoubleMetrics;
+  private final Map<Metrics, List<Long>> longMetrics;
+  private final Map<Metrics, int[]> perEpochMetrics;
+  private final Map<Metrics, double[]> perEpochDoubleMetrics;
 
   static final String CREDIT_MAX_FLOW = "CREDIT_MAX_FLOW";
 
@@ -154,7 +154,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   Distribution[] pathsPerTreeFound; //distribution of single paths per tree, only discovered paths
   Distribution[] pathsPerTreeNF; //distribution of single paths per tree, not found dest
 
-  private List<Map<String, LinkStats>> linkMetricChanges; // changes to link metrics indexed by epoch and edge name
+  private final List<Map<String, LinkStats>> linkMetricChanges; // changes to link metrics indexed by epoch and edge name
 
   AbstractCreditNetworkBase(String key, Parameter[] parameters, double epoch, int numRoots,
                             String file, RunConfig runConfig) {
@@ -532,11 +532,11 @@ public abstract class AbstractCreditNetworkBase extends Metric {
 
 
   // this will block until the all results are available
-  void blockUntilAsyncTransactionsComplete(Queue<Future<TransactionResults>> pendingTransactions) {
-    for (Future<TransactionResults> res : pendingTransactions) {
-      blockUntilAsyncTransactionCompletes(res);
-    }
-  }
+//  void blockUntilAsyncTransactionsComplete(Queue<Future<TransactionResults>> pendingTransactions) {
+//    for (Future<TransactionResults> res : pendingTransactions) {
+//      blockUntilAsyncTransactionCompletes(res);
+//    }
+//  }
 
   // used for unit tests
   CreditLinks getCreditLinks() {

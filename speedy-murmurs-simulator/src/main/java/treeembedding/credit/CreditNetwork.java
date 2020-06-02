@@ -231,29 +231,29 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
       //1: check if and how many spanning tree re-construction took place since last transaction
       //do 1 (!) re-computation if there was any & set stabilization cost
-      if (currentEpoch != lastEpoch) {
-        if (!this.dynRepair) {
-          // if the epoch has changed and there are no dynamic repairs, wait until async
-          // transactions are done, then rebalance
-          //blockUntilAsyncTransactionsComplete(pendingTransactions);
-
-          log.debug("Recompute spanning tree");
-          for (int i = 0; i < roots.length; i++) {
-            g.removeProperty("SPANNINGTREE_" + i);
-            g.removeProperty("TREE_COORDINATES_" + i);
-          }
-          g = embed.transform(g);
-          for (int j = lastEpoch + 1; j <= currentEpoch; j++) {
-            stabMes.add(this.roots.length * 2 * this.computeNonZeroEdges(g, edgeweights));
-          }
-        } else {
-          stabMes.add(stabilizationMessages);
-          for (int j = lastEpoch + 2; j <= currentEpoch; j++) {
-            stabMes.add(0);
-          }
-          stabilizationMessages = 0;
-        }
-      }
+//      if (currentEpoch != lastEpoch) {
+//        if (!this.dynRepair) {
+//          // if the epoch has changed and there are no dynamic repairs, wait until async
+//          // transactions are done, then rebalance
+//          //blockUntilAsyncTransactionsComplete(pendingTransactions);
+//
+//          log.debug("Recompute spanning tree");
+//          for (int i = 0; i < roots.length; i++) {
+//            g.removeProperty("SPANNINGTREE_" + i);
+//            g.removeProperty("TREE_COORDINATES_" + i);
+//          }
+//          g = embed.transform(g);
+//          for (int j = lastEpoch + 1; j <= currentEpoch; j++) {
+//            stabMes.add(this.roots.length * 2 * this.computeNonZeroEdges(g, edgeweights));
+//          }
+//        } else {
+//          stabMes.add(stabilizationMessages);
+//          for (int j = lastEpoch + 2; j <= currentEpoch; j++) {
+//            stabMes.add(0);
+//          }
+//          stabilizationMessages = 0;
+//        }
+//      }
 
       // collect result futures
       Future<TransactionResults> futureResults = transactionResultsFuture(currentTransaction, g, nodes, edgeweights, currentEpoch);
