@@ -978,7 +978,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     return succ;
   }
 
-  private class TransactionStepResult {
+  private static class TransactionStepResult {
     int[][] paths;
     Map<Edge, List<Double>> edgeModifications;
 

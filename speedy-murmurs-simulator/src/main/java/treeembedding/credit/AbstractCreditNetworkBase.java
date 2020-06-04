@@ -109,7 +109,8 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     CREDIT_DEVIATION_PER_EPOCH("_CREDIT_DEVIATION_PER_EPOCH"),
     BCD_PER_EPOCH,
     BCD_NORMALIZED("_BIDIRECTIONAL_CREDIT_DEPLETION"),
-    TOTAL_CREDIT_TRANSACTED_PER_EPOCH("_TOTAL_CREDIT_TRANSACTED");
+    TOTAL_CREDIT_TRANSACTED_PER_EPOCH("_TOTAL_CREDIT_TRANSACTED"),
+    TX_START_END_TIME_NS("_START_END_TIME_NS");
 
     final String fileSuffix;
     final String singleName;
@@ -464,10 +465,8 @@ public abstract class AbstractCreditNetworkBase extends Metric {
       }
     }
 
-//    if (this.txStartEndTimes != null) {
-//      succ &= DataWriter.writeWithoutIndex(this.txStartEndTimes,
-//              this.key + "_TX_START_END_TIMES", folder);
-//    }
+    succ &= DataWriter.writeWithoutIndex(this.txStartEndTimes,
+            this.key + "_TX_START_END_TIMES", folder);
 
     for (Metrics m : Metrics.values()) {
       if (m.getSingleName().equals("") &&

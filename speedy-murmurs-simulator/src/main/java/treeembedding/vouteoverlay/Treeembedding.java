@@ -17,7 +17,7 @@ import gtna.util.parameter.StringParameter;
 import treeembedding.treerouting.TreeCoordinates;
 
 public class Treeembedding extends Transformation {
-  private int padding;
+  private final int padding;
   int trees;
   Random rand;
   String rootSelector;
@@ -38,11 +38,11 @@ public class Treeembedding extends Transformation {
   }
 
   private static String turnSelector(int[] r) {
-    String sel = r[0] + "";
+    StringBuilder sel = new StringBuilder(r[0] + "");
     for (int i = 1; i < r.length; i++) {
-      sel = sel + "-" + r[i];
+      sel.append("-").append(r[i]);
     }
-    return sel;
+    return sel.toString();
   }
 
   public Treeembedding(String name, int pad, int k, String rootSelector, double p, boolean depth, MultipleSpanningTree.Direct dir) {
