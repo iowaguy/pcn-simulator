@@ -27,7 +27,7 @@ class CreditNetworkTest {
   private RunConfig runConfig;
   private static final int EPOCH = 100;
   private static final double ACCEPTABLE_ERROR = 0.0001;
-  private RoutingAlgorithm[] algos = new RoutingAlgorithm[]{
+  private final RoutingAlgorithm[] algos = new RoutingAlgorithm[]{
           RoutingAlgorithm.SILENTWHISPERS,
           RoutingAlgorithm.SPEEDYMURMURS,
           RoutingAlgorithm.MAXFLOW,
@@ -319,7 +319,7 @@ class CreditNetworkTest {
     attack.setSelectedByzantineNodes(selectedByzantineNodes);
 
     // this is to guarantee that the griefed transaction starts first
-    runConfig.setTransactionDelayMs(500);
+    runConfig.setArrivalDelay(500);
 
     AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir, attack);
     CreditLinks edgeweights = abc.getCreditLinks();
@@ -367,7 +367,7 @@ class CreditNetworkTest {
     attack.setSelectedByzantineNodes(selectedByzantineNodes);
 
     // this is to guarantee that the griefed transaction starts first
-    runConfig.setTransactionDelayMs(500);
+    runConfig.setArrivalDelay(500);
 
     AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS_COLLATERALIZE_NONE, testDir, attack);
     CreditLinks edgeweights = abc.getCreditLinks();
@@ -417,7 +417,7 @@ class CreditNetworkTest {
     attack.setSelectedByzantineNodes(selectedByzantineNodes);
 
     // this is to guarantee that the griefed transaction starts first
-    runConfig.setTransactionDelayMs(100);
+    runConfig.setArrivalDelay(100);
 
     AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.SPEEDYMURMURS, testDir, attack);
     CreditLinks edgeweights = abc.getCreditLinks();
@@ -467,7 +467,7 @@ class CreditNetworkTest {
     attack.setSelectedByzantineNodes(selectedByzantineNodes);
 
     // this is to guarantee that the griefed transaction starts first
-    runConfig.setTransactionDelayMs(500);
+    runConfig.setArrivalDelay(500);
 
     AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.MAXFLOW_COLLATERALIZE, testDir, attack);
     CreditLinks edgeweights = abc.getCreditLinks();
@@ -516,7 +516,7 @@ class CreditNetworkTest {
     attack.setSelectedByzantineNodes(selectedByzantineNodes);
 
     // this is to guarantee that the griefed transaction starts first
-    runConfig.setTransactionDelayMs(500);
+    runConfig.setArrivalDelay(500);
 
     AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.MAXFLOW_COLLATERALIZE, testDir, attack);
     CreditLinks edgeweights = abc.getCreditLinks();
@@ -563,7 +563,7 @@ class CreditNetworkTest {
     attack.setSelectedByzantineNodes(selectedByzantineNodes);
 
     // this is to guarantee that the griefed transaction starts first
-    runConfig.setTransactionDelayMs(500);
+    runConfig.setArrivalDelay(500);
 
     AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.MAXFLOW_COLLATERALIZE_TOTAL, testDir, attack);
     CreditLinks edgeweights = abc.getCreditLinks();
@@ -825,7 +825,7 @@ class CreditNetworkTest {
     attack.setSelection(AttackerSelection.TOP_RECIPIENTS_BY_TXS);
 
     // this is to guarantee that the griefed transaction starts first
-    runConfig.setTransactionDelayMs(500);
+    runConfig.setArrivalDelay(500);
 
     AbstractCreditNetworkBase abc = singlePathLinkUpdate(RoutingAlgorithm.MAXFLOW_COLLATERALIZE_TOTAL, testDir, attack);
     CreditLinks edgeweights = abc.getCreditLinks();

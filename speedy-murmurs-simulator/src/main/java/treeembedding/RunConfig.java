@@ -61,7 +61,8 @@ public class RunConfig {
   private double epochLength;
 
   // useful for controlling the order of transactions in tests
-  private int transactionDelayMs;
+  @JsonProperty("arrival_delay")
+  private int arrivalDelay;
 
   public double getEpochLength() {
     if (epochLength == 0) {
@@ -71,12 +72,12 @@ public class RunConfig {
     }
   }
 
-  public int getTransactionDelayMs() {
-    return transactionDelayMs;
+  public int getArrivalDelay() {
+    return arrivalDelay;
   }
 
-  public void setTransactionDelayMs(int transactionDelayMs) {
-    this.transactionDelayMs = transactionDelayMs;
+  public void setArrivalDelay(int arrivalDelay) {
+    this.arrivalDelay = arrivalDelay;
   }
 
   public String getLogLevel() {
