@@ -61,7 +61,7 @@ public class RunConfig {
   private double epochLength;
 
   // useful for controlling the order of transactions in tests
-  @JsonProperty("arrival_delay")
+  @JsonProperty("arrival_delay_ms")
   private int arrivalDelay;
 
   public double getEpochLength() {
