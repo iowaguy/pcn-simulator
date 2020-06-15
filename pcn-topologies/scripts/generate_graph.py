@@ -11,6 +11,8 @@ import numpy as np
 import plot_data_sets as dsplot
 from pathlib import Path
 import shutil
+import graph_analysis as ga
+import lightning_utils as ln
 
 node_count = 'node_count'
 tx_count = 'tx_count'
@@ -21,12 +23,22 @@ log_level = 'log_level'
 dataset_base = '../datasets'
 
 class Topology:
-    def __init__(self, base_topology, nodes, connection_parameter):
+    def __init__(self, base_topology=None, nodes=None, connection_parameter=None, graph=None):
         # number of edges to connect to existing nodes
         self.__connection_parameter = connection_parameter
-        self.__base_topolgies = {'hybrid':self.__gen_hybrid_topology, 'smallworld':self.__gen_smallworld_topology, 'random':self.__gen_random_topology, 'scalefree':self.__gen_scalefree_topology}
-        self.__graph = self.__base_topolgies[base_topology](nodes)
-        self.__link_weights = None
+        self.__base_topolgies = {'hybrid':self.__gen_hybrid_topology, 'smallworld':self.__gen_smallworld_topology, 'random':self.__gen_random_topology, 'scalefree':self.__gen_scalefree_topology, 'scalefree_max':self.__gen_scalefree_topology_with_max_degree}
+
+        if graph:
+            self.__graph = nx.relabel.convert_node_labels_to_integers(graph)
+            self.__link_weights = {}
+            for src, dest in self.__graph.edges():
+                self.__link_weights[(src, dest)] = self.__graph.get_edge_data(src, dest)['capacity']
+                if (dest, src) not in self.__link_weights:
+                    self.__link_weights[(dest, src)] = 0
+        else:
+            self.__graph = self.__base_topolgies[base_topology](nodes)
+            self.__link_weights = None
+
 
     def get_small_worldness(self):
         rando_graph = nx.erdos_renyi_graph(len(self.__graph.nodes), 0.2)
@@ -44,8 +56,9 @@ class Topology:
 
         # The probability of rewiring each edge
         p = self.__connection_parameter['p']
-        return nx.connected_watts_strogatz_graph(nodes, k, p)
-
+#        return nx.connected_watts_strogatz_graph(nodes, k, p)
+        return nx.newman_watts_strogatz_graph(nodes, k, p)
+    
     def __gen_random_topology(self, nodes):
         # probability for edge creation
         p = self.__connection_parameter
@@ -54,12 +67,42 @@ class Topology:
     def __gen_scalefree_topology(self, nodes):
         return nx.barabasi_albert_graph(nodes, self.__connection_parameter)
 
+    def __gen_scalefree_topology_with_max_degree(self, nodes):
+        return nx.barabasi_albert_graph(nodes, self.__connection_parameter)
+
+    def __my_ba_with_max_degree(self, n, m, max_degree):
+        if m < 1 or m >= n:
+            raise nx.NetworkXError("Barabási–Albert network must have m >= 1"
+                                   " and m < n, m = %d, n = %d" % (m, n))
+
+        # Add m initial nodes (m0 in barabasi-speak)
+        G = nx.empty_graph(m)
+        # Target nodes for new edges
+        targets = list(range(m))
+        # List of existing nodes, with nodes repeated once for each adjacent edge
+        repeated_nodes = []
+        # Start adding the other n-m nodes. The first node is m.
+        source = m
+        while source < n:
+            # Add edges to m nodes from the source.
+            G.add_edges_from(zip([source] * m, targets))
+            # Add one node to the list for each new edge just created.
+            repeated_nodes.extend(targets)
+            # And the new node "source" has m edges to add to the list.
+            repeated_nodes.extend([source] * m)
+            # Now choose m unique nodes from the existing nodes
+            # Pick uniformly from repeated_nodes (preferential attachment)
+            targets = _random_subset(repeated_nodes, m, seed)
+            source += 1
+        return G
+
+
     def __gen_hybrid_topology(self, nodes):
         probability_of_triangle=1.0
-        random_edges_per_node=2
+        random_edges_per_node=self.__connection_parameter
         return nx.powerlaw_cluster_graph(nodes, random_edges_per_node, probability_of_triangle)
 
-    def full_knowledge_edge_weight_gen(self, tx_list, routingalgo=nx.shortest_path, value_multiplier=1.0, mult_probability=1.0, tx_inclusion_probability=1.0):
+    def full_knowledge_edge_weight_gen(self, tx_list, routingalgo=nx.shortest_path, value_multiplier=1.0, mult_probability=1.0, tx_inclusion_probability=1.0, min_channel_balance=0):
         max_weight = {}
         cur_weight = {}
 
@@ -75,7 +118,10 @@ class Topology:
                 continue
 
             logging.debug("Searching for path...")
-            r_i = routingalgo(self.__graph, source=source, target=dest)
+            try:
+                r_i = routingalgo(self.__graph, source=source, target=dest)
+            except nx.exception.NetworkXNoPath as e:
+                continue
 
             for i in range(0, len(r_i)-1):
                 node1 = r_i[i]
@@ -96,6 +142,10 @@ class Topology:
             # do a biased coin flip, if result is 1 and multiplier is not 1.0, use multiplier
             if np.random.binomial(1, mult_probability) == 1 and value_multiplier != 1.0:
                 max_weight[k] = max_weight[k]*value_multiplier
+
+            if min_channel_balance:
+                if max_weight[k] < min_channel_balance:
+                    max_weight[k] = min_channel_balance
 
         self.__link_weights = max_weight
         return max_weight
@@ -210,14 +260,9 @@ class TxDistro:
         num = np.random.normal(loc, 2000)
         while num < 0 or num > len(l):
             num = np.random.normal(loc, 2000)
-        # print(len(l))
-        # print(bucket_width)
-        # print(num)
-        # # find corresponding bucket
+        # find corresponding bucket
         node = math.floor(num)
-        # print(bucket)
         logging.debug(f"num={num};  node={node}")
-        #return l[bucket]
         return node
 
 
@@ -250,11 +295,14 @@ class TxDistro:
 
 def convert_topo_to_gtna(topo, name="topology"):
     edge_map = {}
+
     for s, d in topo.edges:
-        if str(s) in edge_map:
-            edge_map[str(s)].append(str(d))
+        s_str = str(s)
+        d_str = str(d)
+        if s_str in edge_map:
+            edge_map[s_str].append(d_str)
         else:
-            edge_map[str(s)] = [str(d)]
+            edge_map[s_str] = [d_str]
 
     with open(f"{name}.graph", 'w') as f:
         f.write("# Name of the Graph:\n")
@@ -312,7 +360,23 @@ if __name__ == '__main__':
     else:
         logging.basicConfig(level=logging.ERROR)
 
-    topo = Topology(configs[base_topology], configs[node_count], configs.get('connection_parameter', 2))
+
+    if 'load_topo' in configs:
+        load_topo_type = configs['load_topo'].get('type', 'gtna')
+        if load_topo_type == 'gtna':
+            # TODO read GTNA files
+            raise NotImplementedError()
+        elif load_topo_type == 'lightning_snapshot':
+            G = ln.load_lightning_topo(configs['load_topo']['ln_snapshot_file'])
+            topo = Topology(graph=G)
+        else:
+            raise NotImplementedError("{load_topo_type} not yet supported")
+
+    else:
+        topo = Topology(configs.get(base_topology, 'scalefree'),
+                        configs.get(node_count, 10000),
+                        configs.get('connection_parameter', 2))
+
     txdist = TxDistro(configs[tx_value_distro], configs[tx_participant_distro], topo)
 
 
@@ -326,17 +390,30 @@ if __name__ == '__main__':
 
     txs = txdist.sample(configs[tx_count])
 
-    if 'value_multiplier' in configs:
-        topo.full_knowledge_edge_weight_gen(txs, value_multiplier=configs.get('value_multiplier', 1),
-                                            mult_probability=configs.get('multiplier_probability', 1),
-                                            tx_inclusion_probability=configs.get('tx_inclusion_probability', 1))
+    if 'load_topo' in configs:
+        load_channels_type = configs['load_topo'].get('type', 'gtna')
+        if load_channels_type == 'gtna':
+            # TODO read GTNA files
+            raise NotImplementedError()
+        elif load_channels_type == 'lightning_snapshot':
+            # already done
+            pass
+
     else:
-        topo.full_knowledge_edge_weight_gen(txs)
+        if 'value_multiplier' in configs:
+            topo.full_knowledge_edge_weight_gen(txs, value_multiplier=configs.get('value_multiplier', 1),
+                                                mult_probability=configs.get('multiplier_probability', 1),
+                                                tx_inclusion_probability=configs.get('tx_inclusion_probability', 1),
+                                                min_channel_balance=configs.get('min_channel_balance', 0))
+        else:
+            topo.full_knowledge_edge_weight_gen(txs, min_channel_balance=configs.get('min_channel_balance', 0))
+
 
     convert_topo_to_gtna(topo)
     convert_credit_links_to_gtna(topo)
     convert_txs_to_gtna(txs)
-    # topo.show()
+    # # topo.show()
+
 
     new_dataset_path = dataset_base + '/' + configs.get('name')
     Path(new_dataset_path).mkdir(parents=True, exist_ok=True)
@@ -346,9 +423,14 @@ if __name__ == '__main__':
         open(new_file, 'a').close()
         # shutil.move(new_file, f"{new_dataset_path}/{fname}")
 
+    # create empty file
     open(f"{new_dataset_path}/newlinks.txt", 'a').close()
 
-    files_to_move = ["topology.graph", "topology.graph_CREDIT_LINKS", "transactions.txt"]
+    nodes = ga.select_n_by_method(".", method=ga.betweenness_centrality, top_n=len(topo.graph))
+    with open("betweenness_centrality.txt", "w") as f:
+        f.write(str(nodes))
+
+    files_to_move = ["topology.graph", "topology.graph_CREDIT_LINKS", "transactions.txt", "betweenness_centrality.txt"]
     for fname in files_to_move:
         shutil.move(fname, f"{new_dataset_path}/{fname}")
 
@@ -356,3 +438,5 @@ if __name__ == '__main__':
 
     dsplot.plot_graph(new_dataset_path)
     dsplot.plot_txs(new_dataset_path)
+
+
