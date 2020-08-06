@@ -1,5 +1,6 @@
 #+TITLE: Plots for Exploiting Centrality
 #+AUTHOR: Ben Weintraub
+#+EXCLUDE_TAGS: noexport
 
 * Utils
 #+NAME: src_utils
@@ -30,24 +31,29 @@
 #+RESULTS: src_utils
 : None
 
-* Plots for Attack Effectiveness (AE)
-
+* Calculate Attack Effectiveness (AE) :noexport:
 #+NAME: src_ae
-#+begin_src python :tangle yes :noweb eval :var pathA="" :var pathB="" :export none
+#+begin_src python :tangle yes :noweb eval :var pathA="" :var pathB=""
   <<src_utils>>
   return attack_effectiveness(pathA, pathB)
 #+end_src
 
 #+RESULTS: src_ae
 
-| ID | Paper figure | Routing algo  | Attackers | Attacker selection     | Dataset | Experiment number |
-|----+--------------+---------------+-----------+------------------------+---------+-------------------|
-|  1 |            5 | SpeedyMurmurs |       30% | Random                 |      25 |                22 |
-|  2 |            7 | SpeedyMurmurs |      0.1% | Betweenness centrality |      25 |                23 |
-
-#+ORGTBL: :skipcols (2)
+#+NAME: ae-calc
 | ID | PathA                                                                                                                                                                                                                                                     | PathB                                                                                                                                                                                                                                                                                                                             | Attack Effectiveness |
 |----+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------|
 |  1 | "../data/dynamic-id25-42/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat0ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/" | "../data/dynamic-id25-22/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-griefing_success-random-500-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/"   |  0.03761900000000007 |
-|  2 | "../data/dynamic-id25-42/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat0ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/" | "../data/dynamic-id25-23/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-10-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/" |  0.19761800000000004 |
+|  2 | "../data/dynamic-id25-42/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat0ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/" | "../data/dynamic-id25-22/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-griefing_success-random-3000-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/"  |  0.20905100000000007 |
+|  3 | "../data/dynamic-id25-42/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat0ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/" | "../data/dynamic-id25-23/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-10-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/" |  0.19761800000000004 |
 #+TBLFM: $4='(org-sbe "src_ae" (pathA $2) (pathB $3))
+
+* Plots for Attack Effectiveness (AE)
+
+#+NAME: pretty-table
+| ID | Paper figure | Routing algo  | Attackers | Attacker selection     | Dataset | Experiment number | Attack Effectiveness |
+|----+--------------+---------------+-----------+------------------------+---------+-------------------+----------------------|
+|  1 |            5 | SpeedyMurmurs |        5% | Random                 |      25 |                22 |             0.037619 |
+|  2 |            5 | SpeedyMurmurs |       30% | Random                 |      25 |                22 |             0.209051 |
+|  3 |            7 | SpeedyMurmurs |      0.1% | Betweenness centrality |      25 |                23 |             0.197618 |
+#+TBLFM: $8=remote(ae-calc, @@#$4)
