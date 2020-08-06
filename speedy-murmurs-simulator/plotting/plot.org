@@ -1,0 +1,53 @@
+#+TITLE: Plots for Exploiting Centrality
+#+AUTHOR: Ben Weintraub
+
+* Utils
+#+NAME: src_utils
+#+begin_src python :tangle yes
+  # notangle-start
+  import pandas as pd
+  # notangle-end
+
+  def loadDataFrame(path):
+      return pd.read_csv(path, header=None, delim_whitespace=True)
+
+  def tx_sum(dataframe):
+      return dataframe[1].sum()
+
+  def normalized_tx_sum(dataframe):
+      return tx_sum(dataframe)/dataframe[1].count()
+
+  def attack_effectiveness(pathA, pathB, filename="cnet-totalCreditTransacted.txt"):
+      dfA = loadDataFrame(pathA + filename)
+      dfB = loadDataFrame(pathB + filename)
+
+      norm_sumA = normalized_tx_sum(dfA)
+      norm_sumB = normalized_tx_sum(dfB)
+
+      return abs(norm_sumA - norm_sumB)
+#+end_src
+
+#+RESULTS: src_utils
+: None
+
+* Plots for Attack Effectiveness (AE)
+
+#+NAME: src_ae
+#+begin_src python :tangle yes :noweb eval :var pathA="" :var pathB="" :export none
+  <<src_utils>>
+  return attack_effectiveness(pathA, pathB)
+#+end_src
+
+#+RESULTS: src_ae
+
+| ID | Paper figure | Routing algo  | Attackers | Attacker selection     | Dataset | Experiment number |
+|----+--------------+---------------+-----------+------------------------+---------+-------------------|
+|  1 |            5 | SpeedyMurmurs |       30% | Random                 |      25 |                22 |
+|  2 |            7 | SpeedyMurmurs |      0.1% | Betweenness centrality |      25 |                23 |
+
+#+ORGTBL: :skipcols (2)
+| ID | PathA                                                                                                                                                                                                                                                     | PathB                                                                                                                                                                                                                                                                                                                             | Attack Effectiveness |
+|----+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------|
+|  1 | "../data/dynamic-id25-42/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat0ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/" | "../data/dynamic-id25-22/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-griefing_success-random-500-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/"   |  0.03761900000000007 |
+|  2 | "../data/dynamic-id25-42/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat0ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/" | "../data/dynamic-id25-23/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-10-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/" |  0.19761800000000004 |
+#+TBLFM: $4='(org-sbe "src_ae" (pathA $2) (pathB $3))
