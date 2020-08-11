@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import sys
 import yaml
 import networkx as nx
@@ -13,6 +14,7 @@ from pathlib import Path
 import shutil
 import graph_analysis as ga
 import lightning_utils as ln
+import statistics as stat
 
 node_count = 'node_count'
 tx_count = 'tx_count'
@@ -23,21 +25,29 @@ log_level = 'log_level'
 dataset_base = '../datasets'
 
 class Topology:
-    def __init__(self, base_topology=None, nodes=None, connection_parameter=None, graph=None):
+    def __init__(self, base_topology=None, nodes=None, connection_parameter=None, graph=None, balance_multiplier=1):
         # number of edges to connect to existing nodes
         self.__connection_parameter = connection_parameter
         self.__base_topolgies = {'hybrid':self.__gen_hybrid_topology, 'smallworld':self.__gen_smallworld_topology, 'random':self.__gen_random_topology, 'scalefree':self.__gen_scalefree_topology, 'scalefree_max':self.__gen_scalefree_topology_with_max_degree}
 
         if graph:
+            print(f"Is connected? {nx.is_connected(graph)}")
+            largest_cc = max(nx.connected_components(graph), key=len)
+            graph = graph.subgraph(largest_cc).copy()
             self.__graph = nx.relabel.convert_node_labels_to_integers(graph)
+
             self.__link_weights = {}
             for src, dest in self.__graph.edges():
-                self.__link_weights[(src, dest)] = self.__graph.get_edge_data(src, dest)['capacity']
+                self.__link_weights[(src, dest)] = self.__graph.get_edge_data(src, dest)['capacity']*balance_multiplier
                 if (dest, src) not in self.__link_weights:
                     self.__link_weights[(dest, src)] = 0
         else:
             self.__graph = self.__base_topolgies[base_topology](nodes)
             self.__link_weights = None
+
+
+    def in_largest_connected_component(self, n):
+        return n in self.largest_cc
 
 
     def get_small_worldness(self):
@@ -295,8 +305,11 @@ class TxDistro:
 
 def convert_topo_to_gtna(topo, name="topology"):
     edge_map = {}
-
+    num_edges = len(nx.edges(topo.graph))
     for s, d in topo.edges:
+        # if not topo.in_largest_connected_component(s) and topo.in_largest_connected_component(d):
+        #     continue
+        # num_edges += 1
         s_str = str(s)
         d_str = str(d)
         if s_str in edge_map:
@@ -304,15 +317,17 @@ def convert_topo_to_gtna(topo, name="topology"):
         else:
             edge_map[s_str] = [d_str]
 
+    num_nodes = len(topo.graph)
     with open(f"{name}.graph", 'w') as f:
         f.write("# Name of the Graph:\n")
-        f.write(f"G (Nodes = {len(topo.graph)})\n")
+        f.write(f"G (Nodes = {num_nodes})\n")
         f.write("# Number of Nodes:\n")
-        f.write(f"{len(topo.graph)}\n")
+        f.write(f"{num_nodes}\n")
         f.write("# Number of Edges:\n")
-        f.write(f"{len(topo.edges)}\n\n")
+        f.write(f"{num_edges}\n\n")
 
         for source, dest_list in edge_map.items():
+
             dest_str = ";".join(dest_list)
             f.write(f"{source}:{dest_str}\n")
 
@@ -326,6 +341,9 @@ def convert_credit_links_to_gtna(topo, name="topology"):
         # print(topo.link_credit)
         edges = {}
         for s, d in topo.graph.edges:
+            # if not topo.in_largest_connected_component(s) and topo.in_largest_connected_component(d):
+                # continue
+
             if s < d:
                 cur = roundup(topo.link_credit[(s,d)])
                 max = roundup(cur + topo.link_credit[(d, s)])
@@ -347,9 +365,44 @@ def roundup(x):
 def rounddown(x):
     return math.floor(x * 10) / 10.0
 
+def calculate_stats(topo, txs):
+    stats_out = {}
+    # calculate avg and median channel weights
+    link_balance_list = list(topo.link_credit.values())
+    stats_out['link_balance_sum'] = sum(link_balance_list)
+    stats_out['link_balance_mean'] = stat.mean(link_balance_list)
+    stats_out['link_balance_median'] = stat.median(link_balance_list)
+
+    tx_vals = [value for _, _, value in txs]
+    stats_out['tx_value_mean'] = stat.mean(tx_vals)
+    stats_out['tx_value_median'] = stat.median(tx_vals)
+    stats_out['tx_value_sum'] = sum(tx_vals)
+    return stats_out
+
+def write_stats(s, f="stats.txt"):
+    with open(f, "w") as f:
+        for k, v in s.items():
+            f.write(f"{k}: {v}\n")
+
+def create_newlinks_files():
+    for i in range(1, 11):
+        new_file = f"{new_dataset_path}/newlinks-{i}.txt"
+        open(new_file, 'a').close()
+
+    # create empty file
+    open(f"{new_dataset_path}/newlinks.txt", 'a').close()
+
 if __name__ == '__main__':
-    spec_file = sys.argv[1]
-    with open(spec_file, 'r') as stream:
+
+    parser = argparse.ArgumentParser(description='Generate graphs')
+    parser.add_argument('specfile',
+                        help='The specifications for the dataset')
+    parser.add_argument('-np', '--noplots', action='store_true', help='Don\'t plot')
+    parser.add_argument('-ngc', '--nographcalcs', action='store_true', help='Don\'t calculate graph statistics')
+    parser.add_argument('-st', '--showtopology', action='store_true', default=False, help='Show a diagram of the topology')
+
+    args = parser.parse_args()
+    with open(args.specfile, 'r') as stream:
         try:
             configs = yaml.safe_load(stream)
         except yaml.YAMLError as e:
@@ -360,7 +413,7 @@ if __name__ == '__main__':
     else:
         logging.basicConfig(level=logging.ERROR)
 
-
+    print("Loading topology...")
     if 'load_topo' in configs:
         load_topo_type = configs['load_topo'].get('type', 'gtna')
         if load_topo_type == 'gtna':
@@ -368,7 +421,7 @@ if __name__ == '__main__':
             raise NotImplementedError()
         elif load_topo_type == 'lightning_snapshot':
             G = ln.load_lightning_topo(configs['load_topo']['ln_snapshot_file'])
-            topo = Topology(graph=G)
+            topo = Topology(graph=G, balance_multiplier=configs['value_multiplier'])
         else:
             raise NotImplementedError("{load_topo_type} not yet supported")
 
@@ -378,20 +431,11 @@ if __name__ == '__main__':
                         configs.get('connection_parameter', 2))
 
     txdist = TxDistro(configs[tx_value_distro], configs[tx_participant_distro], topo)
-
-
-
-    # print("small worldness=" + str(topo.get_small_worldness()))
-
-    # print(txdist.sample(5))
-
-    # topo.full_knowledge_edge_weight_gen(txdist.sample(configs[tx_count]))
-    # print(topo.edges)
-
     txs = txdist.sample(configs[tx_count])
 
-    if 'load_topo' in configs:
-        load_channels_type = configs['load_topo'].get('type', 'gtna')
+    print("Loading channels...")
+    if 'load_initial_balances' in configs:
+        load_channels_type = configs['load_initial_balances'].get('type', 'gtna')
         if load_channels_type == 'gtna':
             # TODO read GTNA files
             raise NotImplementedError()
@@ -399,44 +443,55 @@ if __name__ == '__main__':
             # already done
             pass
 
+        configs.get('value_multiplier', 1)
     else:
-        if 'value_multiplier' in configs:
-            topo.full_knowledge_edge_weight_gen(txs, value_multiplier=configs.get('value_multiplier', 1),
-                                                mult_probability=configs.get('multiplier_probability', 1),
-                                                tx_inclusion_probability=configs.get('tx_inclusion_probability', 1),
-                                                min_channel_balance=configs.get('min_channel_balance', 0))
-        else:
-            topo.full_knowledge_edge_weight_gen(txs, min_channel_balance=configs.get('min_channel_balance', 0))
+        print("Generating balances")
+        # generate initial balances
+        topo.full_knowledge_edge_weight_gen(txs, value_multiplier=configs.get('value_multiplier', 1),
+                                            mult_probability=configs.get('multiplier_probability', 1),
+                                            tx_inclusion_probability=configs.get('tx_inclusion_probability', 1),
+                                            min_channel_balance=configs.get('min_channel_balance', 0))
 
 
+    print("Converting data to GTNA format...")
     convert_topo_to_gtna(topo)
     convert_credit_links_to_gtna(topo)
     convert_txs_to_gtna(txs)
-    # # topo.show()
 
+    if args.showtopology:
+        topo.show()
 
     new_dataset_path = dataset_base + '/' + configs.get('name')
     Path(new_dataset_path).mkdir(parents=True, exist_ok=True)
 
-    for i in range(1, 11):
-        new_file = f"{new_dataset_path}/newlinks-{i}.txt"
-        open(new_file, 'a').close()
-        # shutil.move(new_file, f"{new_dataset_path}/{fname}")
+    write_stats(calculate_stats(topo, txs))
 
-    # create empty file
-    open(f"{new_dataset_path}/newlinks.txt", 'a').close()
+    create_newlinks_files()
 
-    nodes = ga.select_n_by_method(".", method=ga.betweenness_centrality, top_n=len(topo.graph))
+    if args.nographcalcs:
+        exit(0)
+
+    print("Calculating betweenness centrality...")
+    nodes, central_point_dominances = ga.select_n_by_method(".", method=ga.betweenness_centrality, top_n=len(topo.graph))
     with open("betweenness_centrality.txt", "w") as f:
         f.write(str(nodes))
 
-    files_to_move = ["topology.graph", "topology.graph_CREDIT_LINKS", "transactions.txt", "betweenness_centrality.txt"]
+    with open("central_point_dominances.txt", "w") as f:
+        for d in central_point_dominances:
+            f.write(str(d) + "\n")
+
+    print("Moving files...")
+    files_to_move = ["topology.graph", "topology.graph_CREDIT_LINKS",
+                     "transactions.txt", "betweenness_centrality.txt",
+                     "central_point_dominances.txt", "stats.txt"]
     for fname in files_to_move:
         shutil.move(fname, f"{new_dataset_path}/{fname}")
 
-    shutil.copy(spec_file, f"{new_dataset_path}/{spec_file}")
+    shutil.copy(args.specfile, f"{new_dataset_path}/{args.specfile}")
 
+    if args.noplots:
+        exit(0)
+
+    print("Plotting datasets...")
     dsplot.plot_graph(new_dataset_path)
     dsplot.plot_txs(new_dataset_path)
-
-

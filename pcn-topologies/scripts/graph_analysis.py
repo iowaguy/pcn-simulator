@@ -44,7 +44,7 @@ def select_n_by_method(basepath, method=betweenness_centrality, top_n=1):
     filename = "/topology.graph"
     G = parse_topology(basepath + filename)
     top_n_entries = __sort_dict_by_keys(selection_methods[method](G))[0:top_n]
-    return [int(k) for k, _ in top_n_entries]
+    return ([int(k) for k, _ in top_n_entries], [v for _, v in top_n_entries])
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -53,4 +53,10 @@ if __name__ == "__main__":
     parser.add_argument('-n', required=True, type=int, help='The number of nodes to select')
     args = parser.parse_args()
 
-    print(select_n_by_method(args.base, method=args.method, top_n=args.n))
+    nodes, dominances = select_n_by_method(args.base, method=args.method, top_n=args.n)
+    with open(args.base + '/' + betweenness_centrality + ".txt", "w") as f:
+        f.write(str(nodes))
+
+    with open(args.base + '/' + "central_point_dominances.txt", "w") as f:
+        for d in dominances:
+            f.write(str(d) + "\n")

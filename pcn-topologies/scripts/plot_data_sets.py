@@ -4,6 +4,27 @@ import argparse
 import matplotlib.pyplot as plt
 from typing import List, Dict
 from pathlib import Path
+import pandas as pd
+
+def plot_centrality(path, filename):
+    plt.figure()
+    df = pd.read_csv(path + '/' + filename, header=None, delim_whitespace=True)
+    df.plot(label='point dominance')
+
+    axes = plt.gca()
+#    axes.set_xlim([config.get('xmin'), config.get('xmax')])
+#    axes.set_ylim([config.get('ymin'),config.get('ymax')])
+    #axes.xaxis.set_major_locator(ticker.MultipleLocator(10000))
+    #axes.xaxis.tick_top()
+
+#    legendx = config['legend_loc'][0]
+#    legendy = config['legend_loc'][1]
+    plt.xlabel("Nodes")
+    plt.ylabel("Point dominance")
+#    plt.legend(loc=(legendx, legendy), scatterpoints=10)
+    p = path + '/' + "point_dominance.png"
+    plt.savefig(p, dpi=300)
+    print(p)
 
 # plot the distribution of credit on links
 def plot_credit_on_links(base: str, fname: str):
@@ -219,6 +240,7 @@ def plot_txs(path: str):
     plot_tx_payer_dist(path, "transactions.txt", nodes)
     plot_tx_pair_dist(path, "transactions.txt", nodes)
     plot_tx_size(path, "transactions.txt")
+    plot_centrality(path, "central_point_dominances.txt")
 
 if __name__ == "__main__":
     # take in a cli flag that indicates what kind of file will be provided:
