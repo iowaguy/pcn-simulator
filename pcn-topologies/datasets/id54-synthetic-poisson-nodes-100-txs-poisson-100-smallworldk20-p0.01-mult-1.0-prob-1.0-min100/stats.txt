@@ -1,0 +1,6 @@
+link_balance_sum: 202202
+link_balance_mean: 100
+link_balance_median: 100.0
+tx_value_mean: 9
+tx_value_median: 10.0
+tx_value_sum: 985

@@ -1,0 +1,20 @@
+base_topology: smallworld
+connection_parameter:
+  k: 20
+  p: 0.01
+force: false
+id: '62'
+log_level: error
+min_channel_balance: 50
+multiplier_probability: 1.0
+name: id62-synthetic-poisson-nodes-100-txs-exponential-100-smallworldk20-p0.01-mult-1.0-prob-1.0-min50
+node_count: 100
+nographcalcs: false
+noplots: false
+showtopology: false
+specfile: null
+tx_count: 100
+tx_inclusion_probability: 1.0
+tx_participant_distribution: poisson
+tx_value_distribution: exponential
+value_multiplier: 1.0

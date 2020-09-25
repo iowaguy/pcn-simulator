@@ -1,0 +1,20 @@
+base_topology: smallworld
+connection_parameter:
+  k: 20
+  p: 0.01
+force: false
+id: '43'
+log_level: error
+min_channel_balance: 0
+multiplier_probability: 1.0
+name: id43-synthetic-poisson-nodes-100-txs-pareto-100-smallworldk20-p0.01-mult-1.0-prob-1.0
+node_count: 100
+nographcalcs: false
+noplots: false
+showtopology: false
+specfile: null
+tx_count: 100
+tx_inclusion_probability: 1.0
+tx_participant_distribution: poisson
+tx_value_distribution: pareto
+value_multiplier: 1.0

@@ -1,0 +1,17 @@
+# Name of the Graph:
+G (Nodes = 100)
+# Number of Nodes:
+100
+# Number of Edges:
+5
+
+36:81
+81:36
+44:82
+82:44
+58:85
+85:58
+66:97
+97:66
+70:94
+94:70

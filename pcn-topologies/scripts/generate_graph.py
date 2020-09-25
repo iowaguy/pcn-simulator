@@ -15,6 +15,9 @@ import shutil
 import graph_analysis as ga
 import lightning_utils as ln
 import statistics as stat
+import os
+import json
+import collections
 
 node_count = 'node_count'
 tx_count = 'tx_count'
@@ -203,8 +206,8 @@ class TxDistro:
     # some pairs are more likely to transact that other pairs
 
     def __init__(self, value_distro, participant_distro, topology):
-        self.__tx_value_distribution_types = {'powerlaw':self.__sample_tx_pareto, 'constant':self.__sample_tx_constant, 'exponential':self.__sample_tx_exponential, 'poisson':self.__sample_tx_poisson, 'normal':self.__sample_tx_normal}
-        self.__tx_participant_distribution_types = {'random':self.__sample_random_nodes, 'powerlaw':self.__sample_pairs_pareto_dist, 'poisson':self.__sample_pairs_poisson_dist, 'normal':self.__sample_pairs_normal_dist}
+        self.__tx_value_distribution_types = {'pareto':self.__sample_tx_pareto, 'constant':self.__sample_tx_constant, 'exponential':self.__sample_tx_exponential, 'poisson':self.__sample_tx_poisson, 'normal':self.__sample_tx_normal}
+        self.__tx_participant_distribution_types = {'random':self.__sample_random_nodes, 'pareto':self.__sample_pairs_pareto_dist, 'poisson':self.__sample_pairs_poisson_dist, 'normal':self.__sample_pairs_normal_dist}
         self.__value_distribution = value_distro
         self.__participant_distribution = participant_distro
         self.__topology = topology
@@ -280,8 +283,9 @@ class TxDistro:
         l = list(l)
         bp=2
         lam=len(l)/bp
-
+        
         num = np.random.poisson(lam)
+
         return l[num]
 
     def __sample_pareto_dist(self, l, max=None):
@@ -392,27 +396,92 @@ def create_newlinks_files():
     # create empty file
     open(f"{new_dataset_path}/newlinks.txt", 'a').close()
 
+
+def name_dataset(configs):
+    def stringify_connection_param(params):
+        if isinstance(params, collections.Mapping):
+            return f"k{params['k']}-p{params['p']}"
+        else:
+            return params
+
+    ret = f"id{configs['id']}-synthetic-{configs['tx_participant_distribution']}-nodes-{configs['node_count']}-txs-{configs['tx_value_distribution']}-{configs['tx_count']}-{configs['base_topology']}{stringify_connection_param(configs['connection_parameter'])}-mult-{configs['value_multiplier']}-prob-{configs['multiplier_probability']}"
+
+    if not configs['tx_inclusion_probability'] == 1.0:
+        ret += f"-tx_inc{configs['tx_inclusion_probability']}"
+        
+    if not configs['min_channel_balance'] == 0:
+        ret += f"-min{configs['min_channel_balance']}"
+
+    return ret
+
+def connection_parameter_type(string):
+    try:
+        value = int(string)
+    except:
+        try:
+            value = float(string)
+        except:            
+            value = json.loads(string)
+
+    return value
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Generate graphs')
-    parser.add_argument('specfile',
+    parser.add_argument('--specfile',
                         help='The specifications for the dataset')
-    parser.add_argument('-np', '--noplots', action='store_true', help='Don\'t plot')
-    parser.add_argument('-ngc', '--nographcalcs', action='store_true', help='Don\'t calculate graph statistics')
-    parser.add_argument('-st', '--showtopology', action='store_true', default=False, help='Show a diagram of the topology')
+    parser.add_argument('--noplots', action='store_true', help='Don\'t plot')
+    parser.add_argument('--nographcalcs', action='store_true',
+                        help='Don\'t calculate graph statistics')
+    parser.add_argument('--showtopology', action='store_true',
+                        default=False, help='Show a diagram of the topology')
+    parser.add_argument('--node_count', type=int, default=10000, help='Number of nodes')
+    parser.add_argument('--tx_count', type=int, default=100000, help='Number of transactions')
+    parser.add_argument('--tx_value_distribution', default='pareto',
+                        help='Distribution of transaction values')
+    parser.add_argument('--tx_participant_distribution', default='poisson',
+                        help='Distribution of transaction origins and desinations')
+    parser.add_argument('--base_topology', default='scalefree',
+                        help='The base topology type. One of: scalefree, smallworld, or random')
+    parser.add_argument('--log_level', default='error', help='The log level')
+    parser.add_argument('--value_multiplier', type=float, default=1.0,
+                        help='A multiplier for weighting channel balances')
+    parser.add_argument('--tx_inclusion_probability', type=float, default=1.0,
+                        help='The probability that a transaction will be included during the full-knowledge balance assignment algorithm')
+    parser.add_argument('--multiplier_probability', type=float, default=1.0,
+                        help='The probability that the value multiplier will be applied to each link during the post-hoc weight adjustment')
+    parser.add_argument('--connection_parameter', type=connection_parameter_type, default=2,
+                        help='The number of connections that each node makes when joining the graph in the BA scalefree generation algorithm')
+    parser.add_argument('--min_channel_balance', type=int, default=0,
+                        help='The minimum allowed channel balances. All channels will be guaranteed to have at least this much')
+    parser.add_argument('--id', required=True,
+                        help='The numeric identifier for the dataset')
+    parser.add_argument('--force', action='store_true',
+                        default=False,
+                        help='Overwrite existing dataset with the same name')
 
     args = parser.parse_args()
-    with open(args.specfile, 'r') as stream:
-        try:
-            configs = yaml.safe_load(stream)
-        except yaml.YAMLError as e:
-            logging.error(e)
-            exit(1)
-    if log_level in configs:
-        logging.basicConfig(level=configs[log_level].upper())
+    if args.specfile:
+        with open(args.specfile, 'r') as stream:
+            try:
+                configs = yaml.safe_load(stream)
+            except yaml.YAMLError as e:
+                logging.error(e)
+                exit(1)
+        if log_level in configs:
+            logging.basicConfig(level=configs[log_level].upper())
+        else:
+            logging.basicConfig(level=logging.ERROR)
     else:
-        logging.basicConfig(level=logging.ERROR)
+        configs = vars(args)
 
+    configs['name'] = name_dataset(configs)
+    print(f"Looking for {dataset_base + '/' + configs.get('name')}")
+    if os.path.isdir(dataset_base + '/' + configs.get('name')) and \
+       not configs.get('force'):
+        print(f"Dataset {configs.get('name')} exists, skipping.")
+        exit(0)                 
+        
     print("Loading topology...")
     if 'load_topo' in configs:
         load_topo_type = configs['load_topo'].get('type', 'gtna')
@@ -426,9 +495,9 @@ if __name__ == '__main__':
             raise NotImplementedError("{load_topo_type} not yet supported")
 
     else:
-        topo = Topology(configs.get(base_topology, 'scalefree'),
-                        configs.get(node_count, 10000),
-                        configs.get('connection_parameter', 2))
+        topo = Topology(configs.get(base_topology),
+                        configs.get(node_count),
+                        configs.get('connection_parameter'))
 
     txdist = TxDistro(configs[tx_value_distro], configs[tx_participant_distro], topo)
     txs = txdist.sample(configs[tx_count])
@@ -487,8 +556,12 @@ if __name__ == '__main__':
     for fname in files_to_move:
         shutil.move(fname, f"{new_dataset_path}/{fname}")
 
-    shutil.copy(args.specfile, f"{new_dataset_path}/{args.specfile}")
-
+    if args.specfile:
+        shutil.copy(args.specfile, f"{new_dataset_path}/{args.specfile}")
+    else:
+        with open(f"{new_dataset_path}/configs.yml", 'w') as f:
+            yaml.dump(configs, f)
+        
     if args.noplots:
         exit(0)
 
