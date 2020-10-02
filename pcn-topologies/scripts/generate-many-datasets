@@ -32,9 +32,11 @@ gen_graphs() {
   m=$5
   cp=$6
 
+  # These can't be done in parallel right now, because the script writes
+  # output to the local directory.
   ./generate_graph.py --id $id \
-                      --node_count 100 \
-                      --tx_count 100 \
+                      --node_count 10000 \
+                      --tx_count 100000 \
                       --tx_value_distribution $v \
                       --tx_participant_distribution $p \
                       --base_topology $t \
@@ -43,6 +45,7 @@ gen_graphs() {
                       --tx_inclusion_probability 1.0 \
                       --multiplier_probability 1.0 \
                       --connection_parameter $cp \
+		      "${force}" \
                       --min_channel_balance $m &> logs/graph-gen-$id.log
 
   if [ "$?" == 0 ]; then
@@ -52,6 +55,10 @@ gen_graphs() {
   fi
 }
 
+force=$1
+if [ "$force" != "--force" ]; then
+    force=""
+fi
 i=${starting_id}
 for v in ${value_distros[@]}; do
   for p in ${participant_distros[@]}; do

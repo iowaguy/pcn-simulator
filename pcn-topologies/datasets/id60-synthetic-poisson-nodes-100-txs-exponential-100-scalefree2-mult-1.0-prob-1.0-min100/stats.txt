@@ -1,6 +1,0 @@
-link_balance_sum: 39240.051350868074
-link_balance_mean: 100.10217181343896
-link_balance_median: 100.0
-tx_value_mean: 10.467110775686104
-tx_value_median: 7.060065950886612
-tx_value_sum: 1046.711077568611

@@ -1,6 +1,0 @@
-link_balance_sum: 500
-link_balance_mean: 50
-link_balance_median: 50.0
-tx_value_mean: 10
-tx_value_median: 10.0
-tx_value_sum: 1037
