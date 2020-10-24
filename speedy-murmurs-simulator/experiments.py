@@ -25,6 +25,7 @@ network_latency_ms: {network_latency_ms}
 epoch_length: {epoch_length}
 jvm_options: {jvm_options}
 receiver_delay_variability: {receiver_delay_variability}
+arrival_delay_ms: {arrival_delay_ms}
 log_level: error
 '''
 
@@ -45,7 +46,7 @@ num_attackers_prop = '''
 
 def do_replacement(experiment_name, i, config_dict, routing_algorithm,
                    attackers, receiver_delay_ms, concurrent_transactions_count,
-                   attack_type, selected_attackers):
+                   attack_type, selected_attackers, arrival_delay_ms):
     config_formatted = config.format(
         data_set_name=config_dict['data_set_list'][i],
         epoch_length=config_dict['epoch_lengths_list'][i],
@@ -61,6 +62,7 @@ def do_replacement(experiment_name, i, config_dict, routing_algorithm,
         experiment_name=experiment_name,
         routing_algorithm=routing_algorithm,
         receiver_delay_ms=receiver_delay_ms,
+        arrival_delay_ms=arrival_delay_ms,
         concurrent_transactions_count=concurrent_transactions_count,
 
         # if there is only one transaction at a time, transactions are not concurrent
@@ -89,13 +91,26 @@ def generate_configs(experiment_name, config_dict):
     if 'attackers' in config_dict and 'selected_byzantine_nodes' in config_dict:
         raise Exception("Cannot provide both 'attackers' and 'selected_byzantine_nodes'")
 
+    if 'selected_byzantine_nodes' in config_dict and not isinstance(config_dict['selected_byzantine_nodes'][0][0], int):
+        byzantine_nodes = []
+        for i, t  in enumerate(config_dict['selected_byzantine_nodes']):
+            print(config_dict['selected_byzantine_nodes'])
+            selection_type, num_attackers = t
+            if selection_type == 'betweenness_centrality':
+                print(f"{i}, {selection_type}, {num_attackers}")
+                n = get_nodes(f"../../pcn-topologies/datasets/{config_dict['data_set_list'][i]}/betweenness_centrality.txt", num_attackers)
+                byzantine_nodes.append(n)
+
+        config_dict['selected_byzantine_nodes'] = byzantine_nodes
+
     l = [do_replacement(experiment_name, i, config_dict,
                         routing_algorithm=alg,
                         attackers=att, receiver_delay_ms=rec,
                         concurrent_transactions_count=c_txs,
                         attack_type=attack_type,
                         # selected_attackers=[i for i in selected_byzantine_nodes_upto])
-                        selected_attackers=selected_byzantine_nodes)
+                        selected_attackers=selected_byzantine_nodes,
+                        arrival_delay_ms=arrival_delay)
 
          for i in range(0, len(config_dict['data_set_list']))
          for alg in config_dict['routing_algorithms']
@@ -105,8 +120,10 @@ def generate_configs(experiment_name, config_dict):
          for attack_type in config_dict.get('attack_type', [None])
          # for selected_byzantine_nodes_upto in config_dict.get('selected_byzantine_nodes_upto', [None])
          for selected_byzantine_nodes in config_dict.get('selected_byzantine_nodes', [None])
+         for arrival_delay in config_dict.get('arrival_delay_ms', [0])
     ]
 
+        
     return [l]
 
 def get_experiments():
@@ -1033,8 +1050,238 @@ def get_experiments():
             "attacker_selection":"selected",
             "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100/betweenness_centrality.txt", j) for j in [10, 50, 100, 300, 500]]
         },
-
-
+        "33" : {
+            "notes" : "Betweenness centrality attackers on large network",
+            "num_steps":1,
+            "data_set_list":["id26-synthetic-poisson-nodes-100k-txs-pareto-1M-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.maxflow,
+                                  common.speedymurmurs],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":30,
+            "attack_type":["griefing_success","drop_all"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id26-synthetic-poisson-nodes-100k-txs-pareto-1M-scalefree2-mult-0.5-prob-0.5/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
+        },
+        "34" : {
+            "notes" : "remove some rebalancing logic to try to get rid of spike",
+            "num_steps":1,
+            "data_set_list":["id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":30,
+            "attack_type":["griefing_success"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
+            "force_overwrite": True
+        },
+        "35" : {
+            "notes" : "Add arrival delay",
+            "num_steps":1,
+            "data_set_list":["id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":30,
+            "attack_type":["griefing_success"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
+            "arrival_delay_ms": [30]
+        },
+        "36" : {
+            "notes" : "Lightning topology",
+            "num_steps":1,
+            "data_set_list":["id36-measured-nodes-2337-connected-lightning-network-05282020-link-multiplier"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs, common.maxflow],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":30,
+            "attack_type":["griefing"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id36-measured-nodes-2337-connected-lightning-network-05282020-link-multiplier/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
+            "force_overwrite": True
+        },
+        "37" : {
+            "notes" : "Vary arrival delay",
+            "num_steps":1,
+            "data_set_list":["id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":30,
+            "attack_type":["griefing_success"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100/betweenness_centrality.txt", j) for j in [3000]],
+            "arrival_delay_ms": [0, 5, 10, 20, 30]
+        },
+        "38" : {
+            "notes" : "Lightning topology with our weight assignments and less concurrent txs",
+            "num_steps":1,
+            "data_set_list":["id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment"],
+            "concurrent_transactions_count":[2000],
+            "routing_algorithms":[common.speedymurmurs, common.maxflow],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":30,
+            "attack_type":["griefing_success"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
+            "force_overwrite": True
+        },
+        "39" : {
+            "notes" : "Lightning topology with variable concurrency",
+            "num_steps":1,
+            "data_set_list":["id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment"],
+            "concurrent_transactions_count":[2000, 5000, 7500, 10000],
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":30,
+            "attack_type":["griefing_success"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment/betweenness_centrality.txt", j) for j in [0, 500]],
+            "force_overwrite": True
+        },
+        "40" : {
+            "notes" : "Lightning topology. fk balance assignment. 10k concurrent txs",
+            "num_steps":1,
+            "data_set_list":["id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs, common.maxflow],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":30,
+            "attack_type":["griefing_success"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
+        },
+        "41" : {
+            "notes" : "Lightning topology. fk balance assignment. 10k concurrent txs. attackers chosen by %",
+            "num_steps":1,
+            "data_set_list":["id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs, common.maxflow],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":30,
+            "attack_type":["griefing_success"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment/betweenness_centrality.txt", j) for j in [0, 3, 7, 12, 24, 71, 117]],
+        },
+        "42" : { # corresponds to 22 and 41
+            "notes" : "Get baseline for griefing random on dataset 25",
+            "num_steps":1,
+            "data_set_list":["id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5",
+                             "id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment",
+                             "id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100"],
+            "routing_algorithms":[common.speedymurmurs, common.maxflow],
+            "epoch_lengths_list":[1, 1, 1]
+        },
+        "43" : {
+            "notes" : "Get more datapoints for GRS/EG correlation, sequential runs",
+            "num_steps":1,
+            "concurrent_transactions_count":[1],
+            "data_set_list":["id27-synthetic-poisson-nodes-10k-txs-pareto-100k-random-p0.001-mult-0.5-prob-0.5",
+                             "id28-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5",
+                             "id29-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5",
+                             "id30-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5",
+                             "id31-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5",
+                             "id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100",
+                             "id39-synthetic-powerlaw-nodes-10k-txs-pareto-100k-scalefree5-mult-0.5-prob-0.5",
+                             "id40-synthetic-poisson-nodes-10000-txs-pareto-100000-scalefree2-mult-1.0-prob-1.0",
+                             "id41-synthetic-poisson-nodes-10000-txs-pareto-100000-scalefree2-mult-1.0-prob-1.0-min50",
+                             "id42-synthetic-poisson-nodes-10000-txs-pareto-100000-scalefree2-mult-1.0-prob-1.0-min100",
+                             "id43-synthetic-poisson-nodes-10000-txs-pareto-100000-smallworldk20-p0.01-mult-1.0-prob-1.0",
+                             "id44-synthetic-poisson-nodes-10000-txs-pareto-100000-smallworldk20-p0.01-mult-1.0-prob-1.0-min50",
+                             "id45-synthetic-poisson-nodes-10000-txs-pareto-100000-smallworldk20-p0.01-mult-1.0-prob-1.0-min100",
+                             #"id46-synthetic-poisson-nodes-10000-txs-pareto-100000-random0.001-mult-1.0-prob-1.0",
+                             #"id47-synthetic-poisson-nodes-10000-txs-pareto-100000-random0.001-mult-1.0-prob-1.0-min50",
+                             #"id48-synthetic-poisson-nodes-10000-txs-pareto-100000-random0.001-mult-1.0-prob-1.0-min100",
+                             "id49-synthetic-poisson-nodes-10000-txs-poisson-100000-scalefree2-mult-1.0-prob-1.0",
+                             "id50-synthetic-poisson-nodes-10000-txs-poisson-100000-scalefree2-mult-1.0-prob-1.0-min50",
+                             "id51-synthetic-poisson-nodes-10000-txs-poisson-100000-scalefree2-mult-1.0-prob-1.0-min100",
+                             "id52-synthetic-poisson-nodes-10000-txs-poisson-100000-smallworldk20-p0.01-mult-1.0-prob-1.0",
+                             "id53-synthetic-poisson-nodes-10000-txs-poisson-100000-smallworldk20-p0.01-mult-1.0-prob-1.0-min50",
+                             "id54-synthetic-poisson-nodes-10000-txs-poisson-100000-smallworldk20-p0.01-mult-1.0-prob-1.0-min100",
+                             #"id55-synthetic-poisson-nodes-10000-txs-poisson-100000-random0.001-mult-1.0-prob-1.0",
+                             #"id56-synthetic-poisson-nodes-10000-txs-poisson-100000-random0.001-mult-1.0-prob-1.0-min50",
+                             #"id57-synthetic-poisson-nodes-10000-txs-poisson-100000-random0.001-mult-1.0-prob-1.0-min100",
+                             "id58-synthetic-poisson-nodes-10000-txs-exponential-100000-scalefree2-mult-1.0-prob-1.0",
+                             "id59-synthetic-poisson-nodes-10000-txs-exponential-100000-scalefree2-mult-1.0-prob-1.0-min50",
+                             "id60-synthetic-poisson-nodes-10000-txs-exponential-100000-scalefree2-mult-1.0-prob-1.0-min100",
+                             "id61-synthetic-poisson-nodes-10000-txs-exponential-100000-smallworldk20-p0.01-mult-1.0-prob-1.0",
+                             "id62-synthetic-poisson-nodes-10000-txs-exponential-100000-smallworldk20-p0.01-mult-1.0-prob-1.0-min50",
+                             "id63-synthetic-poisson-nodes-10000-txs-exponential-100000-smallworldk20-p0.01-mult-1.0-prob-1.0-min100",
+                             #"id64-synthetic-poisson-nodes-10000-txs-exponential-100000-random0.001-mult-1.0-prob-1.0",
+                             #"id65-synthetic-poisson-nodes-10000-txs-exponential-100000-random0.001-mult-1.0-prob-1.0-min50",
+                             #"id66-synthetic-poisson-nodes-10000-txs-exponential-100000-random0.001-mult-1.0-prob-1.0-min100"
+                             ],
+            "routing_algorithms":[common.speedymurmurs, common.maxflow],
+            "epoch_lengths_list":[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        },
+        "44" : {
+            "notes" : "Get more datapoints for GRS/EG correlation, concurrent/attacker runs",
+            "num_steps":1,
+            "concurrent_transactions_count":[10000],
+            "data_set_list":["id27-synthetic-poisson-nodes-10k-txs-pareto-100k-random-p0.001-mult-0.5-prob-0.5",
+                             "id28-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5",
+                             "id29-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5",
+                             "id30-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5",
+                             "id31-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5",
+                             "id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100",
+                             "id39-synthetic-powerlaw-nodes-10k-txs-pareto-100k-scalefree5-mult-0.5-prob-0.5",
+                             "id40-synthetic-poisson-nodes-10000-txs-pareto-100000-scalefree2-mult-1.0-prob-1.0",
+                             "id41-synthetic-poisson-nodes-10000-txs-pareto-100000-scalefree2-mult-1.0-prob-1.0-min50",
+                             "id42-synthetic-poisson-nodes-10000-txs-pareto-100000-scalefree2-mult-1.0-prob-1.0-min100",
+                             "id43-synthetic-poisson-nodes-10000-txs-pareto-100000-smallworldk20-p0.01-mult-1.0-prob-1.0",
+                             "id44-synthetic-poisson-nodes-10000-txs-pareto-100000-smallworldk20-p0.01-mult-1.0-prob-1.0-min50",
+                             "id45-synthetic-poisson-nodes-10000-txs-pareto-100000-smallworldk20-p0.01-mult-1.0-prob-1.0-min100",
+                             #"id46-synthetic-poisson-nodes-10000-txs-pareto-100000-random0.001-mult-1.0-prob-1.0",
+                             #"id47-synthetic-poisson-nodes-10000-txs-pareto-100000-random0.001-mult-1.0-prob-1.0-min50",
+                             #"id48-synthetic-poisson-nodes-10000-txs-pareto-100000-random0.001-mult-1.0-prob-1.0-min100",
+                             "id49-synthetic-poisson-nodes-10000-txs-poisson-100000-scalefree2-mult-1.0-prob-1.0",
+                             "id50-synthetic-poisson-nodes-10000-txs-poisson-100000-scalefree2-mult-1.0-prob-1.0-min50",
+                             "id51-synthetic-poisson-nodes-10000-txs-poisson-100000-scalefree2-mult-1.0-prob-1.0-min100",
+                             "id52-synthetic-poisson-nodes-10000-txs-poisson-100000-smallworldk20-p0.01-mult-1.0-prob-1.0",
+                             "id53-synthetic-poisson-nodes-10000-txs-poisson-100000-smallworldk20-p0.01-mult-1.0-prob-1.0-min50",
+                             "id54-synthetic-poisson-nodes-10000-txs-poisson-100000-smallworldk20-p0.01-mult-1.0-prob-1.0-min100",
+                             #"id55-synthetic-poisson-nodes-10000-txs-poisson-100000-random0.001-mult-1.0-prob-1.0",
+                             #"id56-synthetic-poisson-nodes-10000-txs-poisson-100000-random0.001-mult-1.0-prob-1.0-min50",
+                             #"id57-synthetic-poisson-nodes-10000-txs-poisson-100000-random0.001-mult-1.0-prob-1.0-min100",
+                             "id58-synthetic-poisson-nodes-10000-txs-exponential-100000-scalefree2-mult-1.0-prob-1.0",
+                             "id59-synthetic-poisson-nodes-10000-txs-exponential-100000-scalefree2-mult-1.0-prob-1.0-min50",
+                             "id60-synthetic-poisson-nodes-10000-txs-exponential-100000-scalefree2-mult-1.0-prob-1.0-min100",
+                             "id61-synthetic-poisson-nodes-10000-txs-exponential-100000-smallworldk20-p0.01-mult-1.0-prob-1.0",
+                             "id62-synthetic-poisson-nodes-10000-txs-exponential-100000-smallworldk20-p0.01-mult-1.0-prob-1.0-min50",
+                             "id63-synthetic-poisson-nodes-10000-txs-exponential-100000-smallworldk20-p0.01-mult-1.0-prob-1.0-min100",
+                             #"id64-synthetic-poisson-nodes-10000-txs-exponential-100000-random0.001-mult-1.0-prob-1.0",
+                             #"id65-synthetic-poisson-nodes-10000-txs-exponential-100000-random0.001-mult-1.0-prob-1.0-min50",
+                             #"id66-synthetic-poisson-nodes-10000-txs-exponential-100000-random0.001-mult-1.0-prob-1.0-min100"
+                             ],
+            "routing_algorithms":[common.speedymurmurs, common.maxflow],
+            "epoch_lengths_list":[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            "network_latency_ms":30,
+            "attack_type":["griefing_success"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[("betweenness_centrality", 500)],
+        },
     }
 
     return experiments
@@ -1046,7 +1293,7 @@ def get_nodes(filename, n=-1):
         return nodes
     else:
         return nodes[0:n]
-
+25,37
 def get_experiment_config(experiment_name):
     return generate_configs(experiment_name, get_experiments().get(experiment_name))
 

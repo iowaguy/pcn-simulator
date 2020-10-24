@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec mkvirtualenv pcn -p python3 -r requirements.txt

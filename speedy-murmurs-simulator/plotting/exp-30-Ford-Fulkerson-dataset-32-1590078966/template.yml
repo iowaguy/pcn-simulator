@@ -1,0 +1,27 @@
+base: ../data/dynamic-id32-30/
+plotname: "exp 30; Ford-Fulkerson; dataset 32"
+
+lines:
+  - line:
+      name: 0% attackers
+      base: ../dynamic-id32-29/dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/
+
+  - line:
+      name: 0.1% attackers
+      base: dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-10-griefing_success-10000ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/
+
+  - line:
+      name: 0.5% attackers
+      base: dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-50-griefing_success-10000ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/
+
+  - line:
+      name: 1% attackers
+      base: dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-100-griefing_success-10000ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/
+
+  - line:
+      name: 3% attackers
+      base: dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-300-griefing_success-10000ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/
+
+  - line:
+      name: 5% attackers
+      base: dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-500-griefing_success-10000ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/

@@ -1,0 +1,42 @@
+base: ../data/dynamic-id25-23/
+legend_loc:
+- 0.68
+- 0.65
+lines:
+- line:
+    base: ../dynamic-id25-21/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-maxflow_collateralize-3-1-1-lat1ms-concurrent-10000/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/
+    files:
+    - cnet-succR.txt
+    name: 0% attackers
+- line:
+    base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-10-griefing_success-10000ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/
+    files:
+    - cnet-succR.txt
+    name: 0.1% attackers
+- line:
+    base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-50-griefing_success-10000ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/
+    files:
+    - cnet-succR.txt
+    name: 0.5% attackers
+- line:
+    base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-100-griefing_success-10000ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/
+    files:
+    - cnet-succR.txt
+    name: 1% attackers
+- line:
+    base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-300-griefing_success-10000ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/
+    files:
+    - cnet-succR.txt
+    name: 3% attackers
+- line:
+    base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-500-griefing_success-10000ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/
+    files:
+    - cnet-succR.txt
+    name: 5% attackers
+plotname: exp 23; Ford-Fulkerson; dataset 25
+running_avg: 1500
+xlabel: Time Epochs
+xmin: 0
+ylabel: Success Ratio
+ymax: 1.0
+ymin: 0.0

@@ -1,0 +1,42 @@
+base: ../data/dynamic-id32-30/
+cumsum: true
+legend_loc:
+- 0.68
+- 0.65
+lines:
+- line:
+    base: ../dynamic-id32-29/dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-speedymurmurs-3-1-1-lat30ms-concurrent-10000/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-totalCreditTransacted.txt
+    name: 0% attackers
+- line:
+    base: dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-speedymurmurs-3-1-1-lat30ms-concurrent-10000-drop_all-selected-10-drop_all-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-totalCreditTransacted.txt
+    name: 0.1% attackers
+- line:
+    base: dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-speedymurmurs-3-1-1-lat30ms-concurrent-10000-drop_all-selected-50-drop_all-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-totalCreditTransacted.txt
+    name: 0.5% attackers
+- line:
+    base: dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-speedymurmurs-3-1-1-lat30ms-concurrent-10000-drop_all-selected-100-drop_all-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-totalCreditTransacted.txt
+    name: 1% attackers
+- line:
+    base: dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-speedymurmurs-3-1-1-lat30ms-concurrent-10000-drop_all-selected-300-drop_all-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-totalCreditTransacted.txt
+    name: 3% attackers
+- line:
+    base: dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-speedymurmurs-3-1-1-lat30ms-concurrent-10000-drop_all-selected-500-drop_all-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-totalCreditTransacted.txt
+    name: 5% attackers
+plotname: exp 30; SpeedyMurmurs; dataset 32
+running_avg: 1500
+xlabel: Time Epochs
+xmin: 0
+ylabel: Successful Transaction Values
+ymin: 0

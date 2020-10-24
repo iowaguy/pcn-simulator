@@ -1,0 +1,23 @@
+base: ../data/dynamic-id25-22/
+plotname: "exp 22; Ford-Fulkerson; dataset 25; griefing with dropping"
+
+lines:
+  - line:
+      name: 0% attackers
+      base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-maxflow_collateralize-3-1-1-lat1ms-concurrent-10000-griefing-10000ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/
+
+  - line:
+      name: 5% attackers
+      base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-maxflow_collateralize-3-1-1-lat1ms-concurrent-10000-griefing-random-500-griefing-10000ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/
+
+  - line:
+      name: 10% attackers
+      base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-maxflow_collateralize-3-1-1-lat1ms-concurrent-10000-griefing-random-1000-griefing-10000ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/
+
+  - line:
+      name: 20% attackers
+      base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-maxflow_collateralize-3-1-1-lat1ms-concurrent-10000-griefing-random-2000-griefing-10000ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/
+
+  - line:
+      name: 30% attackers
+      base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-maxflow_collateralize-3-1-1-lat1ms-concurrent-10000-griefing-random-3000-griefing-10000ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/

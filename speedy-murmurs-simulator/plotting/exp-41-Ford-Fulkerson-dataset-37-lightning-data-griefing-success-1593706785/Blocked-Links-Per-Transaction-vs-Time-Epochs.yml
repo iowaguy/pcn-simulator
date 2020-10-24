@@ -1,0 +1,41 @@
+base: ../data/dynamic-id37-41/
+legend_loc:
+- 0.63
+- 0.1
+lines:
+- line:
+    base: dynamic-id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000-arrivalDelay0ms-griefing_success-10000ms/READABLE_FILE_M-P0-2337/0/CREDIT_MAX_FLOW-0.0-0/
+    files:
+    - cnet-blockedLinksPerTX.txt
+    name: 0% attackers
+- line:
+    base: dynamic-id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000-arrivalDelay0ms-griefing_success-selected-3-griefing_success-10000ms/READABLE_FILE_M-P0-2337/0/CREDIT_MAX_FLOW-0.0-0/
+    files:
+    - cnet-blockedLinksPerTX.txt
+    name: 0.1% attackers
+- line:
+    base: dynamic-id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000-arrivalDelay0ms-griefing_success-selected-7-griefing_success-10000ms/READABLE_FILE_M-P0-2337/0/CREDIT_MAX_FLOW-0.0-0/
+    files:
+    - cnet-blockedLinksPerTX.txt
+    name: 0.3% attackers
+- line:
+    base: dynamic-id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000-arrivalDelay0ms-griefing_success-selected-12-griefing_success-10000ms/READABLE_FILE_M-P0-2337/0/CREDIT_MAX_FLOW-0.0-0/
+    files:
+    - cnet-blockedLinksPerTX.txt
+    name: 0.5% attackers
+- line:
+    base: dynamic-id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000-arrivalDelay0ms-griefing_success-selected-71-griefing_success-10000ms/READABLE_FILE_M-P0-2337/0/CREDIT_MAX_FLOW-0.0-0/
+    files:
+    - cnet-blockedLinksPerTX.txt
+    name: 3% attackers
+- line:
+    base: dynamic-id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment-maxflow_collateralize-3-1-1-lat30ms-concurrent-10000-arrivalDelay0ms-griefing_success-selected-117-griefing_success-10000ms/READABLE_FILE_M-P0-2337/0/CREDIT_MAX_FLOW-0.0-0/
+    files:
+    - cnet-blockedLinksPerTX.txt
+    name: 5% attackers
+plotname: exp 41; Ford-Fulkerson; dataset 37; lightning data; griefing success
+running_avg: 20
+xlabel: Time Epochs
+xmin: 0
+ylabel: Blocked Links Per Transaction
+ymin: 0

@@ -66,7 +66,7 @@ def get_output_base_path(config_dict):
     dir = f'{config_dict["simulation_type"]}-{data_set_size}-{config_dict["experiment_name"]}/{config_dict["simulation_type"]}-{config_dict["data_set_name"]}-{algo}-{config_dict["trees"]}-{config_dict["attempts"]}-{config_dict["iterations"]}-lat{config_dict["network_latency_ms"]}ms'
 
     if config_dict["concurrent_transactions"]:
-        dir += f'-concurrent-{config_dict["concurrent_transactions_count"]}'
+        dir += f'-concurrent-{config_dict["concurrent_transactions_count"]}-arrivalDelay{config_dict["arrival_delay_ms"]}ms'
 
     if "attack_properties" in config_dict:
         if config_dict["attack_properties"].get("attackers"):
@@ -86,9 +86,10 @@ def parse_node_count(config_dict):
     input_data_path = __get_input_data_dir_path(config_dict)
 
     try:
+        print(input_data_path + '/' + config_dict['topology'])
         return int(linecache.getline(input_data_path + '/' + config_dict['topology'], 4))
     except:
-        raise Exception("Are you sure that data file exists and is formatted correctly?")
+        raise Exception("Are you sure that the following data file exists and is formatted correctly? " + input_data_path + '/' + config_dict['topology'])
     
 def get_dynamic_data_path_config(config_dict):
     algo = config_dict["routing_algorithm"]

@@ -95,7 +95,7 @@ def start(configs):
     start = time.time()
 #    ipyclient = ipyparallel.Client(profile_dir=str(Path.home()) + '/.ipython/' + socket.gethostname())
     ipyclient = ipyparallel.Client()
-    ipyclient[:].apply_sync(setup)
+    #ipyclient[:].apply_sync(setup)
 
     with ipyclient[:].sync_imports(local=True):
         import simulation_utils

@@ -1,0 +1,37 @@
+base: ../data/dynamic-id25-22/
+legend_loc:
+- 0.63
+- 0.7
+lines:
+- line:
+    base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-drop_all-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-succR.txt
+    name: 0% attackers
+- line:
+    base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-drop_all-random-500-drop_all-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-succR.txt
+    name: 5% attackers
+- line:
+    base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-drop_all-random-1000-drop_all-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-succR.txt
+    name: 10% attackers
+- line:
+    base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-drop_all-random-2000-drop_all-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-succR.txt
+    name: 20% attackers
+- line:
+    base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-drop_all-random-3000-drop_all-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-succR.txt
+    name: 30% attackers
+plotname: exp 22; SpeedyMurmurs; dataset 25; drop all
+running_avg: 1500
+xlabel: Time Epochs
+xmin: 0
+ylabel: Success Ratio
+ymax: 1.0
+ymin: 0.0

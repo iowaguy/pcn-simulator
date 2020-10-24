@@ -11,19 +11,20 @@ from pathlib import Path
 import pandas as pd
 import math
 import numpy as np
+import matplotlib.ticker as ticker
 
 def plot_experiments(config):
     # dfs = []
     plt.figure()
     basepath = config.get('base', '')
-
+    column = config.get('column', 1)
     for line in config['lines']:
         l = line['line']
         filebase = l['base']
         if len(l['files']) == 1:
             path = basepath + '/' + filebase + '/' + l['files'][0]
             new_df = pd.read_csv(path, header=None, delim_whitespace=True)
-            new_df[1].rolling(window=config.get('running_avg',1)).mean().plot(label=l['name'])
+            new_df[column][(new_df[column].notnull())].rolling(window=config.get('running_avg',1)).mean().plot(label=l['name'])
         else:
             print(l['name'])
             # merge files
@@ -36,7 +37,7 @@ def plot_experiments(config):
                 df = pd.concat([df, new_df[(new_df[1].notnull())]])
                 #print(new_df)
 
-            df[1].rolling(window=config.get('running_avg',1)).mean().plot(label=l['name'])
+            df[column].rolling(window=config.get('running_avg',1)).mean().plot(label=l['name'])
             #new_df[1].rolling(window=config.get('running_avg',1)).mean().plot(label=l['name'])
 #            print(df)
 
@@ -47,13 +48,17 @@ def plot_experiments(config):
     axes = plt.gca()
     axes.set_xlim([config.get('xmin'), config.get('xmax')])
     axes.set_ylim([config.get('ymin'),config.get('ymax')])
-
+    #axes.xaxis.set_major_locator(ticker.MultipleLocator(10000))
+    #axes.xaxis.tick_top()
+    
     legendx = config['legend_loc'][0]
     legendy = config['legend_loc'][1]
     plt.xlabel(config['xlabel'])
     plt.ylabel(config['ylabel'])
-    plt.title(config.get('plotname',""), {"wrap":True})
+#    plt.title(config.get('plotname',""), {"wrap":True})
     plt.legend(loc=(legendx, legendy), scatterpoints=10)
+#    plt.rcParams.update({'font.size': 10})
+    plt.tight_layout()
     plt.savefig(d + '/' + f + '.png', dpi=300)
 
 def plot_experiments_cumulative(config):
@@ -90,9 +95,10 @@ def plot_experiments_cumulative(config):
     legendy = config['legend_loc'][1]
     plt.xlabel(config['xlabel'])
     plt.ylabel(config['ylabel'])
-    plt.title(config.get('plotname',""), {"wrap":True})
-    plt.legend(loc=(legendx, legendy), scatterpoints=10)
-
+#    plt.title(config.get('plotname',""), {"wrap":True})
+    plt.legend(loc=(0.05, 0.65), scatterpoints=10)
+#    plt.rcParams.update({'font.size': 10})
+    plt.tight_layout()
     plt.savefig(d + '/' + f + '-cumulative.png', dpi=300)
 
 

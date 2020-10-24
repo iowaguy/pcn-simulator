@@ -1,0 +1,31 @@
+base: ../data/dynamic-id37-41/
+plotname: "exp 41; SpeedyMurmurs; dataset 37; lightning data; griefing success"
+
+lines:
+  - line:
+      name: 0% attackers
+      base: dynamic-id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment-speedymurmurs-3-1-1-lat30ms-concurrent-10000-arrivalDelay0ms-griefing_success-10000ms/READABLE_FILE_SM-P0-2337/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+      
+  - line:
+      name: 0.1% attackers
+      base: dynamic-id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment-speedymurmurs-3-1-1-lat30ms-concurrent-10000-arrivalDelay0ms-griefing_success-selected-3-griefing_success-10000ms/READABLE_FILE_SM-P0-2337/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+
+  - line:
+      name: 0.3% attackers
+      base: dynamic-id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment-speedymurmurs-3-1-1-lat30ms-concurrent-10000-arrivalDelay0ms-griefing_success-selected-7-griefing_success-10000ms/READABLE_FILE_SM-P0-2337/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+
+  - line:
+      name: 0.5% attackers
+      base: dynamic-id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment-speedymurmurs-3-1-1-lat30ms-concurrent-10000-arrivalDelay0ms-griefing_success-selected-12-griefing_success-10000ms/READABLE_FILE_SM-P0-2337/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+
+  # - line:
+  #     name: 1% attackers
+  #     base: dynamic-id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment-speedymurmurs-3-1-1-lat30ms-concurrent-10000-arrivalDelay0ms-griefing_success-selected-24-griefing_success-10000ms/READABLE_FILE_SM-P0-2337/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+
+  - line:
+      name: 3% attackers
+      base: dynamic-id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment-speedymurmurs-3-1-1-lat30ms-concurrent-10000-arrivalDelay0ms-griefing_success-selected-71-griefing_success-10000ms/READABLE_FILE_SM-P0-2337/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+
+  - line:
+      name: 5% attackers
+      base: dynamic-id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment-speedymurmurs-3-1-1-lat30ms-concurrent-10000-arrivalDelay0ms-griefing_success-selected-117-griefing_success-10000ms/READABLE_FILE_SM-P0-2337/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/

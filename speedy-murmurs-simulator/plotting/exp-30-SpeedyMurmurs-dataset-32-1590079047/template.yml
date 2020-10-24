@@ -1,0 +1,27 @@
+base: ../data/dynamic-id32-30/
+plotname: "exp 30; SpeedyMurmurs; dataset 32"
+
+lines:
+  - line:
+      name: 0% attackers
+      base: ../dynamic-id32-29/dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-speedymurmurs-3-1-1-lat30ms-concurrent-10000/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+
+  - line:
+      name: 0.1% attackers
+      base: dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-speedymurmurs-3-1-1-lat30ms-concurrent-10000-drop_all-selected-10-drop_all-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+
+  - line:
+      name: 0.5% attackers
+      base: dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-speedymurmurs-3-1-1-lat30ms-concurrent-10000-drop_all-selected-50-drop_all-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+
+  - line:
+      name: 1% attackers
+      base: dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-speedymurmurs-3-1-1-lat30ms-concurrent-10000-drop_all-selected-100-drop_all-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+
+  - line:
+      name: 3% attackers
+      base: dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-speedymurmurs-3-1-1-lat30ms-concurrent-10000-drop_all-selected-300-drop_all-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+
+  - line:
+      name: 5% attackers
+      base: dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-speedymurmurs-3-1-1-lat30ms-concurrent-10000-drop_all-selected-500-drop_all-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/

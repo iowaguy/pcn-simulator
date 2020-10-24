@@ -1,0 +1,22 @@
+base: ../data/dynamic-id3-7/
+cumsum: true
+legend_loc:
+- 0
+- 0.7
+lines:
+- line:
+    base: dynamic-id3-measured-nodes-93502-txs-1m-ripple-dynamic-maxflow_collateralize-3-1-1-lat0ms/READABLE_FILE_M-P0-93502/0/CREDIT_MAX_FLOW-0.0-0/
+    files:
+    - cnet-totalCreditTransacted.txt
+    name: Ford-Fulkerson
+- line:
+    base: dynamic-id3-measured-nodes-93502-txs-1m-ripple-dynamic-speedymurmurs-3-1-1-lat0ms/READABLE_FILE_SM-P0-93502/0/CREDIT_NETWORK-SM-P0-165552.45497208898-TREE_ROUTE_TDRAP-true-false-3-331.10490994417796-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-totalCreditTransacted.txt
+    name: SpeedyMurmurs
+plotname: exp 7; Ripple dataset; Max flow and speedymurmurs
+running_avg: 1500
+xlabel: Time Epochs
+xmin: 0
+ylabel: Successful Transaction Values
+ymin: 0

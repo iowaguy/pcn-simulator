@@ -1,0 +1,13 @@
+base: ../data/dynamic-id3-7/
+plotname: "exp 7; Ripple dataset; Max flow and speedymurmurs"
+
+lines:
+  - line:
+      name: Ford-Fulkerson
+      base: dynamic-id3-measured-nodes-93502-txs-1m-ripple-dynamic-maxflow_collateralize-3-1-1-lat0ms/READABLE_FILE_M-P0-93502/0/CREDIT_MAX_FLOW-0.0-0/
+      
+
+  - line:
+      name: SpeedyMurmurs
+      base: dynamic-id3-measured-nodes-93502-txs-1m-ripple-dynamic-speedymurmurs-3-1-1-lat0ms/READABLE_FILE_SM-P0-93502/0/CREDIT_NETWORK-SM-P0-165552.45497208898-TREE_ROUTE_TDRAP-true-false-3-331.10490994417796-RANDOM_PARTITIONER-1/
+

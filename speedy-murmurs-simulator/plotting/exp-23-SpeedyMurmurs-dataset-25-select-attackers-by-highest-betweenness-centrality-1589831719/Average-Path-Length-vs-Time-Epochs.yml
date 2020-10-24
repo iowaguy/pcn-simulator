@@ -1,0 +1,43 @@
+base: ../data/dynamic-id25-23/
+legend_loc:
+- 0.13
+- 0.75
+lines:
+- line:
+    base: ../dynamic-id25-24/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat30ms-concurrent-10000-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-pathLSuccAvg.txt
+    name: 0% attackers
+- line:
+    base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-10-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-pathLSuccAvg.txt
+    name: 0.1% attackers
+- line:
+    base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-50-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-pathLSuccAvg.txt
+    name: 0.5% attackers
+- line:
+    base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-100-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-pathLSuccAvg.txt
+    name: 1% attackers
+- line:
+    base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-300-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-pathLSuccAvg.txt
+    name: 3% attackers
+- line:
+    base: dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat30ms-concurrent-10000-griefing_success-selected-500-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-pathLSuccAvg.txt
+    name: 5% attackers
+plotname: exp 23; SpeedyMurmurs; dataset 25; select attackers by highest betweenness
+  centrality
+running_avg: 1500
+xlabel: Time Epochs
+xmin: 0
+ylabel: Average Path Length
+ymax: 30
+ymin: 0
