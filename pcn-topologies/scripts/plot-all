@@ -1,0 +1,6 @@
+#!/bin/bash
+
+
+for ds in $(ls -1 ../datasets/ | grep -v README); do
+  nohup ./plot_data_sets.py -base ../datasets/${ds} >> plotter.out &
+done

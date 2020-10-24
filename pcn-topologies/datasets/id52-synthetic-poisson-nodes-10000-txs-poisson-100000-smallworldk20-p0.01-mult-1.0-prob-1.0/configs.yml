@@ -1,0 +1,20 @@
+base_topology: smallworld
+connection_parameter:
+  k: 20
+  p: 0.01
+force: true
+id: '52'
+log_level: error
+min_channel_balance: 0
+multiplier_probability: 1.0
+name: id52-synthetic-poisson-nodes-10000-txs-poisson-100000-smallworldk20-p0.01-mult-1.0-prob-1.0
+node_count: 10000
+nographcalcs: false
+noplots: false
+showtopology: false
+specfile: null
+tx_count: 100000
+tx_inclusion_probability: 1.0
+tx_participant_distribution: poisson
+tx_value_distribution: poisson
+value_multiplier: 1.0

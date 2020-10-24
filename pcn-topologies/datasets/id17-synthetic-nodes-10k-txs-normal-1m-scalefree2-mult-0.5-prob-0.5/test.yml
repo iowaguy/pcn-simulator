@@ -1,0 +1,9 @@
+name: id17-synthetic-nodes-10k-txs-normal-1m-scalefree2-mult-0.5-prob-0.5
+node_count: 10000
+tx_count: 1000000
+tx_value_distribution: normal
+tx_participant_distribution: normal
+base_topology: scalefree
+log_level: error
+value_multiplier: 0.5
+muliplier_probability: 0.5

@@ -1,0 +1,10 @@
+name: id23-synthetic-poisson-nodes-10k-txs-pareto-1m-scalefree2-mult-0.5-prob-0.5
+node_count: 10000
+tx_count: 1000000
+tx_value_distribution: powerlaw
+tx_participant_distribution: poisson
+base_topology: scalefree
+log_level: error
+value_multiplier: 0.5
+tx_inclusion_probability: 1.0
+multiplier_probability: 0.5

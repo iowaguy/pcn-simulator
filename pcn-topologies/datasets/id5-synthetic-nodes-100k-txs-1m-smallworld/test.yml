@@ -1,0 +1,7 @@
+name: id5-synthetic-nodes-100k-txs-1m-smallworld
+node_count: 100000
+tx_count: 1000000
+tx_value_distribution: powerlaw
+tx_participant_distribution: powerlaw
+base_topology: smallworld
+log_level: error

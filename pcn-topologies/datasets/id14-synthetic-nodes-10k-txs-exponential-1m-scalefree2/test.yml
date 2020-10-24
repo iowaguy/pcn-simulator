@@ -1,0 +1,8 @@
+name: id14-synthetic-nodes-10k-txs-exponential-1m-scalefree2
+node_count: 10000
+tx_count: 1000000
+tx_value_distribution: exponential
+tx_participant_distribution: powerlaw
+base_topology: scalefree
+log_level: error
+value_multiplier: 1.0

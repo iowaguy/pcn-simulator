@@ -1,0 +1,78 @@
+#!/bin/bash
+
+value_distros=(
+  "pareto"
+  "poisson"
+  "exponential"
+)
+
+participant_distros=(
+  "poisson"
+)
+
+topos=(
+  "scalefree"
+  "smallworld"
+  "random"
+)
+
+min_bals=(
+  0
+  50
+  100
+)
+
+starting_id=40
+
+gen_graphs() {
+  id=$1
+  v=$2
+  p=$3
+  t=$4
+  m=$5
+  cp=$6
+
+  # These can't be done in parallel right now, because the script writes
+  # output to the local directory.
+  ./generate_graph.py --id $id \
+                      --node_count 10000 \
+                      --tx_count 100000 \
+                      --tx_value_distribution $v \
+                      --tx_participant_distribution $p \
+                      --base_topology $t \
+                      --log_level error \
+                      --value_multiplier 1.0 \
+                      --tx_inclusion_probability 1.0 \
+                      --multiplier_probability 1.0 \
+                      --connection_parameter $cp \
+		      "${force}" \
+                      --min_channel_balance $m &> logs/graph-gen-$id.log
+
+  if [ "$?" == 0 ]; then
+    echo "Done with: id$i $v $p $t $m"
+  else
+    echo "Failed: id$i $v $p $t $m"
+  fi
+}
+
+force=$1
+if [ "$force" != "--force" ]; then
+    force=""
+fi
+i=${starting_id}
+for v in ${value_distros[@]}; do
+  for p in ${participant_distros[@]}; do
+    for t in ${topos[@]}; do
+      for m in ${min_bals[@]}; do
+        if [ "$t" == "smallworld" ]; then
+          gen_graphs $i $v $p $t $m '{"k":20,"p":0.01}'
+        elif [ "$t" == "random" ]; then
+          gen_graphs $i $v $p $t $m 0.001
+        elif [ "$t" == "scalefree" ]; then
+          gen_graphs $i $v $p $t $m 2
+        fi
+        ((i++))
+      done
+    done
+  done
+done
