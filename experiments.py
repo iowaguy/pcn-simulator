@@ -7,7 +7,7 @@ import json
 config = '''
 notes: {notes}
 attempts: {attempts}
-base: ../../pcn-topologies/datasets/{data_set_name}
+base: pcn-topologies/datasets/{data_set_name}
 data_set_name: {data_set_name}
 experiment_name: {experiment_name}
 force_overwrite: {force_overwrite}
@@ -98,7 +98,7 @@ def generate_configs(experiment_name, config_dict):
             selection_type, num_attackers = t
             if selection_type == 'betweenness_centrality':
                 print(f"{i}, {selection_type}, {num_attackers}")
-                n = get_nodes(f"../../pcn-topologies/datasets/{config_dict['data_set_list'][i]}/betweenness_centrality.txt", num_attackers)
+                n = get_nodes(f"pcn-topologies/datasets/{config_dict['data_set_list'][i]}/betweenness_centrality.txt", num_attackers)
                 byzantine_nodes.append(n)
 
         config_dict['selected_byzantine_nodes'] = byzantine_nodes
@@ -893,7 +893,7 @@ def get_experiments():
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
-            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5/betweenness_centrality.txt", j) for j in [10, 50, 100, 300, 500]]
+            "selected_byzantine_nodes":[get_nodes("pcn-topologies/datasets/id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5/betweenness_centrality.txt", j) for j in [10, 50, 100, 300, 500]]
         },
         "24" : {
             "notes" : "Try larger hop delays",
@@ -959,7 +959,7 @@ def get_experiments():
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
-            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id27-synthetic-poisson-nodes-10k-txs-pareto-100k-random-p0.001-mult-0.5-prob-0.5/betweenness_centrality.txt", j) for j in [10, 50, 100, 300, 500]]
+            "selected_byzantine_nodes":[get_nodes("pcn-topologies/datasets/id27-synthetic-poisson-nodes-10k-txs-pareto-100k-random-p0.001-mult-0.5-prob-0.5/betweenness_centrality.txt", j) for j in [10, 50, 100, 300, 500]]
         },
         "27" : {
             "notes" : "Smallworld topology, betweenness centrality selection",
@@ -973,7 +973,7 @@ def get_experiments():
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
-            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id28-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5/betweenness_centrality.txt", j) for j in [10, 50, 100, 300, 500]]
+            "selected_byzantine_nodes":[get_nodes("pcn-topologies/datasets/id28-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5/betweenness_centrality.txt", j) for j in [10, 50, 100, 300, 500]]
         },
         # "28" : {
         #     "notes" : "large topology, betweenness centrality selection",
@@ -987,7 +987,7 @@ def get_experiments():
         #     "receiver_delay_variability": 0,
         #     "receiver_delay_ms":[10000],
         #     "attacker_selection":"selected",
-        #     "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id26-synthetic-poisson-nodes-100k-txs-pareto-1M-scalefree2-mult-0.5-prob-0.5/betweenness_centrality.txt", j) for j in [10, 50, 100, 300, 500, 1000]]
+        #     "selected_byzantine_nodes":[get_nodes("pcn-topologies/datasets/id26-synthetic-poisson-nodes-100k-txs-pareto-1M-scalefree2-mult-0.5-prob-0.5/betweenness_centrality.txt", j) for j in [10, 50, 100, 300, 500, 1000]]
         # }
         "29" : {
             "notes" : "try new toplogies",
@@ -1020,7 +1020,7 @@ def get_experiments():
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
-            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100/betweenness_centrality.txt", j) for j in [10, 50, 100, 300, 500]]
+            "selected_byzantine_nodes":[get_nodes("pcn-topologies/datasets/id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100/betweenness_centrality.txt", j) for j in [10, 50, 100, 300, 500]]
         },
         "31" : {
             "notes" : "scalefree topology with minimum balances, random attackers",
@@ -1048,7 +1048,7 @@ def get_experiments():
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
-            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100/betweenness_centrality.txt", j) for j in [10, 50, 100, 300, 500]]
+            "selected_byzantine_nodes":[get_nodes("pcn-topologies/datasets/id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100/betweenness_centrality.txt", j) for j in [10, 50, 100, 300, 500]]
         },
         "33" : {
             "notes" : "Betweenness centrality attackers on large network",
@@ -1063,7 +1063,7 @@ def get_experiments():
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
-            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id26-synthetic-poisson-nodes-100k-txs-pareto-1M-scalefree2-mult-0.5-prob-0.5/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
+            "selected_byzantine_nodes":[get_nodes("pcn-topologies/datasets/id26-synthetic-poisson-nodes-100k-txs-pareto-1M-scalefree2-mult-0.5-prob-0.5/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
         },
         "34" : {
             "notes" : "remove some rebalancing logic to try to get rid of spike",
@@ -1077,7 +1077,7 @@ def get_experiments():
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
-            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
+            "selected_byzantine_nodes":[get_nodes("pcn-topologies/datasets/id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
             "force_overwrite": True
         },
         "35" : {
@@ -1092,7 +1092,7 @@ def get_experiments():
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
-            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
+            "selected_byzantine_nodes":[get_nodes("pcn-topologies/datasets/id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
             "arrival_delay_ms": [30]
         },
         "36" : {
@@ -1107,7 +1107,7 @@ def get_experiments():
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
-            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id36-measured-nodes-2337-connected-lightning-network-05282020-link-multiplier/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
+            "selected_byzantine_nodes":[get_nodes("pcn-topologies/datasets/id36-measured-nodes-2337-connected-lightning-network-05282020-link-multiplier/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
             "force_overwrite": True
         },
         "37" : {
@@ -1122,7 +1122,7 @@ def get_experiments():
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
-            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100/betweenness_centrality.txt", j) for j in [3000]],
+            "selected_byzantine_nodes":[get_nodes("pcn-topologies/datasets/id34-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree-mult-0.5-prob-0.5-min-100/betweenness_centrality.txt", j) for j in [3000]],
             "arrival_delay_ms": [0, 5, 10, 20, 30]
         },
         "38" : {
@@ -1137,7 +1137,7 @@ def get_experiments():
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
-            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
+            "selected_byzantine_nodes":[get_nodes("pcn-topologies/datasets/id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
             "force_overwrite": True
         },
         "39" : {
@@ -1152,7 +1152,7 @@ def get_experiments():
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
-            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment/betweenness_centrality.txt", j) for j in [0, 500]],
+            "selected_byzantine_nodes":[get_nodes("pcn-topologies/datasets/id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment/betweenness_centrality.txt", j) for j in [0, 500]],
             "force_overwrite": True
         },
         "40" : {
@@ -1167,7 +1167,7 @@ def get_experiments():
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
-            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
+            "selected_byzantine_nodes":[get_nodes("pcn-topologies/datasets/id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
         },
         "41" : {
             "notes" : "Lightning topology. fk balance assignment. 10k concurrent txs. attackers chosen by %",
@@ -1181,7 +1181,7 @@ def get_experiments():
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
-            "selected_byzantine_nodes":[get_nodes("../../pcn-topologies/datasets/id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment/betweenness_centrality.txt", j) for j in [0, 3, 7, 12, 24, 71, 117]],
+            "selected_byzantine_nodes":[get_nodes("pcn-topologies/datasets/id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment/betweenness_centrality.txt", j) for j in [0, 3, 7, 12, 24, 71, 117]],
         },
         "42" : { # corresponds to 22 and 41
             "notes" : "Get baseline for griefing random on dataset 25",
