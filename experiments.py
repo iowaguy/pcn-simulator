@@ -867,7 +867,7 @@ def get_experiments():
             "attacker_selection":"selected",
             "selected_byzantine_nodes":[[i for i in range(0,j)] for j in [0, 500, 1000, 2000, 3000]]
         },
-        "22" : {
+        "22" : { #fig 5
             "notes" : "Get baseline for griefing random on dataset 25",
             "num_steps":1,
             "data_set_list":["id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5"],
@@ -881,7 +881,7 @@ def get_experiments():
             "attacker_selection":"random",
             "attackers":[0, 500, 1000, 2000, 3000]
         },
-        "23" : {
+        "23" : { # fig 7
             "notes" : "Try selecting as few attackers as possible",
             "num_steps":1,
             "data_set_list":["id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5"],
@@ -1008,7 +1008,7 @@ def get_experiments():
             # "attacker_selection":"random",
             # "attackers":[0]
         },
-        "30" : {
+        "30" : { # fig 11
             "notes" : "Smallworld topology, betweenness centrality selection",
             "num_steps":1,
             "data_set_list":["id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100"],
@@ -1169,7 +1169,7 @@ def get_experiments():
             "attacker_selection":"selected",
             "selected_byzantine_nodes":[get_nodes("pcn-topologies/datasets/id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment/betweenness_centrality.txt", j) for j in [0, 10, 50, 100, 300, 500]],
         },
-        "41" : {
+        "41" : { # fig 9
             "notes" : "Lightning topology. fk balance assignment. 10k concurrent txs. attackers chosen by %",
             "num_steps":1,
             "data_set_list":["id37-measured-nodes-2337-connected-lightning-network-05282020-fk-link-assignment"],
