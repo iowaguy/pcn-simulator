@@ -1282,6 +1282,20 @@ def get_experiments():
             "attacker_selection":"selected",
             "selected_byzantine_nodes":[("betweenness_centrality", 500)],
         },
+        "45" : { #fig 5
+            "notes" : "Get baseline for griefing random on dataset 25, w/ tree stats",
+            "num_steps":1,
+            "data_set_list":["id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs, common.maxflow],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":1,
+            "attack_type":["griefing_success", "griefing", "drop_all"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"random",
+            "attackers":[0, 500, 1000, 2000, 3000]
+        },
     }
 
     return experiments
