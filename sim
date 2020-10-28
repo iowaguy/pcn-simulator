@@ -107,9 +107,12 @@ single() {
 
 mkdir -p ${LOG_DIR}
 while :; do
-  case "$1" in
+  PARAM=`echo $1 | awk -F= '{print $1}'`
+  VALUE=`echo $1 | awk -F= '{print $2}'`
+  case "$PARAM" in
     start)
       start "$2"
+      shift
       ;;
     stop)
       stop
@@ -119,23 +122,28 @@ while :; do
       ;;
     exp|experiment)
       experiment "$2" "$3"
+      shift
+      shift
       ;;
     single)
       single "$2"
+      shift
       ;;
     controller)
       controller
       ;;
     engines)
       engines "$2"
+      shift
       ;;
     engines-remote)
       engines_remote "$2"
+      shift
       ;;
-
     *)
       usage
       ;;
   esac
+  shift
 done
 shift $((OPTIND-1))
