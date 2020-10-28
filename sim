@@ -52,12 +52,21 @@ controller() {
   exit 0
 }
 
-engines() {
+engines_core() {
   ENGINES=$1
-  for i in `seq $ENGINES`; do  
+  for i in `seq $ENGINES`; do
       nohup ipengine &> logs/engine-$(hostname)-${i}.log &
   done
+}
+
+engines() {
+  engines_core $1
   exec tail -f logs/engine-$(hostname)-${ENGINES}.log
+}
+
+engines_remote() {
+  engines_core $1
+  echo "logs/engine-$(hostname)-${ENGINES}.log"
 }
 
 start() {
@@ -120,12 +129,13 @@ while :; do
     engines)
       engines "$2"
       ;;
+    engines-remote)
+      engines_remote "$2"
+      ;;
+
     *)
       usage
       ;;
   esac
 done
 shift $((OPTIND-1))
-
-
-
