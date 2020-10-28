@@ -102,7 +102,7 @@ public class Dynamic {
 
 
 
-    Metric m = null;
+    Metric[] metrics = null;
     if (routingAlgorithm == RoutingAlgorithm.SILENTWHISPERS ||
             routingAlgorithm == RoutingAlgorithm.SPEEDYMURMURS ||
             routingAlgorithm == RoutingAlgorithm.SPEEDYMURMURS_COLLATERALIZE_TOTAL) {
@@ -112,13 +112,15 @@ public class Dynamic {
       int[] roots = {64, 36, 43};
       Partitioner part = new RandomPartitioner();
 
-      m = new CreditNetwork(trans, name, epoch, routingAlgorithm, req, part, roots, max, newlinks, runConfig);
+      Metric m = new CreditNetwork(trans, name, epoch, routingAlgorithm, req, part, roots, max, newlinks, runConfig);
+      metrics = new Metric[]{m};
     } else if (routingAlgorithm == RoutingAlgorithm.MAXFLOW ||
             routingAlgorithm == RoutingAlgorithm.MAXFLOW_COLLATERALIZE ||
             routingAlgorithm == RoutingAlgorithm.MAXFLOW_COLLATERALIZE_TOTAL) {
       log.info(routingAlgorithm.toString());
-      m = new CreditMaxFlow(trans, name,
+      Metric m = new CreditMaxFlow(trans, name,
               0, 0, newlinks, epoch, runConfig);
+      metrics = new Metric[]{m, new TreeStats()};
     } else {
       log.error("Unsupported routing algorithm");
       System.exit(1);
@@ -126,7 +128,7 @@ public class Dynamic {
 
 
     Network net = new ReadableFile(name, name, graph, null);
-    Series.generate(net, new Metric[]{m, new TreeStats()}, 0, 0);
+    Series.generate(net, metrics, 0, 0);
   }
 
   private static String getNodesFromTopoFile(String topoFilePath) {
