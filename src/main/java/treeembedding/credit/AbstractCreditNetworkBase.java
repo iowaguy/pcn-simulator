@@ -172,7 +172,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     this.txStartEndTimes = new double[this.transactions.size()][];
     this.networkLatency = runConfig.getNetworkLatencyMs();
     this.attack = runConfig.getAttackProperties();
-
+    System.out.println("Working Directory = " + System.getProperty("user.dir"));
     // calculate the number of epochs by calculating the epoch of the last transaction
     int numEpochs = calculateEpoch(transactions.get(transactions.size() - 1));
 

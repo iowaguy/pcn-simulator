@@ -26,6 +26,7 @@ import treeembedding.credit.CreditMaxFlow;
 import treeembedding.credit.CreditNetwork;
 import treeembedding.credit.partioner.Partitioner;
 import treeembedding.credit.partioner.RandomPartitioner;
+import treeembedding.treerouting.TreeStats;
 
 public class Dynamic {
   private static Logger log = LogManager.getLogger();
@@ -125,7 +126,7 @@ public class Dynamic {
 
 
     Network net = new ReadableFile(name, name, graph, null);
-    Series.generate(net, new Metric[]{m}, 0, 0);
+    Series.generate(net, new Metric[]{m, new TreeStats()}, 0, 0);
   }
 
   private static String getNodesFromTopoFile(String topoFilePath) {
