@@ -113,14 +113,14 @@ public class Dynamic {
       Partitioner part = new RandomPartitioner();
 
       Metric m = new CreditNetwork(trans, name, epoch, routingAlgorithm, req, part, roots, max, newlinks, runConfig);
-      metrics = new Metric[]{m};
+      metrics = new Metric[]{m, new TreeStats()};
     } else if (routingAlgorithm == RoutingAlgorithm.MAXFLOW ||
             routingAlgorithm == RoutingAlgorithm.MAXFLOW_COLLATERALIZE ||
             routingAlgorithm == RoutingAlgorithm.MAXFLOW_COLLATERALIZE_TOTAL) {
       log.info(routingAlgorithm.toString());
       Metric m = new CreditMaxFlow(trans, name,
               0, 0, newlinks, epoch, runConfig);
-      metrics = new Metric[]{m, new TreeStats()};
+      metrics = new Metric[]{m};
     } else {
       log.error("Unsupported routing algorithm");
       System.exit(1);

@@ -1,9 +1,9 @@
-name: id39-synthetic-powerlaw-nodes-10k-txs-pareto-100k-scalefree5-mult-0.5-prob-0.5
-node_count: 10000
-tx_count: 100000
-tx_value_distribution: powerlaw
+name: smalltest
+node_count: 100
+tx_count: 1000
+tx_value_distribution: pareto
 #tx_participant_distribution: poisson
-tx_participant_distribution: powerlaw
+tx_participant_distribution: pareto
 base_topology: scalefree
 #load_topo:
 #  type: lightning_snapshot

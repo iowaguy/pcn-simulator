@@ -404,6 +404,7 @@ def name_dataset(configs):
         else:
             return params
 
+    print(configs)
     ret = f"id{configs['id']}-synthetic-{configs['tx_participant_distribution']}-nodes-{configs['node_count']}-txs-{configs['tx_value_distribution']}-{configs['tx_count']}-{configs['base_topology']}{stringify_connection_param(configs['connection_parameter'])}-mult-{configs['value_multiplier']}-prob-{configs['multiplier_probability']}"
 
     if not configs['tx_inclusion_probability'] == 1.0:
@@ -461,10 +462,11 @@ if __name__ == '__main__':
                         help='Overwrite existing dataset with the same name')
 
     args = parser.parse_args()
+    configs = vars(args)
     if args.specfile:
         with open(args.specfile, 'r') as stream:
             try:
-                configs = yaml.safe_load(stream)
+                configs.update(yaml.safe_load(stream))
             except yaml.YAMLError as e:
                 logging.error(e)
                 exit(1)
@@ -472,8 +474,6 @@ if __name__ == '__main__':
             logging.basicConfig(level=configs[log_level].upper())
         else:
             logging.basicConfig(level=logging.ERROR)
-    else:
-        configs = vars(args)
 
     configs['name'] = name_dataset(configs)
     print(f"Looking for {dataset_base + '/' + configs.get('name')}")
