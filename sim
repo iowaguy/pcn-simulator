@@ -5,6 +5,7 @@ EXPERIMENT_LOG=${LOG_DIR}/experiment-`hostname`-`date +%m-%d-%y-%H:%M:%S`.out
 IPYTHON_HOME=${HOME}/.ipython
 IPCLUSTER_DIR=${IPYTHON_HOME}/`hostname`/
 SCRIPTS_DIR="scripts"
+JAVA=$JAVA_HOME/bin/java
 
 usage() {
   echo "Usage: $0 [start|stop|status|experiment|controller|engines]" 1>&2
@@ -67,6 +68,7 @@ engines() {
 engines_remote() {
   engines_core $1
   echo "logs/engine-$(hostname)-${ENGINES}.log"
+  exit $?
 }
 
 start() {
@@ -99,9 +101,9 @@ experiment() {
 }
 
 single() {
-  #nohup java -cp target/pcn-simulator-1.0-SNAPSHOT-jar-with-dependencies.jar treeembedding.runners.Dynamic data/dynamic-id3-dynamic-baseline-sequential/dynamic-id3-ripple-dynamic-silentwhispers-3-1-1-lat0ms/ &
+  #nohup $JAVA -cp target/pcn-simulator-1.0-SNAPSHOT-jar-with-dependencies.jar treeembedding.runners.Dynamic data/dynamic-id3-dynamic-baseline-sequential/dynamic-id3-ripple-dynamic-silentwhispers-3-1-1-lat0ms/ &
   run_config_path=$1
-  nohup java -cp target/pcn-simulator-1.0-SNAPSHOT-jar-with-dependencies.jar treeembedding.runners.Dynamic "$run_config_path" &
+  nohup $JAVA -cp target/pcn-simulator-1.0-SNAPSHOT-jar-with-dependencies.jar treeembedding.runners.Dynamic "$run_config_path" &
   exit 0
 }
 
@@ -141,6 +143,7 @@ while :; do
       shift
       ;;
     *)
+      echo "ERROR: unknown parameter \"$PARAM\""
       usage
       ;;
   esac

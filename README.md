@@ -2,7 +2,8 @@
 The simulator can be run in one of two ways. It can either be run as a
 standalone JVM application, or as part of an experiment which will run many JVMs
 (i.e. simulations). Before running in either mode, the simulator must be
-compiled; this can be done by running `mvn clean install`.
+compiled; this can be done by running `mvn clean install`. This simulator
+requires Java 8, so you must set the JAVA_HOME environment variable appropriately.
 
 ## Standalone Mode
 Standalone mode can be used to run one of the routing algorithms for a
@@ -13,7 +14,7 @@ The configuration file must be YAML formatted and must be named `runconfig.yml`.
 
 Execute the following command to run the simulation:
 ```java
-java -cp target/pcn-simulator-1.0-SNAPSHOT-jar-with-dependencies.jar treeembedding.runners.Dynamic <DIR>
+$JAVA_HOME/bin/java -cp target/pcn-simulator-1.0-SNAPSHOT-jar-with-dependencies.jar treeembedding.runners.Dynamic <DIR>
 ```
 `<DIR>` is the directory where `runconfig.yml` is stored and is also where the
 output of the simulation will be written.

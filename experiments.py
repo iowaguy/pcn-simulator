@@ -1294,7 +1294,8 @@ def get_experiments():
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"random",
-            "attackers":[0, 500, 1000, 2000, 3000]
+            "attackers":[0, 500, 1000, 2000, 3000],
+            "force_overwrite": True
         },
     }
 
