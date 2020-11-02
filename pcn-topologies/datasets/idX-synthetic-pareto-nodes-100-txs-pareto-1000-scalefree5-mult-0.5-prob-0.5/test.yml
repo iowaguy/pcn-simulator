@@ -1,0 +1,16 @@
+name: smalltest
+node_count: 100
+tx_count: 1000
+tx_value_distribution: pareto
+#tx_participant_distribution: poisson
+tx_participant_distribution: pareto
+base_topology: scalefree
+#load_topo:
+#  type: lightning_snapshot
+#  ln_snapshot_file: lngraph_2020_05_28__18_00.json
+log_level: error
+value_multiplier: 0.5
+tx_inclusion_probability: 1.0
+multiplier_probability: 0.5
+connection_parameter: 5
+# min_channel_balance: 100
