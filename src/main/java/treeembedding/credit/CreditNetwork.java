@@ -63,9 +63,9 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
   //computed metrics
   private double stab_av; //average stab overhead
-  private int[][] subtreeSizes;
-  private int[][] nodeDepths;
-  private int[][] numChildren;
+  private double[][] subtreeSizes;
+  private double[][] nodeDepths;
+  private double[][] numChildren;
 
   private double passRootAll = 0;
   private int rootPath = 0;
@@ -101,9 +101,9 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
     this.zeroEdges = new ConcurrentLinkedQueue<>();
 
-    this.subtreeSizes = new int[this.roots.length][];
-    this.nodeDepths = new int[this.roots.length][];
-    this.numChildren = new int[this.roots.length][];
+    this.subtreeSizes = new double[this.roots.length][];
+    this.nodeDepths = new double[this.roots.length][];
+    this.numChildren = new double[this.roots.length][];
 
     int threads = 1;
     if (runConfig.areTransactionsConcurrent()) {
@@ -235,9 +235,9 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     }
 
     for (int treeId = 0; treeId < this.roots.length; treeId++) {
-      this.subtreeSizes[treeId] = new int[graph.getNodeCount()];
-      this.nodeDepths[treeId] =  new int[graph.getNodeCount()];
-      this.numChildren[treeId] =  new int[graph.getNodeCount()];
+      this.subtreeSizes[treeId] = new double[graph.getNodeCount()];
+      this.nodeDepths[treeId] =  new double[graph.getNodeCount()];
+      this.numChildren[treeId] =  new double[graph.getNodeCount()];
     }
 
     // calculate tree stats for attackers
@@ -1022,9 +1022,40 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
     succ &= DataWriter.writeWithIndex(this.passRoot, this.key + "_ROOT_TRAF", folder);
 
+
+    double[] subtreeSizesOneDim = null;
+    double[] nodeDepthsOneDim = null;
+    double[] numChildrenOneDim = null;
+    for (int i = 0; i < numRoots; i++) {
+      subtreeSizesOneDim = concatArrays(this.subtreeSizes);
+      nodeDepthsOneDim = concatArrays(this.nodeDepths);
+      numChildrenOneDim = concatArrays(this.numChildren);
+    }
+
+    for (int treeId = 0; treeId < this.numRoots; treeId++) {
+      succ &= DataWriter.writeWithIndex(subtreeSizesOneDim, this.key + "_SUBTREE_SIZE", folder);
+      succ &= DataWriter.writeWithIndex(nodeDepthsOneDim, this.key + "_NODE_DEPTHS", folder);
+      succ &= DataWriter.writeWithIndex(numChildrenOneDim, this.key + "_NUM_CHILDREN", folder);
+    }
     succ &= writeDataCommon(folder);
 
     return succ;
+  }
+
+  private double[] concatArrays(double[][] arr){
+    int lengthSum = 0;
+    for (double[] value : arr) {
+      lengthSum += value.length;
+    }
+
+    double[] list = new double[lengthSum];
+    int index = 0;
+    for (double[] oneTree : arr) {
+      for (double oneNode : oneTree) {
+        list[index++] = oneNode;
+      }
+    }
+    return list;
   }
 
   private class TransactionStepResult {
