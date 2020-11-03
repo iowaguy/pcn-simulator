@@ -211,6 +211,8 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     // if a node has no children, then its subtree includes only itself i.e. one node
     if (children.length == 0) {
       this.subtreeSizes[treeId][root] = 1;
+      this.nodeDepths[treeId][root] = depth;
+      this.numChildren[treeId][root] = children.length;
       return 1;
     }
 
@@ -240,7 +242,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       this.numChildren[treeId] =  new double[graph.getNodeCount()];
     }
 
-    // calculate tree stats for attackers
+    // calculate tree stats for all nodes
     for (int treeId = 0; treeId < numRoots; treeId++) {
       SpanningTree tree = (SpanningTree) g.getProperty("SPANNINGTREE_" + treeId);
       calculatePerNodeTreeStats(tree, treeId, roots[treeId], 1);
