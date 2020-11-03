@@ -48,221 +48,233 @@ public class MultipleSpanningTree extends Transformation {
     this(rootSelector, k, rand, p, depth, Direct.UP);
   }
 
+  private int[] selectRoots(Graph graph) {
+    int[] roots = new int[this.trees];
+    if (this.rootSelector.equals("rand") || this.rootSelector.equals("bfs")) {
+      for (int i = 0; i < roots.length; i++) {
+        roots[i] = this.selectRoot(graph, rootSelector)[0];
+      }
+    } else {
+      int[] r = this.selectRoot(graph, rootSelector);
+      for (int i = 0; i < roots.length; i++) {
+        roots[i] = r[i % r.length];
+      }
+    }
+
+    return roots;
+  }
+
+  /**
+   * Build the spanning tree from the graph.
+   */
   @Override
   public Graph transform(Graph graph) {
     CreditLinks edgeweights = null;
     if (graph.hasProperty("CREDIT_LINKS")) {
       edgeweights = (CreditLinks) graph.getProperty("CREDIT_LINKS");
     }
+
     if (this.rootSelector.equals("bfs") && edgeweights == null) {
       Transformation tbfs = new BFSRand("rand", rand);
       for (int i = 0; i < trees; i++) {
         graph = tbfs.transform(graph);
       }
-    } else {
-      int[] roots = new int[this.trees];
-      if (this.rootSelector.equals("rand") || this.rootSelector.equals("bfs")) {
-        for (int i = 0; i < roots.length; i++) {
-          roots[i] = this.selectRoot(graph, rootSelector)[0];
-        }
+      return graph;
+    }
+
+    int[] roots = selectRoots(graph);
+
+    Vector<HashMap<Integer, ParentChild>> parentChildMap = new Vector<HashMap<Integer, ParentChild>>();
+    HashMap<Integer, Vector<int[]>> offers = new HashMap<Integer, Vector<int[]>>();
+    Node[] nodes = graph.getNodes();
+    int[][] parCount = new int[nodes.length][];
+    for (int i = 0; i < nodes.length; i++) {
+      int l;
+      if (this.oneDSel == Direct.TWOPHASE) {
+        l = potentialParents(graph, nodes[i], Direct.NONE, edgeweights).length;
       } else {
-        int[] r = this.selectRoot(graph, rootSelector);
-        for (int i = 0; i < roots.length; i++) {
-          roots[i] = r[i % r.length];
-        }
+        l = potentialParents(graph, nodes[i], this.oneDSel, edgeweights).length;
       }
-      Vector<HashMap<Integer, ParentChild>> parentChildMap = new Vector<HashMap<Integer, ParentChild>>();
-      HashMap<Integer, Vector<int[]>> offers = new HashMap<Integer, Vector<int[]>>();
-      Node[] nodes = graph.getNodes();
-      int[][] parCount = new int[nodes.length][];
-      for (int i = 0; i < nodes.length; i++) {
-        int l;
-        if (this.oneDSel == Direct.TWOPHASE) {
-          l = potentialParents(graph, nodes[i], Direct.NONE, edgeweights).length;
-        } else {
-          l = potentialParents(graph, nodes[i], this.oneDSel, edgeweights).length;
-        }
-        parCount[i] = new int[l];
-      }
-      for (int i = 0; i < this.trees; i++) {
-        HashMap<Integer, ParentChild> map = new HashMap<Integer, ParentChild>();
-        parentChildMap.add(map);
-        map.put(roots[i], new ParentChild(-1,
-                roots[i], 0));
-        int[] out = potentialChildren(graph, nodes[roots[i]], this.oneDSel, edgeweights);
+      parCount[i] = new int[l];
+    }
+    for (int i = 0; i < this.trees; i++) {
+      HashMap<Integer, ParentChild> map = new HashMap<Integer, ParentChild>();
+      parentChildMap.add(map);
+      map.put(roots[i], new ParentChild(-1,
+              roots[i], 0));
+      int[] out = potentialChildren(graph, nodes[roots[i]], this.oneDSel, edgeweights);
+      if (out.length == 0) {
+        out = potentialChildren(graph, nodes[roots[i]], Direct.EITHER, edgeweights);
         if (out.length == 0) {
-          out = potentialChildren(graph, nodes[roots[i]], Direct.EITHER, edgeweights);
-          if (out.length == 0) {
-            out = potentialChildren(graph, nodes[roots[i]], Direct.NONE, edgeweights);
-          }
+          out = potentialChildren(graph, nodes[roots[i]], Direct.NONE, edgeweights);
         }
+      }
+      for (int j = 0; j < out.length; j++) {
+        Vector<int[]> vec = offers.get(out[j]);
+        if (vec == null) {
+          vec = new Vector<int[]>();
+          offers.put(out[j], vec);
+        }
+        vec.add(new int[]{roots[i], i, 1});
+      }
+    }
+
+    while (!offers.isEmpty()) {
+      Iterator<Entry<Integer, Vector<int[]>>> it = offers.entrySet().iterator();
+      HashMap<Integer, int[]> next = new HashMap<Integer, int[]>();
+      while (it.hasNext()) {
+        Entry<Integer, Vector<int[]>> entry = it.next();
+        int index = entry.getKey();
+        Vector<int[]> vec = entry.getValue();
+        int min = this.trees;
+        int[] out = potentialParents(graph, nodes[index], Direct.NONE, edgeweights);
+        String pot = "";
+        HashMap<Integer, Integer> mapIndex = new HashMap<Integer, Integer>(out.length);
         for (int j = 0; j < out.length; j++) {
-          Vector<int[]> vec = offers.get(out[j]);
-          if (vec == null) {
-            vec = new Vector<int[]>();
-            offers.put(out[j], vec);
+          if (parCount[index][j] < min) {
+            min = parCount[index][j];
           }
-          vec.add(new int[]{roots[i], i, 1});
+          mapIndex.put(out[j], j);
+          pot = pot + " " + out[j];
         }
+        Vector<Integer> choice = new Vector<Integer>();
+        int curM = min;
+        while (choice.isEmpty()) {
+          for (int j = 0; j < vec.size(); j++) {
+            int[] a = vec.get(j);
+            if (!mapIndex.containsKey(a[0])) {
+              System.out.println("Offer " + a[0] + " " + a[1] + " " + a[2] + " for " + index + " with pot " + pot
+                      + " " + this.oneDSel);
+            }
+            if (parCount[index][mapIndex.get(a[0])] == curM) {
+              choice.add(j);
+            }
+          }
+          if (choice.isEmpty()) curM++;
+        }
+        if (curM > min) {
+          if (rand.nextDouble() > p) {
+            continue;
+          }
+        }
+        int parent;
+        if (this.d) {
+          int minC = vec.get(choice.get(0))[2];
+          for (int j = 1; j < choice.size(); j++) {
+            if (vec.get(choice.get(j))[2] < minC) {
+              minC = vec.get(choice.get(j))[2];
+            }
+          }
+          Vector<Integer> poss = new Vector<Integer>();
+          for (int j = 0; j < choice.size(); j++) {
+            if (vec.get(choice.get(j))[2] == minC) {
+              poss.add(choice.get(j));
+            }
+          }
+          parent = poss.get(rand.nextInt(poss.size()));
+        } else {
+          parent = choice.get(rand.nextInt(choice.size()));
+        }
+        int[] a = vec.get(parent);
+        next.put(index, a);
+        parCount[index][mapIndex.get(a[0])]++;
       }
-
-      while (!offers.isEmpty()) {
-        Iterator<Entry<Integer, Vector<int[]>>> it = offers.entrySet().iterator();
-        HashMap<Integer, int[]> next = new HashMap<Integer, int[]>();
-        while (it.hasNext()) {
-          Entry<Integer, Vector<int[]>> entry = it.next();
-          int index = entry.getKey();
-          Vector<int[]> vec = entry.getValue();
-          int min = this.trees;
-          int[] out = potentialParents(graph, nodes[index], Direct.NONE, edgeweights);
-          String pot = "";
-          HashMap<Integer, Integer> mapIndex = new HashMap<Integer, Integer>(out.length);
-          for (int j = 0; j < out.length; j++) {
-            if (parCount[index][j] < min) {
-              min = parCount[index][j];
-            }
-            mapIndex.put(out[j], j);
-            pot = pot + " " + out[j];
-          }
-          Vector<Integer> choice = new Vector<Integer>();
-          int curM = min;
-          while (choice.isEmpty()) {
-            for (int j = 0; j < vec.size(); j++) {
-              int[] a = vec.get(j);
-              if (!mapIndex.containsKey(a[0])) {
-                System.out.println("Offer " + a[0] + " " + a[1] + " " + a[2] + " for " + index + " with pot " + pot
-                        + " " + this.oneDSel);
-              }
-              if (parCount[index][mapIndex.get(a[0])] == curM) {
-                choice.add(j);
-              }
-            }
-            if (choice.isEmpty()) curM++;
-          }
-          if (curM > min) {
-            if (rand.nextDouble() > p) {
-              continue;
-            }
-          }
-          int parent;
-          if (this.d) {
-            int minC = vec.get(choice.get(0))[2];
-            for (int j = 1; j < choice.size(); j++) {
-              if (vec.get(choice.get(j))[2] < minC) {
-                minC = vec.get(choice.get(j))[2];
-              }
-            }
-            Vector<Integer> poss = new Vector<Integer>();
-            for (int j = 0; j < choice.size(); j++) {
-              if (vec.get(choice.get(j))[2] == minC) {
-                poss.add(choice.get(j));
-              }
-            }
-            parent = poss.get(rand.nextInt(poss.size()));
+      Iterator<Entry<Integer, int[]>> itnext = next.entrySet().iterator();
+      while (itnext.hasNext()) {
+        Entry<Integer, int[]> entry = itnext.next();
+        int index = entry.getKey();
+        int[] parent = entry.getValue();
+        Vector<int[]> vec = offers.get(index);
+        int i = 0;
+        while (i < vec.size()) {
+          int[] a = vec.get(i);
+          if (a[1] == parent[1]) {
+            vec.remove(i);
           } else {
-            parent = choice.get(rand.nextInt(choice.size()));
+            i++;
           }
-          int[] a = vec.get(parent);
-          next.put(index, a);
-          parCount[index][mapIndex.get(a[0])]++;
         }
-        Iterator<Entry<Integer, int[]>> itnext = next.entrySet().iterator();
-        while (itnext.hasNext()) {
-          Entry<Integer, int[]> entry = itnext.next();
-          int index = entry.getKey();
-          int[] parent = entry.getValue();
-          Vector<int[]> vec = offers.get(index);
-          int i = 0;
-          while (i < vec.size()) {
-            int[] a = vec.get(i);
-            if (a[1] == parent[1]) {
-              vec.remove(i);
-            } else {
-              i++;
+        if (vec.size() == 0) {
+          offers.remove(index);
+        }
+        HashMap<Integer, ParentChild> map = parentChildMap.get(parent[1]);
+        map.put(index, new ParentChild(parent[0],
+                index, parent[2]));
+        int[] out = potentialChildren(graph, nodes[index], this.oneDSel, edgeweights);
+        for (int j = 0; j < out.length; j++) {
+          if (map.containsKey(out[j])) continue;
+          int[] added = next.get(out[j]);
+          if (added == null || added[1] != parent[1]) {
+            int[] o = new int[]{index, parent[1], parent[2] + 1};
+            Vector<int[]> vecOut = offers.get(out[j]);
+            if (vecOut == null) {
+              vecOut = new Vector<int[]>();
+              offers.put(out[j], vecOut);
             }
-          }
-          if (vec.size() == 0) {
-            offers.remove(index);
-          }
-          HashMap<Integer, ParentChild> map = parentChildMap.get(parent[1]);
-          map.put(index, new ParentChild(parent[0],
-                  index, parent[2]));
-          int[] out = potentialChildren(graph, nodes[index], this.oneDSel, edgeweights);
-          for (int j = 0; j < out.length; j++) {
-            if (map.containsKey(out[j])) continue;
-            int[] added = next.get(out[j]);
-            if (added == null || added[1] != parent[1]) {
-              int[] o = new int[]{index, parent[1], parent[2] + 1};
-              Vector<int[]> vecOut = offers.get(out[j]);
-              if (vecOut == null) {
-                vecOut = new Vector<int[]>();
-                offers.put(out[j], vecOut);
-              }
-              vecOut.add(o);
-              if (out[j] == 55604) {
+            vecOut.add(o);
+            if (out[j] == 55604) {
 
-              }
             }
           }
         }
-        //second phase if necessary
-        if (offers.isEmpty() && this.oneDSel == Direct.TWOPHASE) {
-          this.oneDSel = Direct.EITHER;
-          for (Node n : nodes) {
-            int index = n.getIndex();
-            int[] out = potentialChildren(graph, n, Direct.EITHER, edgeweights);
-            for (int i = 0; i < this.trees; i++) {
-              HashMap<Integer, ParentChild> map = parentChildMap.get(i);
-              ParentChild parent = map.get(index);
-              if (parent == null) continue;
-              for (int j = 0; j < out.length; j++) {
-                if (!map.containsKey(out[j])) {
-                  Vector<int[]> vecOut = offers.get(out[j]);
-                  if (vecOut == null) {
-                    vecOut = new Vector<int[]>();
-                    offers.put(out[j], vecOut);
-                  }
-                  int[] o = new int[]{index, i, parent.getDepth() + 1};
-                  vecOut.add(o);
+      }
+      //second phase if necessary
+      if (offers.isEmpty() && this.oneDSel == Direct.TWOPHASE) {
+        this.oneDSel = Direct.EITHER;
+        for (Node n : nodes) {
+          int index = n.getIndex();
+          int[] out = potentialChildren(graph, n, Direct.EITHER, edgeweights);
+          for (int i = 0; i < this.trees; i++) {
+            HashMap<Integer, ParentChild> map = parentChildMap.get(i);
+            ParentChild parent = map.get(index);
+            if (parent == null) continue;
+            for (int j = 0; j < out.length; j++) {
+              if (!map.containsKey(out[j])) {
+                Vector<int[]> vecOut = offers.get(out[j]);
+                if (vecOut == null) {
+                  vecOut = new Vector<int[]>();
+                  offers.put(out[j], vecOut);
                 }
-              }
-            }
-          }
-        }
-
-        //third phase if necessary
-        if (offers.isEmpty()) {
-          this.oneDSel = Direct.NONE;
-          for (Node n : nodes) {
-            int index = n.getIndex();
-            int[] out = potentialChildren(graph, n, Direct.NONE, edgeweights);
-            for (int i = 0; i < this.trees; i++) {
-              HashMap<Integer, ParentChild> map = parentChildMap.get(i);
-              ParentChild parent = map.get(index);
-              if (parent == null) continue;
-              for (int j = 0; j < out.length; j++) {
-                if (!map.containsKey(out[j])) {
-                  Vector<int[]> vecOut = offers.get(out[j]);
-                  if (vecOut == null) {
-                    vecOut = new Vector<int[]>();
-                    offers.put(out[j], vecOut);
-                  }
-                  int[] o = new int[]{index, i, parent.getDepth() + 1};
-                  vecOut.add(o);
-                }
+                int[] o = new int[]{index, i, parent.getDepth() + 1};
+                vecOut.add(o);
               }
             }
           }
         }
       }
 
-      for (int i = 0; i < this.trees; i++) {
-        ArrayList<ParentChild> parentChildList = new ArrayList<ParentChild>();
-        parentChildList.addAll(parentChildMap.get(i).values());
-        SpanningTree result = new SpanningTree(graph, parentChildList);
-
-        graph.addProperty(graph.getNextKey("SPANNINGTREE"), result);
+      //third phase if necessary
+      if (offers.isEmpty()) {
+        this.oneDSel = Direct.NONE;
+        for (Node n : nodes) {
+          int index = n.getIndex();
+          int[] out = potentialChildren(graph, n, Direct.NONE, edgeweights);
+          for (int i = 0; i < this.trees; i++) {
+            HashMap<Integer, ParentChild> map = parentChildMap.get(i);
+            ParentChild parent = map.get(index);
+            if (parent == null) continue;
+            for (int j = 0; j < out.length; j++) {
+              if (!map.containsKey(out[j])) {
+                Vector<int[]> vecOut = offers.get(out[j]);
+                if (vecOut == null) {
+                  vecOut = new Vector<int[]>();
+                  offers.put(out[j], vecOut);
+                }
+                int[] o = new int[]{index, i, parent.getDepth() + 1};
+                vecOut.add(o);
+              }
+            }
+          }
+        }
       }
+    }
+
+    for (int i = 0; i < this.trees; i++) {
+      ArrayList<ParentChild> parentChildList = new ArrayList<ParentChild>();
+      parentChildList.addAll(parentChildMap.get(i).values());
+      SpanningTree result = new SpanningTree(graph, parentChildList);
+
+      graph.addProperty(graph.getNextKey("SPANNINGTREE"), result);
     }
 
     return graph;

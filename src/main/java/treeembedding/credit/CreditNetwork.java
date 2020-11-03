@@ -63,7 +63,9 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
   //computed metrics
   private double stab_av; //average stab overhead
-
+  private int[][] subtreeSizes;
+  private int[][] nodeDepths;
+  private int[][] numChildren;
 
   private double passRootAll = 0;
   private int rootPath = 0;
@@ -99,7 +101,9 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
     this.zeroEdges = new ConcurrentLinkedQueue<>();
 
-
+    this.subtreeSizes = new int[this.roots.length][];
+    this.nodeDepths = new int[this.roots.length][];
+    this.numChildren = new int[this.roots.length][];
 
     int threads = 1;
     if (runConfig.areTransactionsConcurrent()) {
@@ -187,6 +191,39 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     return edgeweights;
   }
 
+  /**
+   * Calculate tree stats for each node in the tree.
+   *
+   * 1) size of subtree for every node
+   * 2) depth of every node
+   * 3) number of direct children for every node
+   *
+   * @param tree the spanning tree
+   * @param treeId the index of the tree
+   * @param root the node whose subtree is in question
+   * @param depth the depth of the root
+   * @return the number of nodes in root's subtree
+   */
+  private int calculatePerNodeTreeStats(SpanningTree tree, int treeId, int root, int depth) {
+    int[] children = tree.getChildren(root);
+    int subtreeSum = 0;
+
+    // if a node has no children, then its subtree includes only itself i.e. one node
+    if (children.length == 0) {
+      this.subtreeSizes[treeId][root] = 1;
+      return 1;
+    }
+
+    for (int child : children) {
+      subtreeSum += calculatePerNodeTreeStats(tree, treeId, child, depth + 1);
+    }
+
+    this.subtreeSizes[treeId][root] = subtreeSum;
+    this.nodeDepths[treeId][root] = depth;
+    this.numChildren[treeId][root] = children.length;
+    return subtreeSum;
+  }
+
   @Override
   public void computeData(Graph g, Network n, HashMap<String, Metric> m) {
     this.graph = g;
@@ -195,6 +232,18 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     Treeembedding embed = new Treeembedding("T", 200, roots, MultipleSpanningTree.Direct.TWOPHASE);
     if (!g.hasProperty("SPANNINGTREE_0")) {
       g = embed.transform(g);
+    }
+
+    for (int treeId = 0; treeId < this.roots.length; treeId++) {
+      this.subtreeSizes[treeId] = new int[graph.getNodeCount()];
+      this.nodeDepths[treeId] =  new int[graph.getNodeCount()];
+      this.numChildren[treeId] =  new int[graph.getNodeCount()];
+    }
+
+    // calculate tree stats for attackers
+    for (int treeId = 0; treeId < numRoots; treeId++) {
+      SpanningTree tree = (SpanningTree) g.getProperty("SPANNINGTREE_" + treeId);
+      calculatePerNodeTreeStats(tree, treeId, roots[treeId], 1);
     }
 
     int totalTransactionAttemptCount = 0;
