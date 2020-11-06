@@ -5,7 +5,7 @@ import simulation_common
 import sys
 
 bucket_fields = ['data_set_name', 'concurrent_transactions_count', \
-                 'routing_algorithms', 'arrival_delay_ms']
+                 'routing_algorithm', 'arrival_delay_ms']
 attack_property_fields = ['attack_type', 'attackers', 'receiver_delay_ms']
 
 all_fields = {'general': bucket_fields, 'attack_properties': attack_property_fields}
@@ -28,67 +28,79 @@ def get_config(config, second_level=None):
         return config
     
 def compare_two_configs_single_level(config_a, config_b, second_level=None):
+    # Configs should both have the same sets of fields, though maybe not the
+    # same values
     field_assertion(get_config(config_a, second_level), \
                     get_config(config_b, second_level))
 
     differences = 0
     differing_field = None
-    differing_entries = frozenset()
+    differing_entries = set()
 
-    for field in all_fields.get(second_level, 'general'):
+    for field in all_fields.get(second_level, all_fields['general']):
         # If the field is undefined, we don't need to try to compare
         if field not in get_config(config_a, second_level):
             continue
 
-            if get_config(config_a, second_level)[field] != \
-               get_config(config_b, second_level)[field]:
-                differences += 1
-                differing_field = field
-                differing_entries.add(get_config(config_a, second_level)[field])
-                differing_entries.add(get_config(config_b, second_level)[field])
+        if get_config(config_a, second_level)[field] != \
+          get_config(config_b, second_level)[field]:
+            differences += 1
+            differing_field = field
+            differing_entries.add(get_config(config_a, second_level)[field])
+            differing_entries.add(get_config(config_b, second_level)[field])
 
     return (differences, differing_field, differing_entries)
 
 def compare_two_configs(config_a, config_b):
-
+    # if config_a['routing_algorithm'] == 'speedymurmurs' and config_b['routing_algorithm'] == 'maxflow_collateralize':
+    #     breakpoint()
+        
     # track the number of fields that differ and
     # keep track of what those differences are
     differences_top, differing_fields_top, differing_entries_top = \
       compare_two_configs_single_level(config_a, config_b)
+    # import pdb; pdb.set_trace()
     differences_second, differing_fields_second, differing_entries_second = \
       compare_two_configs_single_level(config_a, config_b, 'attack_properties')
 
     differences = differences_top + differences_second
     # If this assertion fails, it means that two simulations were
     # exactly the same, which should never happen
+    if differences == 0:
+        breakpoint()
     assert differences >= 1
             
     if differences > 1:
         # If a pair of configs differ by more than one field, then we don't
         # want to plot them against each other
-        pass
+        return None
     elif differences == 1:
         # If the two configs only differ by one field, then they should not both
         # report differences
-        assert differing_fields_top ^ differing_fields_second
+        assert (differing_fields_top != None) ^ (differing_fields_second != None)
 
         differing_field = differing_fields_top or differing_fields_second
-        
+
         label_top_level = generate_label(config_a, differing_field, bucket_fields)
-        label_second_level = generate_label(config_a, differing_field, attack_property_fields)
+        label_second_level = generate_label(config_a.get('attack_properties', {}), \
+                                            differing_field, \
+                                            attack_property_fields)
+
         label = "-".join([label_top_level, label_second_level])
-        bucket = {'sensitivity_to':differing_field, 'label':label,\
-                  'entries':differing_entries}
-        if label not in buckets:
-            buckets[label] = []
-            buckets[label].append(bucket)
+
+        # Merge the sets
+        differing_entries_top |= differing_entries_second
+
+        return {'sensitivity_to':differing_field, 'label':label,\
+                'entries':differing_entries_top}
+
 
 
 def generate_label(config, differing_field, label_set):
-    "-".join([field + get_config(config, second_level)[field] \
-                          for field in bucket_fields \
-                          if (differing_field != field) and \
-                          (field in get_config(config, second_level))])
+    return "-".join([field + str(config[field]) \
+                     for field in label_set \
+                     if (differing_field != field) and \
+                     (field in config)])
 
 # Bucket configs that differ in only one dimension, and also determine what
 # that dimension is, and what the variations are.
@@ -100,7 +112,14 @@ def configs_to_buckets(configs, buckets={}):
         
         # Compare config_a to each remaining config
         for config_b in configs[i+1:]:
-            compare_two_configs(config_a, config_b)
+            bucket = compare_two_configs(config_a, config_b)
+            if bucket:
+                label = bucket['label']
+                if label not in buckets:
+                    buckets[label] = []
+                buckets[label].append(bucket)
+
+    return buckets
 
 
 # convert to paths
@@ -118,8 +137,7 @@ if __name__ == "__main__":
     all_configs = experiments.get_experiment_config(experiment_name)
     buckets = {}
     for config_sets in all_configs:
-        buckets = configs_to_buckets(config_sets, buckets)
-
+        buckets.update(configs_to_buckets(config_sets, buckets))
 
     #     buckets = configs_to_buckets(config_sets)
     #     if buckets == None:
@@ -129,5 +147,5 @@ if __name__ == "__main__":
 
     #     config_to_paths(config)
 
-    for b in buckets[0:]:
-        print(b)
+    for k in buckets:
+        print(f"{k} {buckets[k]}")

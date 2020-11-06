@@ -36,8 +36,6 @@ def run_config(config_dict, output_dir, force=False):
 
     jvm_opts = config_dict.get('jvm_options', '-showversion')
     java=os.environ['JAVA_HOME'] + "/bin/java"
-    # return f'java -cp {simulation_common.classpath} {simulation_common.run_info[sim_type]["class"]} {output_dir}'
-    # out = subprocess.run([java, '-cp', f'{simulation_common.classpath}', '-Xss512k', f'{simulation_common.run_info[sim_type]["class"]}', f'{output_dir}'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     out = subprocess.run([java, jvm_opts, '-cp', f'{simulation_common.classpath}', f'{simulation_common.run_info[sim_type]["class"]}', f'{output_dir}'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     # if it fails, delete dir

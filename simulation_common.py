@@ -86,7 +86,6 @@ def parse_node_count(config_dict):
     input_data_path = __get_input_data_dir_path(config_dict)
 
     try:
-        print(input_data_path + '/' + config_dict['topology'])
         return int(linecache.getline(input_data_path + '/' + config_dict['topology'], 4))
     except:
         raise Exception("Are you sure that the following data file exists and is formatted correctly? " + input_data_path + '/' + config_dict['topology'])
