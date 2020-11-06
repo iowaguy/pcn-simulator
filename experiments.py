@@ -100,6 +100,11 @@ def generate_configs(experiment_name, config_dict):
                 print(f"{i}, {selection_type}, {num_attackers}")
                 n = get_nodes(f"pcn-topologies/datasets/{config_dict['data_set_list'][i]}/betweenness_centrality.txt", num_attackers)
                 byzantine_nodes.append(n)
+            elif selection_type == 'none' or selection_type == 'baseline':
+                pass
+            elif selection_type == 'selected':
+                # in this case, num attackers is actually a list of attackers
+                byzantine_nodes.append(num_attackers)
 
         config_dict['selected_byzantine_nodes'] = byzantine_nodes
 
@@ -1297,6 +1302,21 @@ def get_experiments():
             "attackers":[0, 500, 1000, 2000, 3000],
             "force_overwrite": True
         },
+        "46" : {
+            "notes" : "Select tree roots as attackers",
+            "num_steps":1,
+            "data_set_list":["id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":1,
+            "attack_type":["griefing_success", "griefing", "drop_all"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[("selected", [64, 36, 43]), ("baseline", 0)],
+        },
+        
     }
 
     return experiments
