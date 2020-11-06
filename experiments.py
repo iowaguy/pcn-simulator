@@ -1,5 +1,4 @@
 import simulation_common as common
-import attack_common
 import sys
 import yaml
 import json
@@ -1282,7 +1281,7 @@ def get_experiments():
             "attacker_selection":"selected",
             "selected_byzantine_nodes":[("betweenness_centrality", 500)],
         },
-        "45" : { #fig 5
+        "45" : { #fig 5, but also includes tree stats
             "notes" : "Get baseline for griefing random on dataset 25, w/ tree stats",
             "num_steps":1,
             "data_set_list":["id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5"],
@@ -1308,11 +1307,13 @@ def get_nodes(filename, n=-1):
         return nodes
     else:
         return nodes[0:n]
-25,37
+
 def get_experiment_config(experiment_name):
     return generate_configs(experiment_name, get_experiments().get(experiment_name))
 
 if __name__ == "__main__":
+    import attack_common
+
     exp_name = sys.argv[1]
 
     if exp_name == "list":

@@ -6,9 +6,11 @@ IPYTHON_HOME=${HOME}/.ipython
 IPCLUSTER_DIR=${IPYTHON_HOME}/`hostname`/
 SCRIPTS_DIR="scripts"
 JAVA=$JAVA_HOME/bin/java
+JAR=pcn-simulator-1.0-SNAPSHOT-jar-with-dependencies.jar
+CLASS=treeembedding.runners.Dynamic
 
 usage() {
-  echo "Usage: $0 [start|stop|status|experiment|controller|engines]" 1>&2
+  echo "Usage: $0 [start|stop|status|experiment|controller|engines|plot]" 1>&2
   exit 1
 }
 
@@ -101,10 +103,15 @@ experiment() {
 }
 
 single() {
-  #nohup $JAVA -cp target/pcn-simulator-1.0-SNAPSHOT-jar-with-dependencies.jar treeembedding.runners.Dynamic data/dynamic-id3-dynamic-baseline-sequential/dynamic-id3-ripple-dynamic-silentwhispers-3-1-1-lat0ms/ &
+  #$JAVA -cp $JAR $CLASS data/dynamic-id3-dynamic-baseline-sequential/dynamic-id3-ripple-dynamic-silentwhispers-3-1-1-lat0ms/
   run_config_path=$1
-  nohup $JAVA -cp target/pcn-simulator-1.0-SNAPSHOT-jar-with-dependencies.jar treeembedding.runners.Dynamic "$run_config_path" &
+  nohup $JAVA -cp $JAR $CLASS "$run_config_path" &
   exit 0
+}
+
+plot() {
+  experiment=$1
+  python plot-experiment $experiment
 }
 
 mkdir -p ${LOG_DIR}
@@ -140,6 +147,10 @@ while :; do
       ;;
     engines-remote)
       engines_remote "$2"
+      shift
+      ;;
+    plot)
+      plot "$2"
       shift
       ;;
     *)
