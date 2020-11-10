@@ -1,0 +1,37 @@
+base: ../data
+legend_loc:
+- 0.13
+- 0.75
+lines:
+- line:
+    base: dynamic-id25-45/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-pathLSuccAvg.txt
+    name: No attack
+    steps: 1
+- line:
+    base: dynamic-id25-46/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms-drop_all-selected-3-drop_all-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-pathLSuccAvg.txt
+    name: Dropping
+    steps: 1
+- line:
+    base: dynamic-id25-46/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms-griefing-selected-3-griefing-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-pathLSuccAvg.txt
+    name: Griefing and dropping
+    steps: 1
+- line:
+    base: dynamic-id25-46/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms-griefing_success-selected-3-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/
+    files:
+    - cnet-pathLSuccAvg.txt
+    name: Griefing only
+    steps: 1
+plotname: exp 46; SpeedyMurmurs; 10k nodes; scale-free network; 2 connections/node;
+  Full knowledge assignment; 100k Txs
+running_avg: 1500
+xlabel: Time Epochs
+xmin: 0
+ylabel: Average Path Length
+ymax: 30
+ymin: 0
