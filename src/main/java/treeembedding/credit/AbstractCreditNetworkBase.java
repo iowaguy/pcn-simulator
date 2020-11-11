@@ -487,7 +487,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
               .toArray();
     }
     succ &= DataWriter.writeWithoutIndex(transactionsPerNodeDoubles,
-            this.key + "TRANSACTIONS_PER_NODE", folder);
+            this.key + "_TRANSACTIONS_PER_NODE", folder);
 
     if (Config.getBoolean("SERIES_GRAPH_WRITE")) {
       (new GtnaGraphWriter()).writeWithProperties(graph, folder + "graph.txt");
