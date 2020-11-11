@@ -13,6 +13,7 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -240,6 +241,12 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
       this.subtreeSizes[treeId] = new double[graph.getNodeCount()];
       this.nodeDepths[treeId] =  new double[graph.getNodeCount()];
       this.numChildren[treeId] =  new double[graph.getNodeCount()];
+    }
+
+    // Initialize arrays for storing all transactions that go through a node
+    transactionsPerNode = new CopyOnWriteArrayList<>();
+    for (int i = 0; i < graph.getNodeCount(); i++) {
+      transactionsPerNode.add(i, new CopyOnWriteArrayList<>());
     }
 
     // calculate tree stats for all nodes
@@ -891,13 +898,15 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     for (int treeIndex = 0; treeIndex < reversedPaths.length; treeIndex++) {
       if (vals[treeIndex] != 0) {
         int currentNodeIndex = reversedPaths[treeIndex][0];
+        this.transactionsPerNode.get(reversedPaths[treeIndex][0]).add(currentTransaction);
         for (int nodeIndex = 1; nodeIndex < reversedPaths[treeIndex].length; nodeIndex++) {
+          this.transactionsPerNode.get(reversedPaths[treeIndex][nodeIndex]).add(currentTransaction);
           simulateNetworkLatency();
 
           int previousNodeIndex = reversedPaths[treeIndex][nodeIndex];
           Edge edge = CreditLinks.makeEdge(currentNodeIndex, previousNodeIndex);
 
-          // payment griefing attack logic
+          /////////////// payment griefing attack logic
           if (attack != null && (attack.getType() == AttackType.GRIEFING ||
                   attack.getType() == AttackType.GRIEFING_SUCCESS)) {
             if (this.byzantineNodes.contains(currentNodeIndex)) {
@@ -913,6 +922,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
               }
             }
           }
+          ///////////////////////////////////////////////////
 
           if (log.isInfoEnabled()) {
             log.info("Finalize: cur=" + currentNodeIndex + "; prev=" + previousNodeIndex + "; val=" + vals[treeIndex]);

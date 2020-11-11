@@ -12,6 +12,7 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -83,6 +84,12 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
   public void computeData(Graph g, Network n, HashMap<String, Metric> m) {
     this.graph = g;
     int totalTransactionAttemptCount = 0;
+
+    // Initialize arrays for storing all transactions that go through a node
+    transactionsPerNode = new CopyOnWriteArrayList<>();
+    for (int i = 0; i < graph.getNodeCount(); i++) {
+      transactionsPerNode.add(i, new CopyOnWriteArrayList<>());
+    }
 
     success_first = 0;
     success = 0;
@@ -295,7 +302,9 @@ public class CreditMaxFlow extends AbstractCreditNetworkBase {
     for (int pathIndex = 0; pathIndex < reversedPaths.size(); pathIndex++) {
       if (transactionVals.get(pathIndex) != 0) {
         int currentNodeIndex = reversedPaths.get(pathIndex)[0];
+        this.transactionsPerNode.get(reversedPaths.get(pathIndex)[0]).add(currentTransaction);
         for (int nodeIndex = 1; nodeIndex < reversedPaths.get(pathIndex).length; nodeIndex++) {
+          this.transactionsPerNode.get(reversedPaths.get(pathIndex)[nodeIndex]).add(currentTransaction);
           simulateNetworkLatency();
 
           int previousNodeIndex = reversedPaths.get(pathIndex)[nodeIndex];

@@ -147,7 +147,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
   double success_first; //fraction of transactions successful in first try
   final int numRoots;
   double[] stab; //stabilization overhead over time (in #messages)
-
+  List<List<Transaction>> transactionsPerNode;
 
 
   Distribution[] pathsPerTree; //distribution of single paths per tree
@@ -477,6 +477,17 @@ public abstract class AbstractCreditNetworkBase extends Metric {
                 this.key + m.getFileSuffix(), folder);
       }
     }
+
+    double[][] transactionsPerNodeDoubles = new double[transactionsPerNode.size()][];
+    for (int i = 0; i < transactionsPerNode.size(); i++) {
+      transactionsPerNodeDoubles[i] = transactionsPerNode.get(i)
+              .stream()
+              .filter(t -> t != null)
+              .mapToDouble(t -> t.index)
+              .toArray();
+    }
+    succ &= DataWriter.writeWithoutIndex(transactionsPerNodeDoubles,
+            this.key + "TRANSACTIONS_PER_NODE", folder);
 
     if (Config.getBoolean("SERIES_GRAPH_WRITE")) {
       (new GtnaGraphWriter()).writeWithProperties(graph, folder + "graph.txt");
