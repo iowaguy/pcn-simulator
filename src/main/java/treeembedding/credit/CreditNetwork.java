@@ -245,7 +245,7 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
 
     // Initialize arrays for storing all transactions that go through a node
     transactionsPerNode = new CopyOnWriteArrayList<>();
-    for (int i = 0; i < graph.getNodeCount(); i++) {
+    for (int i = 0; i < graph.getNodeCount()*numRoots; i++) {
       transactionsPerNode.add(i, new CopyOnWriteArrayList<>());
     }
 
@@ -898,9 +898,12 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     for (int treeIndex = 0; treeIndex < reversedPaths.length; treeIndex++) {
       if (vals[treeIndex] != 0) {
         int currentNodeIndex = reversedPaths[treeIndex][0];
-        this.transactionsPerNode.get(reversedPaths[treeIndex][0]).add(currentTransaction);
+        this.transactionsPerNode.get(reversedPaths[treeIndex][0] + treeIndex*graph.getNodeCount())
+                .add(currentTransaction);
         for (int nodeIndex = 1; nodeIndex < reversedPaths[treeIndex].length; nodeIndex++) {
-          this.transactionsPerNode.get(reversedPaths[treeIndex][nodeIndex]).add(currentTransaction);
+          this.transactionsPerNode.get(reversedPaths[treeIndex][nodeIndex] +
+                  treeIndex*graph.getNodeCount())
+                  .add(currentTransaction);
           simulateNetworkLatency();
 
           int previousNodeIndex = reversedPaths[treeIndex][nodeIndex];

@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Vector;
@@ -482,7 +483,7 @@ public abstract class AbstractCreditNetworkBase extends Metric {
     for (int i = 0; i < transactionsPerNode.size(); i++) {
       transactionsPerNodeDoubles[i] = transactionsPerNode.get(i)
               .stream()
-              .filter(t -> t != null)
+              .filter(Objects::nonNull)
               .mapToDouble(t -> t.index)
               .toArray();
     }

@@ -1,6 +1,8 @@
-from typing import Dict, Tuple
-import networkx as nx
+#!/usr/bin/env python3
+
 import matplotlib.pyplot as plt
+import networkx as nx
+from typing import Tuple
 
 first_data_line_in_topo = 7
 betweenness_centrality = "betweenness_centrality"
@@ -42,3 +44,13 @@ def select_n_by_method(basepath, method=betweenness_centrality, top_n=1):
     G = parse_topology(basepath + filename)
     top_n_entries = __sort_dict_by_keys(selection_methods[method](G))[0:top_n]
     return ([int(k) for k, _ in top_n_entries], [v for _, v in top_n_entries])
+
+def calculate_betweenness_centrality_raw(path="./", topo=None, store=False):
+    if topo:
+        G = topo
+    else:
+        G = parse_topology(path + "/topology.graph")
+
+    bc = nx.betweenness_centrality(G)
+    with open(path + "/betweenness_centrality_raw.txt", "w") as f:
+        f.write('\n'.join(str(bc) for node, bc in bc.items()))

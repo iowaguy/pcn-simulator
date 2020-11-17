@@ -118,19 +118,26 @@ class CreditNetworkTest {
 
       if (ra == RoutingAlgorithm.SPEEDYMURMURS) {
         assertEquals(0, abc.transactionsPerNode.get(0).get(0).index);
-        assertEquals(0, abc.transactionsPerNode.get(0).get(1).index);
-        assertEquals(2, abc.transactionsPerNode.get(0).size());
+        assertEquals(1, abc.transactionsPerNode.get(0).size());
         assertEquals(0, abc.transactionsPerNode.get(1).size());
         assertEquals(0, abc.transactionsPerNode.get(2).get(0).index);
-        assertEquals(0, abc.transactionsPerNode.get(2).get(1).index);
-        assertEquals(2, abc.transactionsPerNode.get(2).size());
+        assertEquals(1, abc.transactionsPerNode.get(2).size());
         assertEquals(0, abc.transactionsPerNode.get(3).get(0).index);
-        assertEquals(0, abc.transactionsPerNode.get(3).get(1).index);
-        assertEquals(2, abc.transactionsPerNode.get(3).size());
+        assertEquals(1, abc.transactionsPerNode.get(3).size());
         assertEquals(0, abc.transactionsPerNode.get(4).size());
         assertEquals(0, abc.transactionsPerNode.get(5).get(0).index);
-        assertEquals(0, abc.transactionsPerNode.get(5).get(1).index);
-        assertEquals(2, abc.transactionsPerNode.get(5).size());
+        assertEquals(1, abc.transactionsPerNode.get(5).size());
+
+        assertEquals(0, abc.transactionsPerNode.get(6).get(0).index);
+        assertEquals(1, abc.transactionsPerNode.get(6).size());
+        assertEquals(0, abc.transactionsPerNode.get(7).size());
+        assertEquals(0, abc.transactionsPerNode.get(8).get(0).index);
+        assertEquals(1, abc.transactionsPerNode.get(8).size());
+        assertEquals(0, abc.transactionsPerNode.get(9).get(0).index);
+        assertEquals(1, abc.transactionsPerNode.get(9).size());
+        assertEquals(0, abc.transactionsPerNode.get(10).size());
+        assertEquals(0, abc.transactionsPerNode.get(11).get(0).index);
+        assertEquals(1, abc.transactionsPerNode.get(11).size());
       } else if (ra == RoutingAlgorithm.MAXFLOW_COLLATERALIZE) {
         assertEquals(0, abc.transactionsPerNode.get(0).get(0).index);
         assertEquals(1, abc.transactionsPerNode.get(0).size());
@@ -176,12 +183,19 @@ class CreditNetworkTest {
       assertEquals(100.0, edgeweights.getWeight(3, 4), ACCEPTABLE_ERROR);
 
       if (ra == RoutingAlgorithm.SPEEDYMURMURS) {
-        assertEquals(4, abc.transactionsPerNode.get(0).size());
+        assertEquals(2, abc.transactionsPerNode.get(0).size());
         assertEquals(0, abc.transactionsPerNode.get(1).size());
-        assertEquals(4, abc.transactionsPerNode.get(2).size());
-        assertEquals(4, abc.transactionsPerNode.get(3).size());
+        assertEquals(2, abc.transactionsPerNode.get(2).size());
+        assertEquals(2, abc.transactionsPerNode.get(3).size());
         assertEquals(0, abc.transactionsPerNode.get(4).size());
-        assertEquals(4, abc.transactionsPerNode.get(5).size());
+        assertEquals(2, abc.transactionsPerNode.get(5).size());
+
+        assertEquals(2, abc.transactionsPerNode.get(6).size());
+        assertEquals(0, abc.transactionsPerNode.get(7).size());
+        assertEquals(2, abc.transactionsPerNode.get(8).size());
+        assertEquals(2, abc.transactionsPerNode.get(9).size());
+        assertEquals(0, abc.transactionsPerNode.get(10).size());
+        assertEquals(2, abc.transactionsPerNode.get(11).size());
       } else if (ra == RoutingAlgorithm.MAXFLOW_COLLATERALIZE) {
         assertEquals(2, abc.transactionsPerNode.get(0).size());
         assertEquals(0, abc.transactionsPerNode.get(1).size());

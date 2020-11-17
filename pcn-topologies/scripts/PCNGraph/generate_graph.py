@@ -1,23 +1,22 @@
 #!/usr/bin/env python3
 
 import argparse
-import sys
-import yaml
-import networkx as nx
-import matplotlib.pyplot as plt
-import logging
-import random
-import math
-import numpy as np
-import plot_data_sets as dsplot
-from pathlib import Path
-import shutil
-import graph_analysis as ga
-import lightning_utils as ln
-import statistics as stat
-import os
-import json
 import collections
+import graph_analysis as ga
+import json
+import lightning_utils as ln
+import logging
+import math
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
+import os
+import plot_data_sets as dsplot
+import random
+import shutil
+import statistics as stat
+import yaml
+from pathlib import Path
 
 node_count = 'node_count'
 tx_count = 'tx_count'
@@ -545,6 +544,8 @@ if __name__ == '__main__':
     with open("betweenness_centrality.txt", "w") as f:
         f.write(str(nodes))
 
+    calculate_betweenness_centrality_raw("")
+    
     with open("central_point_dominances.txt", "w") as f:
         for d in central_point_dominances:
             f.write(str(d) + "\n")
