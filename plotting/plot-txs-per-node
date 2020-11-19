@@ -5,6 +5,7 @@ import json
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
+import argparse
 
 def get_transactions_per_node(exp_path):
     # Had to do this in a weird way because each row does not have the
@@ -100,41 +101,50 @@ def tree_cdf(exp_path, xlabel, trees, nodes):
         out = np.array(range(nodes))/float(nodes)
         plt.plot(sorted_data, out)
         lower += nodes
-        print(sorted_data[9900:])
+        print("Top 100: " + ",".join(sorted_data[9900:]))
 
     plt.legend(('Tree 1', 'Tree 2', 'Tree 3'))
     plt.xlabel(xlabel)
     plt.show()
 
-def plot_line(exp_path, ylabel, xlabel, xmax, trees=3, nodes=10000):
-    children_df = pd.read_csv(exp_path, header=None, delim_whitespace=True)
-    # children_per_tree = []
-    # lower = 0
-    # cumsum_per_tree = []
-    # # for i in range(trees):
-    #     children_per_tree.append(children_df.iloc[lower:lower + nodes])
-    #     lower += nodes
-
-    # for i in range(trees):
-    #     plt.scatter(range(nodes), children_per_tree[i][1], s=1)
-    #     #plt.plot(range(nodes), children_per_tree[i][1])
-
-    plt.hist(children_df[1], xmax, density=False, facecolor='g', alpha=0.75)
-    # plt.legend(('Tree 1', 'Tree 2', 'Tree 3'))
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.show()
-    
-
 
 if __name__ == "__main__":
-    exp1 = "/Users/ben/workspace/credit-networks/data/dynamic-id25-45/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1"
-    ds25 = "/Users/ben/workspace/credit-networks/pcn-topologies/datasets/id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5"
-    tx_counts = get_transactions_per_node(exp1)
-    # transactions_vs_betweenness_centrality(ds25, tx_counts=tx_counts)
-    #transactions_vs_subtree_size(exp1, tx_counts)
-    transactions_vs_tree_depth(exp1, tx_counts)
-    # cdf_num_children(exp1)
-    # cdf_subtree_size(exp1)
-    # cdf_node_depth(exp1)
-    # #plot_line(exp1 + "/cnet-nodeDepths.txt", '# of nodes', 'Node depth', xmax=16)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--exp_path', required=True,
+                        help='The path to the experiment directory')
+    parser.add_argument('--dataset_path', required=False,
+                        help='The path to the dataset directory')
+    parser.add_argument('--all', '-a', action='store_true',
+                        default=False,
+                        help='Generate all plots')
+    parser.add_argument('--tx_vs_bc_scatter', action='store_true',
+                        default=False,
+                        help='Create a scatter plot of the # of transactions vs. the betweenness centrality of each node')
+    parser.add_argument('--tx_vs_subtree_scatter', action='store_true',
+                        default=False,
+                        help='Create a scatter plot of the # of transactions vs. the subtree size of each node')
+    parser.add_argument('--tx_vs_root_dist_scatter', action='store_true',
+                        default=False,
+                        help='Create a scatter plot of the # of transactions vs. the distance of each node to the root')
+    parser.add_argument('--tree_stats', action='store_true',
+                        default=False,
+                        help='Create CDFs of the tree statistics')
+
+    args = parser.parse_args()
+
+    if args.all or args.tree_stats:
+        cdf_num_children(args.exp_path)
+        cdf_subtree_size(args.exp_path)
+        cdf_node_depth(args.exp_path)
+
+    if args.all or args.tx_vs_bc_scatter or args.tx_vs_subtree_scatter or args.tx_vs_root_dist_scatter:
+        tx_counts = get_transactions_per_node(args.exp_path)
+
+        if args.all or args.tx_vs_bc_scatter:
+            transactions_vs_betweenness_centrality(args.dataset_path, tx_counts=tx_counts)
+
+        if args.all or args.tx_vs_subtree_scatter:
+            transactions_vs_subtree_size(args.exp_path, tx_counts)
+
+        if args.all or  args.tx_vs_root_dist_scatter:
+            transactions_vs_tree_depth(args.exp_path, tx_counts)
