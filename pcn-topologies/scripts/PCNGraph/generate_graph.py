@@ -465,7 +465,9 @@ if __name__ == '__main__':
        not configs.get('force'):
         print(f"Dataset {configs.get('name')} exists, skipping.")
         exit(0)                 
-        
+    else:
+        print("Dataset not found, creating...")
+
     if 'load_topo' in configs:
         print("Loading topology...")
         load_topo_type = configs['load_topo'].get('type', 'gtna')
@@ -498,7 +500,7 @@ if __name__ == '__main__':
 
         configs.get('value_multiplier', 1)
     else:
-        print("Generating balances")
+        print("Generating balances...")
         # generate initial balances
         topo.full_knowledge_edge_weight_gen(txs, value_multiplier=configs.get('value_multiplier', 1),
                                             mult_probability=configs.get('multiplier_probability', 1),
