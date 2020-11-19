@@ -162,21 +162,6 @@ class Topology:
         self.__link_weights = max_weight
         return max_weight
 
-    # def uniform_edge_weight_gen(self, tx_list, value_multiplier=1.0):
-    #     sums = 0
-    #     for src, dest, val in tx_list:
-    #         sums += val
-
-    #     link_avg = sums/nx.edges(self.__graph)
-
-    #     weights = {}
-    #     for src, dest, val in tx_list:
-    #         weights[(src, dest)] = link_avg
-
-    #     self.__link_weights = weights
-
-    #     return weights
-    
     @property
     def graph(self):
         return self.__graph
@@ -481,8 +466,8 @@ if __name__ == '__main__':
         print(f"Dataset {configs.get('name')} exists, skipping.")
         exit(0)                 
         
-    print("Loading topology...")
     if 'load_topo' in configs:
+        print("Loading topology...")
         load_topo_type = configs['load_topo'].get('type', 'gtna')
         if load_topo_type == 'gtna':
             # TODO read GTNA files
@@ -501,8 +486,8 @@ if __name__ == '__main__':
     txdist = TxDistro(configs[tx_value_distro], configs[tx_participant_distro], topo)
     txs = txdist.sample(configs[tx_count])
 
-    print("Loading channels...")
     if 'load_initial_balances' in configs:
+        print("Loading channels...")        
         load_channels_type = configs['load_initial_balances'].get('type', 'gtna')
         if load_channels_type == 'gtna':
             # TODO read GTNA files
@@ -544,8 +529,6 @@ if __name__ == '__main__':
     with open("betweenness_centrality.txt", "w") as f:
         f.write(str(nodes))
 
-    calculate_betweenness_centrality_raw("")
-    
     with open("central_point_dominances.txt", "w") as f:
         for d in central_point_dominances:
             f.write(str(d) + "\n")
