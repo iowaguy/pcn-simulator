@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+
+import pandas as pd
+import json
+import networkx as nx
+import matplotlib.pyplot as plt
+import numpy as np
+
+def get_transactions_per_node(exp_path):
+    # Had to do this in a weird way because each row does not have the
+    # same number of columns.
+    df = pd.read_csv(exp_path + "/cnet-transactionsPerNode.txt", \
+                     header=None, sep='\n', skip_blank_lines=False)
+
+    df = df[0].str.split('\t', expand=True)
+    return df.apply(lambda x: len(x) - x.isnull().sum(), axis='columns')
+
+def transactions_vs_betweenness_centrality(dataset_path, exp_path=None, tx_counts=[]):
+    if not exp_path and (len(tx_counts) == 0):
+        raise Exception("Must provide either transaction count series or experiment path.")
+    elif exp_path and (len(tx_counts) == 0):
+        tx_count = get_transactions_per_node(exp_path)
+
+    transactions_vs_x(dataset_path + "/betweenness_centrality_raw.txt", tx_counts, \
+                                 'Betweenness centrality (normalized)')
+        
+def transactions_vs_tree_depth(exp_path, tx_counts=[]):
+    if not exp_path and (len(tx_counts) == 0):
+        raise Exception("Must provide either transaction count series or experiment path.")
+    elif exp_path and (len(tx_counts) == 0):
+        tx_count = get_transactions_per_node(exp_path)
+
+    transactions_vs_x(exp_path + "/cnet-nodeDepths.txt", tx_counts, 'Distance from root')
+
+def transactions_vs_subtree_size(exp_path, tx_counts=[]):
+    if not exp_path and (len(tx_counts) == 0):
+        raise Exception("Must provide either transaction count series or experiment path.")
+    elif exp_path and (len(tx_counts) == 0):
+        tx_count = get_transactions_per_node(exp_path)
+
+    transactions_vs_x(exp_path + "/cnet-subtreeSize.txt", tx_counts, 'Subtree size')
+    
+    
+def transactions_vs_x(path, tx_counts, xlabel, roots=[64, 36, 43], nodes=10000):
+    df = pd.read_csv(path, header=None, delim_whitespace=True)
+
+    if len(df) == nodes:
+        df = pd.concat([df, df, df], ignore_index=True)
+    
+    df['tx_counts'] = tx_counts
+
+    plt.xlabel(xlabel)
+    plt.ylabel('# of transactions')
+
+    lower = 0
+    upper = lower + nodes
+
+    for i, root in enumerate(roots):
+        data_per_tree = df.iloc[lower:upper]
+        # plt.scatter(df[0].iloc[lower + root], df['tx_counts'].iloc[lower + root], s=10, c='r')
+        plt.scatter(data_per_tree[0], data_per_tree['tx_counts'], s=10)
+        plt.scatter(data_per_tree[0].iloc[root], data_per_tree['tx_counts'].iloc[root], s=10, c='r')
+        
+        r = np.corrcoef(data_per_tree[0], data_per_tree['tx_counts'])
+        print(f'tree {i+1}, r={r[0][1]}')        
+        lower += nodes
+        upper = lower + nodes
+        plt.show()        
+
+
+def cdf_num_children(exp_path, trees=3, nodes=10000):
+    tree_cdf(exp_path + "/cnet-numChildren.txt", 'Number of children', trees, nodes)
+
+def cdf_subtree_size(exp_path, trees=3, nodes=10000):
+    tree_cdf(exp_path + "/cnet-subtreeSize.txt", 'Size of subtree', trees, nodes)
+
+def cdf_node_depth(exp_path, trees=3, nodes=10000):
+    tree_cdf(exp_path + "/cnet-nodeDepths.txt", 'Distance from root', trees, nodes)
+    
+def tree_cdf(exp_path, xlabel, trees, nodes):
+    df = pd.read_csv(exp_path, header=None, delim_whitespace=True)
+    # stuff_per_tree = []
+    lower = 0
+    # cumsum_per_tree = []
+    for i in range(trees):
+        data_per_tree = df.iloc[lower:lower + nodes]
+        # stuff_per_tree.append(df.iloc[lower:lower + nodes])
+        total = data_per_tree[1].sum()
+        # cumsum_per_tree.append(np.cumsum(np.sort(data_per_tree[1])/total))
+        sorted_data = np.sort(data_per_tree[1])
+        out = np.array(range(nodes))/float(nodes)
+        plt.plot(sorted_data, out)
+        lower += nodes
+        print(sorted_data[9900:])
+
+    plt.legend(('Tree 1', 'Tree 2', 'Tree 3'))
+    plt.xlabel(xlabel)
+    plt.show()
+
+def plot_line(exp_path, ylabel, xlabel, xmax, trees=3, nodes=10000):
+    children_df = pd.read_csv(exp_path, header=None, delim_whitespace=True)
+    # children_per_tree = []
+    # lower = 0
+    # cumsum_per_tree = []
+    # # for i in range(trees):
+    #     children_per_tree.append(children_df.iloc[lower:lower + nodes])
+    #     lower += nodes
+
+    # for i in range(trees):
+    #     plt.scatter(range(nodes), children_per_tree[i][1], s=1)
+    #     #plt.plot(range(nodes), children_per_tree[i][1])
+
+    plt.hist(children_df[1], xmax, density=False, facecolor='g', alpha=0.75)
+    # plt.legend(('Tree 1', 'Tree 2', 'Tree 3'))
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.show()
+    
+
+
+if __name__ == "__main__":
+    exp1 = "/Users/ben/workspace/credit-networks/data/dynamic-id25-45/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1"
+    ds25 = "/Users/ben/workspace/credit-networks/pcn-topologies/datasets/id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5"
+    tx_counts = get_transactions_per_node(exp1)
+    # transactions_vs_betweenness_centrality(ds25, tx_counts=tx_counts)
+    # transactions_vs_subtree_size(exp1, tx_counts)
+    transactions_vs_tree_depth(exp1, tx_counts)
+    # cdf_num_children(exp1)
+    # cdf_subtree_size(exp1)
+    # cdf_node_depth(exp1)
+    # #plot_line(exp1 + "/cnet-nodeDepths.txt", '# of nodes', 'Node depth', xmax=16)
