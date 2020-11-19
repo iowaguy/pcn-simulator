@@ -1316,7 +1316,21 @@ def get_experiments():
             "attacker_selection":"selected",
             "selected_byzantine_nodes":[("selected", [64, 36, 43]), ("baseline", 0)],
         },
-        
+        "47" : {
+            "notes" : "Try out new topo that has random participant distro",
+            "num_steps":1,
+            "data_set_list":["id68-synthetic-random-nodes-10000-txs-pareto-100000-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs, common.maxflow],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":1,
+            "attack_type":["griefing_success", "griefing", "drop_all"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"random",
+            "attackers":[0, 500, 1000, 2000, 3000],
+            "force_overwrite": True
+        },        
     }
 
     return experiments
