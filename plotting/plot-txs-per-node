@@ -101,7 +101,7 @@ def tree_cdf(exp_path, xlabel, trees, nodes):
         out = np.array(range(nodes))/float(nodes)
         plt.plot(sorted_data, out)
         lower += nodes
-        print("Top 100: " + ",".join(sorted_data[9900:]))
+        print("Top 100: " + ", ".join([str(i) for i in sorted_data[9900:]]))
 
     plt.legend(('Tree 1', 'Tree 2', 'Tree 3'))
     plt.xlabel(xlabel)
@@ -132,19 +132,19 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    if args.all or args.tx_vs_bc_scatter or args.tx_vs_subtree_scatter or args.tx_vs_root_dist_scatter:
+        tx_counts = get_transactions_per_node(args.exp_path)
+    
     if args.all or args.tree_stats:
         cdf_num_children(args.exp_path)
         cdf_subtree_size(args.exp_path)
         cdf_node_depth(args.exp_path)
 
-    if args.all or args.tx_vs_bc_scatter or args.tx_vs_subtree_scatter or args.tx_vs_root_dist_scatter:
-        tx_counts = get_transactions_per_node(args.exp_path)
+    if args.all or args.tx_vs_bc_scatter:
+        transactions_vs_betweenness_centrality(args.dataset_path, tx_counts=tx_counts)
 
-        if args.all or args.tx_vs_bc_scatter:
-            transactions_vs_betweenness_centrality(args.dataset_path, tx_counts=tx_counts)
+    if args.all or args.tx_vs_subtree_scatter:
+        transactions_vs_subtree_size(args.exp_path, tx_counts)
 
-        if args.all or args.tx_vs_subtree_scatter:
-            transactions_vs_subtree_size(args.exp_path, tx_counts)
-
-        if args.all or  args.tx_vs_root_dist_scatter:
-            transactions_vs_tree_depth(args.exp_path, tx_counts)
+    if args.all or  args.tx_vs_root_dist_scatter:
+        transactions_vs_tree_depth(args.exp_path, tx_counts)

@@ -6,6 +6,7 @@ IPYTHON_HOME=${HOME}/.ipython
 IPCLUSTER_DIR=${IPYTHON_HOME}/`hostname`/
 SCRIPTS_DIR="scripts"
 JAVA=$JAVA_HOME/bin/java
+PYTHON=python3
 
 usage() {
   echo "Usage: $0 [start|stop|status|experiment|controller|engines]" 1>&2
@@ -86,9 +87,9 @@ experiment() {
   fi
 
   if [ -n "${PRINT_EXPERIMENT_TYPE}" ]; then
-    nohup python experiments.py "${EXPERIMENT_TYPE}" "${PRINT_EXPERIMENT_TYPE}" &> "${EXPERIMENT_LOG}" &
+    nohup ${PYTHON} experiments.py "${EXPERIMENT_TYPE}" "${PRINT_EXPERIMENT_TYPE}" &> "${EXPERIMENT_LOG}" &
   else
-    nohup python experiments.py "${EXPERIMENT_TYPE}" &> "${EXPERIMENT_LOG}" &
+    nohup ${PYTHON} experiments.py "${EXPERIMENT_TYPE}" &> "${EXPERIMENT_LOG}" &
   fi
 
   sleep 1

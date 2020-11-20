@@ -91,23 +91,33 @@ def generate_configs(experiment_name, config_dict):
     if 'attackers' in config_dict and 'selected_byzantine_nodes' in config_dict:
         raise Exception("Cannot provide both 'attackers' and 'selected_byzantine_nodes'")
 
-    if 'selected_byzantine_nodes' in config_dict and not isinstance(config_dict['selected_byzantine_nodes'][0][0], int):
-        byzantine_nodes = []
-        for i, t  in enumerate(config_dict['selected_byzantine_nodes']):
-            print(config_dict['selected_byzantine_nodes'])
-            selection_type, num_attackers = t
-            if selection_type == 'betweenness_centrality':
-                print(f"{i}, {selection_type}, {num_attackers}")
-                n = get_nodes(f"pcn-topologies/datasets/{config_dict['data_set_list'][i]}/betweenness_centrality.txt", num_attackers)
-                byzantine_nodes.append(n)
-            elif selection_type == 'none' or selection_type == 'baseline':
-                pass
-            elif selection_type == 'selected':
-                # in this case, num attackers is actually a list of attackers
-                byzantine_nodes.append(num_attackers)
+    # If we want to select specific attackers
+    if 'selected_byzantine_nodes' in config_dict:
 
-        config_dict['selected_byzantine_nodes'] = byzantine_nodes
+        # the attackers are *not* a list of ints
+        if not isinstance(config_dict['selected_byzantine_nodes'][0][0], int):
+            byzantine_nodes = []
+            # the first item is the selection criterion and the second item is
+            # either the number of nodes to select, or a list of specific
+            # attackers.
+            for i, t  in enumerate(config_dict['selected_byzantine_nodes']):
+                print(config_dict['selected_byzantine_nodes'])
+                selection_type, num_attackers = t
+                if selection_type == 'betweenness_centrality':
+                    print(f"{i}, {selection_type}, {num_attackers}")
+                    n = get_nodes(f"pcn-topologies/datasets/{config_dict['data_set_list'][i]}/betweenness_centrality.txt", num_attackers)
+                    byzantine_nodes.append(n)
+                elif selection_type == 'none' or selection_type == 'baseline':
+                    pass
+                elif selection_type == 'by_number_of_transactions':
+                    raise NotImplementedError("Cannot select attackers by number of transactions yet.")
+                elif selection_type == 'selected':
+                    # in this case, num attackers is actually a list of attackers
+                    byzantine_nodes.append(num_attackers)
 
+                config_dict['selected_byzantine_nodes'] = byzantine_nodes
+
+    # TODO the attackers are a list of ints, then treat those ints as the node IDs of the attackers
     l = [do_replacement(experiment_name, i, config_dict,
                         routing_algorithm=alg,
                         attackers=att, receiver_delay_ms=rec,
@@ -1330,7 +1340,22 @@ def get_experiments():
             "attacker_selection":"random",
             "attackers":[0, 500, 1000, 2000, 3000],
             "force_overwrite": True
-        },        
+        },
+        "48" : {
+            "notes" : "Try out new topo that has random participant distro",
+            "num_steps":1,
+            "data_set_list":["id68-synthetic-random-nodes-10000-txs-pareto-100000-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs, common.maxflow],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":1,
+            "attack_type":["griefing_success", "griefing", "drop_all"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[("by_number_of_transactions", 10)],
+            "force_overwrite": True
+        },
     }
 
     return experiments
