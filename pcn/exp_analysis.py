@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-def __sanity_check_tx_counts(exp_path, tx_counts):
+def sanity_check_tx_counts(exp_path, tx_counts):
     if not exp_path and (len(tx_counts) == 0):
         raise Exception("Must provide either transaction count series or experiment path.")
     elif exp_path and (len(tx_counts) == 0):
@@ -12,7 +12,7 @@ def __sanity_check_tx_counts(exp_path, tx_counts):
 
 
 def get_top_n_nodes_by_transaction_count(n, exp_path=None, tx_counts=[]):
-    return __sanity_check_tx_counts(exp_path, tx_counts).nlargest(n, 0)
+    return sanity_check_tx_counts(exp_path, tx_counts).nlargest(n, 0)
 
 
 def get_transactions_per_node(exp_path):
