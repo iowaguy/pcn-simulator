@@ -1,0 +1,159 @@
+#!/usr/bin/env python3
+
+import argparse
+import yaml
+import logging
+import os
+import lightning_utils as ln
+from pcn import TxDistro, Topology
+from pathlib import Path
+import shutil
+import pcn
+
+dataset_base = '../datasets'
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='Generate graphs')
+    parser.add_argument('--specfile',
+                        help='The specifications for the dataset')
+    parser.add_argument('--noplots', action='store_true', help='Don\'t plot')
+    parser.add_argument('--nographcalcs', action='store_true',
+                        help='Don\'t calculate graph statistics')
+    parser.add_argument('--showtopology', action='store_true',
+                        default=False, help='Show a diagram of the topology')
+    parser.add_argument('--node_count', type=int, default=10000, help='Number of nodes')
+    parser.add_argument('--tx_count', type=int, default=100000, help='Number of transactions')
+    parser.add_argument('--tx_value_distribution', default='pareto',
+                        help='Distribution of transaction values')
+    parser.add_argument('--tx_participant_distribution', default='poisson',
+                        help='Distribution of transaction origins and desinations')
+    parser.add_argument('--base_topology', default='scalefree',
+                        help='The base topology type. One of: scalefree, smallworld, or random')
+    parser.add_argument('--log_level', default='error', help='The log level')
+    parser.add_argument('--value_multiplier', type=float, default=1.0,
+                        help='A multiplier for weighting channel balances')
+    parser.add_argument('--tx_inclusion_probability', type=float, default=1.0,
+                        help='The probability that a transaction will be included during the full-knowledge balance assignment algorithm')
+    parser.add_argument('--multiplier_probability', type=float, default=1.0,
+                        help='The probability that the value multiplier will be applied to each link during the post-hoc weight adjustment')
+    parser.add_argument('--connection_parameter', type=connection_parameter_type, default=2,
+                        help='The number of connections that each node makes when joining the graph in the BA scalefree generation algorithm')
+    parser.add_argument('--min_channel_balance', type=int, default=0,
+                        help='The minimum allowed channel balances. All channels will be guaranteed to have at least this much')
+    parser.add_argument('--id', required=True,
+                        help='The numeric identifier for the dataset')
+    parser.add_argument('--force', action='store_true',
+                        default=False,
+                        help='Overwrite existing dataset with the same name')
+
+    args = parser.parse_args()
+    if args.specfile:
+        with open(args.specfile, 'r') as stream:
+            try:
+                configs = yaml.safe_load(stream)
+            except yaml.YAMLError as e:
+                logging.error(e)
+                exit(1)
+        if 'log_level' in configs:
+            logging.basicConfig(level=configs['log_level'].upper())
+        else:
+            logging.basicConfig(level=logging.ERROR)
+    else:
+        configs = vars(args)
+
+    configs['name'] = name_dataset(configs)
+    print(f"Looking for {dataset_base + '/' + configs.get('name')}")
+    if os.path.isdir(dataset_base + '/' + configs.get('name')) and \
+       not configs.get('force'):
+        print(f"Dataset {configs.get('name')} exists, skipping.")
+        exit(0)
+    else:
+        print("Dataset not found, creating...")
+
+    if 'load_topo' in configs:
+        print("Loading topology...")
+        load_topo_type = configs['load_topo'].get('type', 'gtna')
+        if load_topo_type == 'gtna':
+            # TODO read GTNA files
+            raise NotImplementedError()
+        elif load_topo_type == 'lightning_snapshot':
+            G = ln.load_lightning_topo(configs['load_topo']['ln_snapshot_file'])
+            topo = Topology(graph=G, balance_multiplier=configs['value_multiplier'])
+        else:
+            raise NotImplementedError("{load_topo_type} not yet supported")
+
+    else:
+        topo = Topology(configs.get('base_topology'),
+                        configs.get(node_count),
+                        configs.get('connection_parameter'))
+
+    txdist = TxDistro(configs['tx_value_distro'], configs['tx_participant_distro'], topo)
+    txs = txdist.sample(configs[tx_count])
+
+    if 'load_initial_balances' in configs:
+        print("Loading channels...")
+        load_channels_type = configs['load_initial_balances'].get('type', 'gtna')
+        if load_channels_type == 'gtna':
+            # TODO read GTNA files
+            raise NotImplementedError()
+        elif load_channels_type == 'lightning_snapshot':
+            # already done
+            pass
+
+        configs.get('value_multiplier', 1)
+    else:
+        print("Generating balances...")
+        # generate initial balances
+        topo.full_knowledge_edge_weight_gen(txs, value_multiplier=configs.get('value_multiplier', 1),
+                                            mult_probability=configs.get('multiplier_probability', 1),
+                                            tx_inclusion_probability=configs.get('tx_inclusion_probability', 1),
+                                            min_channel_balance=configs.get('min_channel_balance', 0))
+
+
+    print("Converting data to GTNA format...")
+    convert_topo_to_gtna(topo)
+    convert_credit_links_to_gtna(topo)
+    convert_txs_to_gtna(txs)
+
+    if args.showtopology:
+        topo.show()
+
+    new_dataset_path = dataset_base + '/' + configs.get('name')
+    Path(new_dataset_path).mkdir(parents=True, exist_ok=True)
+
+    write_stats(calculate_stats(topo, txs))
+
+    create_newlinks_files()
+
+    if args.nographcalcs:
+        exit(0)
+
+    print("Calculating betweenness centrality...")
+    nodes, central_point_dominances = pcn.select_n_by_method(".", method=pcn.betweenness_centrality, top_n=len(topo.graph))
+    with open("betweenness_centrality.txt", "w") as f:
+        f.write(str(nodes))
+
+    with open("central_point_dominances.txt", "w") as f:
+        for d in central_point_dominances:
+            f.write(str(d) + "\n")
+
+    print("Moving files...")
+    files_to_move = ["topology.graph", "topology.graph_CREDIT_LINKS",
+                     "transactions.txt", "betweenness_centrality.txt",
+                     "central_point_dominances.txt", "stats.txt"]
+    for fname in files_to_move:
+        shutil.move(fname, f"{new_dataset_path}/{fname}")
+
+    if args.specfile:
+        shutil.copy(args.specfile, f"{new_dataset_path}/{args.specfile}")
+    else:
+        with open(f"{new_dataset_path}/configs.yml", 'w') as f:
+            yaml.dump(configs, f)
+
+    if args.noplots:
+        exit(0)
+
+    print("Plotting datasets...")
+    dsplot.plot_graph(new_dataset_path)
+    dsplot.plot_txs(new_dataset_path)

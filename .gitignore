@@ -20,3 +20,4 @@ speedy-datasets/
 /plotting/archived/*
 */nohup*.out
 **.png
+/.vagrant/

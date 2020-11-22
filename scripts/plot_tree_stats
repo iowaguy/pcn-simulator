@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+
+import sys
+
+# This line is required so I can use the pcn module
+sys.path.append('../')
+import pcn
+import argparse
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--exp_path', required=True,
+                        help='The path to the experiment directory')
+    parser.add_argument('--dataset_path', required=False,
+                        help='The path to the dataset directory')
+    parser.add_argument('--all', '-a', action='store_true',
+                        default=False,
+                        help='Generate all plots')
+    parser.add_argument('--tx_vs_bc_scatter', action='store_true',
+                        default=False,
+                        help='Create a scatter plot of the # of transactions vs. the betweenness centrality of each node')
+    parser.add_argument('--tx_vs_subtree_scatter', action='store_true',
+                        default=False,
+                        help='Create a scatter plot of the # of transactions vs. the subtree size of each node')
+    parser.add_argument('--tx_vs_root_dist_scatter', action='store_true',
+                        default=False,
+                        help='Create a scatter plot of the # of transactions vs. the distance of each node to the root')
+    parser.add_argument('--tree_stats', action='store_true',
+                        default=False,
+                        help='Create CDFs of the tree statistics')
+
+    args = parser.parse_args()
+
+    if args.all or args.tx_vs_bc_scatter or args.tx_vs_subtree_scatter or args.tx_vs_root_dist_scatter:
+        tx_counts = pcn.get_transactions_per_node(args.exp_path)
+
+    if args.all or args.tree_stats:
+        pcn.cdf_num_children(args.exp_path)
+        pcn.cdf_subtree_size(args.exp_path)
+        pcn.cdf_node_depth(args.exp_path)
+
+    if args.all or args.tx_vs_bc_scatter:
+        pcn.transactions_vs_betweenness_centrality(args.dataset_path, tx_counts=tx_counts)
+
+    if args.all or args.tx_vs_subtree_scatter:
+        pcn.transactions_vs_subtree_size(args.exp_path, tx_counts)
+
+    if args.all or  args.tx_vs_root_dist_scatter:
+        pcn.transactions_vs_tree_depth(args.exp_path, tx_counts)

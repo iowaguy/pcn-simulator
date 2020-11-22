@@ -3,6 +3,7 @@ import attack_common
 import sys
 import yaml
 import json
+import pcn
 
 config = '''
 notes: {notes}
@@ -110,7 +111,8 @@ def generate_configs(experiment_name, config_dict):
                 elif selection_type == 'none' or selection_type == 'baseline':
                     pass
                 elif selection_type == 'by_number_of_transactions':
-                    raise NotImplementedError("Cannot select attackers by number of transactions yet.")
+                    n = pcn.get_top_n_nodes_by_transaction_count(num_attackers, exp_path=config_dict['exp_path'])
+                    byzantine_nodes.append(n)
                 elif selection_type == 'selected':
                     # in this case, num attackers is actually a list of attackers
                     byzantine_nodes.append(num_attackers)
@@ -1341,6 +1343,16 @@ def get_experiments():
             "attackers":[0, 500, 1000, 2000, 3000],
             "force_overwrite": True
         },
+        "48-prep" : {
+            "notes" : "Try out new topo that has random participant distro",
+            "num_steps":1,
+            "data_set_list":["id68-synthetic-random-nodes-10000-txs-pareto-100000-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":1,
+            "force_overwrite": True
+        },
         "48" : {
             "notes" : "Try out new topo that has random participant distro",
             "num_steps":1,
@@ -1354,8 +1366,9 @@ def get_experiments():
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
             "selected_byzantine_nodes":[("by_number_of_transactions", 10)],
+            "exp_path":"data/dynamic-id68-47/dynamic-id68-synthetic-random-nodes-10000-txs-pareto-100000-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms-griefing_success-10000ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1",
             "force_overwrite": True
-        },
+        },        
     }
 
     return experiments
