@@ -7,14 +7,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pcn.exp_analysis
 
+
 def transactions_vs_betweenness_centrality(dataset_path, exp_path=None, tx_counts=[]):
     tx_counts = sanity_check_tx_counts(exp_path, tx_counts)
     __transactions_vs_x(dataset_path + "/betweenness_centrality_raw.txt", tx_counts, \
                                  'Betweenness centrality (normalized)')
-        
+
+
 def transactions_vs_tree_depth(exp_path, tx_counts=[]):
     tx_counts = sanity_check_tx_counts(exp_path, tx_counts)
     __transactions_vs_x(exp_path + "/cnet-nodeDepths.txt", tx_counts, 'Distance from root')
+
 
 def transactions_vs_subtree_size(exp_path, tx_counts=[]):
     tx_counts = sanity_check_tx_counts(exp_path, tx_counts)
