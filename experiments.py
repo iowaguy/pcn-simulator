@@ -1363,14 +1363,14 @@ def get_experiments():
             "num_steps":1,
             "data_set_list":["id68-synthetic-random-nodes-10000-txs-pareto-100000-scalefree2-mult-0.5-prob-0.5"],
             "concurrent_transactions_count":[10000],
-            "routing_algorithms":[common.speedymurmurs, common.maxflow],
+            "routing_algorithms":[common.speedymurmurs],
             "epoch_lengths_list":[1],
             "network_latency_ms":1,
             "attack_type":["griefing_success", "griefing", "drop_all"],
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
-            "selected_byzantine_nodes":[("by_number_of_transactions", 10)],
+            "selected_byzantine_nodes":[("by_number_of_transactions", 1), ("by_number_of_transactions", 10), ("by_number_of_transactions", 100), ("by_number_of_transactions", 1000), ("by_number_of_transactions", 2000), ("by_number_of_transactions", 3000)],
             "exp_path":"data/dynamic-id68-48-prep/dynamic-id68-synthetic-random-nodes-10000-txs-pareto-100000-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/",
             "force_overwrite": True
         },
@@ -1379,10 +1379,10 @@ def get_experiments():
             "num_steps":1,
             "data_set_list":["id68-synthetic-random-nodes-10000-txs-pareto-100000-scalefree2-mult-0.5-prob-0.5"],
             "concurrent_transactions_count":[10000],
-            "routing_algorithms":[common.speedymurmurs, common.maxflow],
+            "routing_algorithms":[common.speedymurmurs],
             "epoch_lengths_list":[1],
             "network_latency_ms":1,
-            "attack_type":["griefing_success", "griefing", "drop_all"],
+            "attack_type":["griefing_success"],
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
@@ -1390,7 +1390,6 @@ def get_experiments():
             "exp_path":"data/test-output/READABLE_FILE_SM-P0-100/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/",
             "force_overwrite": True
         },
-        
     }
 
     return experiments

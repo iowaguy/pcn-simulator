@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+from os import listdir
+from os.path import isdir, realpath, dirname
+import sys
+from glob import glob
+
+
+script_dir = dirname(realpath(__file__))
+
+# This line is required so I can use the pcn module
+sys.path.append(script_dir + '/../')
+import pcn
+
+if __name__ == "__main__":
+
+    metric_file_mapping = {'success_ratio':{'ylabel':'Success Ratio',
+                                            'x_range':[0, 60000],
+                                            'y_range':[0.0, 1.0],
+                                            'filename': 'cnet-succR.txt'}}
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--experiment', '--exp', required=True,
+                        help='The experiment ID')
+    parser.add_argument('--dataset', '--ds', required=True,
+                        help='The dataset ID')    
+    parser.add_argument('--algorithm', required=False, default='all',
+                        choices=['all', 'speedymurmurs', 'maxflow'],
+                        help='The routing algorithm to plot')
+    parser.add_argument('--basepath', required=False, default=script_dir + '/../data/',
+                        help='The path to the experiment data directory')
+    parser.add_argument('--metric', required=False, choices=['success_ratio'],
+                        default='success_ratio', help='The metric to plot')
+    parser.add_argument('--xlabel', required=False, default='Time Epochs',
+                        help='The x-axis label')
+    parser.add_argument('--ylabel', required=False, default=None,
+                        help='The y-axis label')
+    parser.add_argument('--running_avg', required=False, default=1500,
+                        help='The running average of the plot')
+
+    args = parser.parse_args()
+
+    exp_output = f"dynamic-id{args.dataset}-{args.experiment}/"
+    exp_base = args.basepath + exp_output
+    list_of_files = [glob(exp_base + inode + '/READABLE*/0/C*/')[0] + metric_file_mapping[args.metric]['filename']
+                     for inode in listdir(exp_base)
+                     if args.algorithm == 'all' or args.algorithm in inode
+                     if isdir(exp_base + inode)]
+    print(list_of_files)
+    pcn.line_plot_from_list(list_of_files, xlabel=args.xlabel, ylabel=metric_file_mapping[args.metric]['ylabel'], running_avg=args.running_avg, x_range=metric_file_mapping[args.metric]['x_range'], y_range=metric_file_mapping[args.metric]['y_range'], legend_labels=['1 attackers', '2 attackers', '3 attackers'])
+    # if args.algorithm == 'all':
+        
+    # if args.all or args.tx_vs_bc_scatter or args.tx_vs_subtree_scatter or args.tx_vs_root_dist_scatter:
+    #     tx_counts = pcn.get_transactions_per_node(args.exp_path)
+
+    # if args.all or args.tree_stats:
+    #     pcn.cdf_num_children(args.exp_path)
+    #     pcn.cdf_subtree_size(args.exp_path)
+    #     pcn.cdf_node_depth(args.exp_path)
+
+    # if args.all or args.tx_vs_bc_scatter:
+    #     pcn.transactions_vs_betweenness_centrality(args.dataset_path, tx_counts=tx_counts)
+
+    # if args.all or args.tx_vs_subtree_scatter:
+    #     pcn.transactions_vs_subtree_size(args.exp_path, tx_counts)
+
+    # if args.all or  args.tx_vs_root_dist_scatter:
+    #     pcn.transactions_vs_tree_depth(args.exp_path, tx_counts)

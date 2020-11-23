@@ -16,3 +16,6 @@ from pcn.exp_analysis import (
     get_top_n_nodes_by_transaction_count
 )
 
+from pcn.plot_utils import (
+    line_plot_from_list
+)
