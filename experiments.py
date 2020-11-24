@@ -1424,7 +1424,7 @@ def get_experiments():
             "concurrent_transactions_count":[10000],
             "routing_algorithms":[common.speedymurmurs],
             "epoch_lengths_list":[1],
-            "network_latency_ms":30,
+            "network_latency_ms":1,
             "attack_type":["griefing_success"],
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
