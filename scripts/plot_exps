@@ -17,6 +17,7 @@ import pcn
 if __name__ == "__main__":
 
     metric_file_mapping = {'success_ratio':{'ylabel':'Success Ratio',
+                                            'xlabel':'Time Epochs',                                            
                                             'x_range':[0, 60000],
                                             'y_range':[0.0, 1.0],
                                             'filename': 'cnet-succR.txt'}}
@@ -33,13 +34,14 @@ if __name__ == "__main__":
                         help='The path to the experiment data directory')
     parser.add_argument('--metric', required=False, choices=['success_ratio'],
                         default='success_ratio', help='The metric to plot')
-    parser.add_argument('--xlabel', required=False, default='Time Epochs',
+    parser.add_argument('--xlabel', required=False, default=None,
                         help='The x-axis label')
     parser.add_argument('--ylabel', required=False, default=None,
                         help='The y-axis label')
     parser.add_argument('--running_avg', required=False, default=1500,
                         help='The running average of the plot')
-
+    parser.add_argument('--legend', nargs='+', required=False, default=[],
+                        help='The labels for the legend. Should be in the same order as `ls` lists the simulation result directories in the experiment directory.')
     args = parser.parse_args()
 
     exp_output = f"dynamic-id{args.dataset}-{args.experiment}/"
@@ -49,22 +51,15 @@ if __name__ == "__main__":
                      if args.algorithm == 'all' or args.algorithm in inode
                      if isdir(exp_base + inode)]
     print(list_of_files)
-    pcn.line_plot_from_list(list_of_files, xlabel=args.xlabel, ylabel=metric_file_mapping[args.metric]['ylabel'], running_avg=args.running_avg, x_range=metric_file_mapping[args.metric]['x_range'], y_range=metric_file_mapping[args.metric]['y_range'], legend_labels=['1 attackers', '2 attackers', '3 attackers'])
-    # if args.algorithm == 'all':
-        
-    # if args.all or args.tx_vs_bc_scatter or args.tx_vs_subtree_scatter or args.tx_vs_root_dist_scatter:
-    #     tx_counts = pcn.get_transactions_per_node(args.exp_path)
+    if not args.xlabel:
+        xlabel = metric_file_mapping[args.metric]['xlabel']
+    if not args.ylabel:
+        ylabel = metric_file_mapping[args.metric]['ylabel']
 
-    # if args.all or args.tree_stats:
-    #     pcn.cdf_num_children(args.exp_path)
-    #     pcn.cdf_subtree_size(args.exp_path)
-    #     pcn.cdf_node_depth(args.exp_path)
-
-    # if args.all or args.tx_vs_bc_scatter:
-    #     pcn.transactions_vs_betweenness_centrality(args.dataset_path, tx_counts=tx_counts)
-
-    # if args.all or args.tx_vs_subtree_scatter:
-    #     pcn.transactions_vs_subtree_size(args.exp_path, tx_counts)
-
-    # if args.all or  args.tx_vs_root_dist_scatter:
-    #     pcn.transactions_vs_tree_depth(args.exp_path, tx_counts)
+    pcn.line_plot_from_list(list_of_files,
+                            xlabel=xlabel,
+                            ylabel=ylabel,
+                            running_avg=args.running_avg,
+                            x_range=metric_file_mapping[args.metric]['x_range'],
+                            y_range=metric_file_mapping[args.metric]['y_range'],
+                            legend_labels=args.legend)

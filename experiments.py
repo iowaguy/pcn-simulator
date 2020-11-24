@@ -114,7 +114,7 @@ def generate_configs(experiment_name, config_dict):
                     n = get_nodes(f"pcn-topologies/datasets/{config_dict['data_set_list'][i]}/betweenness_centrality.txt", num_attackers)
                     byzantine_nodes.append(n)
                 elif selection_type == 'none' or selection_type == 'baseline':
-                    pass
+                    byzantine_nodes.append([])
                 elif selection_type == 'by_number_of_transactions':
                     n = pcn.get_top_n_nodes_by_transaction_count(num_attackers, exp_path=config_dict['exp_path'])
                     byzantine_nodes.append(n)
@@ -1370,7 +1370,7 @@ def get_experiments():
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
-            "selected_byzantine_nodes":[("by_number_of_transactions", 1), ("by_number_of_transactions", 10), ("by_number_of_transactions", 100), ("by_number_of_transactions", 1000), ("by_number_of_transactions", 2000), ("by_number_of_transactions", 3000)],
+            "selected_byzantine_nodes":[("baseline", 0), ("by_number_of_transactions", 1), ("by_number_of_transactions", 10), ("by_number_of_transactions", 100), ("by_number_of_transactions", 1000), ("by_number_of_transactions", 2000), ("by_number_of_transactions", 3000)],
             "exp_path":"data/dynamic-id68-48-prep/dynamic-id68-synthetic-random-nodes-10000-txs-pareto-100000-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/",
             "force_overwrite": True
         },
