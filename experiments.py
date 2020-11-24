@@ -94,6 +94,7 @@ def do_replacement(experiment_name, i, config_dict, routing_algorithm,
 
 # epoch_lengths_list: a list of the epoch lengths for each data set, indexes should match. See RunConfig.java to learn what the properties mean.
 def generate_configs(experiment_name, config_dict):
+
     if 'attackers' in config_dict and 'selected_byzantine_nodes' in config_dict:
         raise Exception("Cannot provide both 'attackers' and 'selected_byzantine_nodes'")
 
@@ -1366,7 +1367,7 @@ def get_experiments():
             "routing_algorithms":[common.speedymurmurs],
             "epoch_lengths_list":[1],
             "network_latency_ms":1,
-            "attack_type":["griefing_success", "griefing", "drop_all"],
+            "attack_type":["griefing_success"],
             "receiver_delay_variability": 0,
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",

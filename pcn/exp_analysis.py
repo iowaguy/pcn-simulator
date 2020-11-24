@@ -11,8 +11,17 @@ def sanity_check_tx_counts(exp_path, tx_counts):
     return tx_count
 
 
-def get_top_n_nodes_by_transaction_count(n, exp_path=None, tx_counts=[]):
-    return sanity_check_tx_counts(exp_path, tx_counts).nlargest(n, 0)
+def get_top_n_nodes_by_transaction_count(n, exp_path=None, tx_counts=[], roots=3):
+    tx_counts = sanity_check_tx_counts(exp_path, tx_counts)
+
+    num_nodes = int(len(tx_counts)/roots)
+    lower = 0
+    summed_txs = tx_counts[lower:lower + num_nodes] 
+    for i in range(roots-1):
+        lower += num_nodes
+        summed_txs += tx_counts[lower:lower + num_nodes].reset_index(drop=True)
+
+    return summed_txs.nlargest(n, 0)
 
 
 def get_transactions_per_node(exp_path):
