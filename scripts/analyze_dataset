@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 
 import argparse
-from PCNGraph.graph_analysis import *
-#from PCNGraph import *
+import sys
+from os.path import realpath, dirname
+
+script_dir = dirname(realpath(__file__))
+
+# This line is required so I can use the pcn module
+sys.path.append(script_dir + '/../')
+import pcn
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--path', required=True,
@@ -19,7 +26,7 @@ parser.add_argument('-n', required=False, type=int, help='The number of nodes to
 args = parser.parse_args()
 
 if args.betweenness_centrality:
-    calculate_betweenness_centrality_raw(args.path, store=args.write)
+    pcn.calculate_betweenness_centrality_raw(args.path, store=args.write)
 
 if args.method:
     nodes, dominances = select_n_by_method(args.path, method=args.method, top_n=args.n)

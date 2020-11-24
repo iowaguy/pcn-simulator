@@ -19,3 +19,7 @@ from pcn.exp_analysis import (
 from pcn.plot_utils import (
     line_plot_from_list
 )
+
+from pcn.graph_analysis import (
+    calculate_betweenness_centrality_raw
+)

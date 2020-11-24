@@ -110,8 +110,9 @@ def generate_configs(experiment_name, config_dict):
             for i, t  in enumerate(config_dict['selected_byzantine_nodes']):
                 selection_type, num_attackers = t
                 if selection_type == 'betweenness_centrality':
-                    print(f"{i}, {selection_type}, {num_attackers}")
-                    n = get_nodes(f"pcn-topologies/datasets/{config_dict['data_set_list'][i]}/betweenness_centrality.txt", num_attackers)
+                    if len(config_dict['data_set_list']) > 1:
+                        raise NotImplementedError("Because of some complictions with indexing on the next line, we cannot support multiple datasets per experiment right now.")
+                    n = get_nodes(f"pcn-topologies/datasets/{config_dict['data_set_list'][0]}/betweenness_centrality.txt", num_attackers)
                     byzantine_nodes.append(n)
                 elif selection_type == 'none' or selection_type == 'baseline':
                     byzantine_nodes.append([])
@@ -1414,6 +1415,21 @@ def get_experiments():
             "attacker_selection":"selected",
             "selected_byzantine_nodes":[("by_number_of_transactions", 10), ("by_number_of_transactions", 50)],
             "exp_path":"data/test-output/READABLE_FILE_SM-P0-100/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/",
+            "force_overwrite": True
+        },
+        "50" : { # fig 7, sm only
+            "notes" : "Try selecting as few attackers as possible",
+            "num_steps":1,
+            "data_set_list":["id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":30,
+            "attack_type":["griefing_success"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[("baseline", 0), ("betweenness_centrality", 10), ("betweenness_centrality", 50), ("betweenness_centrality", 100), ("betweenness_centrality", 300), ("betweenness_centrality", 500)],
             "force_overwrite": True
         },
     }
