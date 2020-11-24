@@ -108,7 +108,6 @@ def generate_configs(experiment_name, config_dict):
             # either the number of nodes to select, or a list of specific
             # attackers.
             for i, t  in enumerate(config_dict['selected_byzantine_nodes']):
-                print(config_dict['selected_byzantine_nodes'])
                 selection_type, num_attackers = t
                 if selection_type == 'betweenness_centrality':
                     print(f"{i}, {selection_type}, {num_attackers}")
@@ -1418,9 +1417,7 @@ if __name__ == "__main__":
     elif exp_name == "print":
         exps = get_experiment_config(sys.argv[2])
         for d in exps:
-            # parsed = json.loads(d)
             print(json.dumps(d, indent=4))
-            # print(d)
     else:
         configs = get_experiment_config(exp_name)
         attack_common.start(configs)

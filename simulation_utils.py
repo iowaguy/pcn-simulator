@@ -242,7 +242,6 @@ def read_graph_file(graph_file):
             destinations = connections_str.split(';')
             print(f"node_id: {node_id}")
             for dest in destinations:
-                # print(f'src: {node_id}; dest: {dest}')
                 g.add_edge(node_id, dest)
 
     return g
