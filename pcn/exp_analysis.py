@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import pandas as pd
+import os.path
 
 def sanity_check_tx_counts(exp_path, tx_counts):
     if not exp_path and (len(tx_counts) == 0):
@@ -25,10 +26,20 @@ def get_top_n_nodes_by_transaction_count(n, exp_path=None, tx_counts=[], roots=3
 
 
 def get_transactions_per_node(exp_path):
-    # Had to do this in a weird way because each row does not have the
-    # same number of columns.
-    df = pd.read_csv(exp_path + "/cnet-transactionsPerNode.txt", \
-                     header=None, sep='\n', skip_blank_lines=False)
+    cache_file = exp_path + "/txsPerNodeSummedCache.txt"
 
-    df = df[0].str.split('\t', expand=True)
-    return df.apply(lambda x: len(x) - x.isnull().sum(), axis='columns').to_frame()
+    if os.path.isfile(cache_file):
+        df = pd.read_csv(cache_file, header=None)
+    else:
+        # Had to do this in a weird way because each row does not have the
+        # same number of columns.
+        df = pd.read_csv(exp_path + "/cnet-transactionsPerNode.txt", \
+                        header=None, sep='\n', skip_blank_lines=False)
+
+        df = df[0].str.split('\t', expand=True)
+        df = df.apply(lambda x: len(x) - x.isnull().sum(), axis='columns').to_frame()
+        # Cache the calculation so we don't have to do it again later, it can
+        # take awhile.
+        df.to_csv(cache_file, index=False, header=False)
+
+    return df
