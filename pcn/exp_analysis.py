@@ -7,9 +7,9 @@ def sanity_check_tx_counts(exp_path, tx_counts):
     if not exp_path and (len(tx_counts) == 0):
         raise Exception("Must provide either transaction count series or experiment path.")
     elif exp_path and (len(tx_counts) == 0):
-        tx_count = get_transactions_per_node(exp_path)
+        tx_counts = get_transactions_per_node(exp_path)
 
-    return tx_count
+    return tx_counts
 
 
 def get_top_n_nodes_by_transaction_count(n, exp_path=None, tx_counts=[], roots=3):

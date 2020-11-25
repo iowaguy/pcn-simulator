@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
 import sys
+import os
+from os.path import realpath, dirname
+script_dir = dirname(realpath(__file__))
 
 # This line is required so I can use the pcn module
-sys.path.append('../')
+sys.path.append(script_dir + '/../')
 import pcn
 import argparse
 
@@ -43,7 +46,9 @@ if __name__ == "__main__":
         pcn.transactions_vs_betweenness_centrality(args.dataset_path, tx_counts=tx_counts)
 
     if args.all or args.tx_vs_subtree_scatter:
-        pcn.transactions_vs_subtree_size(args.exp_path, tx_counts)
+        pcn.transactions_vs_subtree_size(args.exp_path, tx_counts,
+                                         dataset_path=args.dataset_path)
 
     if args.all or  args.tx_vs_root_dist_scatter:
-        pcn.transactions_vs_tree_depth(args.exp_path, tx_counts)
+        pcn.transactions_vs_tree_depth(args.exp_path, tx_counts,
+                                       dataset_path=args.dataset_path)

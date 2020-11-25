@@ -18,9 +18,14 @@ if __name__ == "__main__":
 
     metric_file_mapping = {'success_ratio':{'ylabel':'Success Ratio',
                                             'xlabel':'Time Epochs',                                            
-                                            'x_range':[0, 60000],
+                                            'x_range':[0, 100000],
                                             'y_range':[0.0, 1.0],
                                             'filename': 'cnet-succR.txt'}}
+    # This mapping is required because the names in the file paths are not
+    # intuitive, but it would be difficult to change them.
+    attack_name_mapping = {'griefing':'-griefing_success-',
+                           'griefing_and_dropping':'-griefing-',
+                           'dropping':'-drop_all-'}
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--experiment', '--exp', required=True,
@@ -30,6 +35,9 @@ if __name__ == "__main__":
     parser.add_argument('--algorithm', required=False, default='all',
                         choices=['all', 'speedymurmurs', 'maxflow'],
                         help='The routing algorithm to plot')
+    parser.add_argument('--attack_type', required=False, default=None,
+                        choices=['griefing', 'griefing_and_dropping', 'dropping'],
+                        help='The routing algorithm to plot')    
     parser.add_argument('--basepath', required=False, default=script_dir + '/../data/',
                         help='The path to the experiment data directory')
     parser.add_argument('--metric', required=False, choices=['success_ratio'],
@@ -41,7 +49,9 @@ if __name__ == "__main__":
     parser.add_argument('--running_avg', required=False, default=1500,
                         help='The running average of the plot')
     parser.add_argument('--legend', nargs='+', required=False, default=[],
-                        help='The labels for the legend. Should be in the same order as `ls` lists the simulation result directories in the experiment directory.')
+                        help='The labels for the legend. The order should correspond'
+                        ' to the alphanumeric ordering of the simulation result'
+                        ' directories in the experiment directory.')
     args = parser.parse_args()
 
     exp_output = f"dynamic-id{args.dataset}-{args.experiment}/"
@@ -49,6 +59,7 @@ if __name__ == "__main__":
     list_of_files = [glob(exp_base + inode + '/READABLE*/0/C*/')[0] + metric_file_mapping[args.metric]['filename']
                      for inode in listdir(exp_base)
                      if args.algorithm == 'all' or args.algorithm in inode
+                     if not args.attack_type or attack_name_mapping[args.attack_type] in inode
                      if isdir(exp_base + inode)]
     list_of_files.sort()
     pp = pprint.PrettyPrinter(indent=4)
