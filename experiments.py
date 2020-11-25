@@ -1453,7 +1453,7 @@ def get_experiments():
                                         ("by_tree_depth", 100),
                                         ("by_tree_depth", 300),
                                         ("by_tree_depth", 500)],
-            "exp_path":"data/dynamic-id25-51-prep/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/",            
+            "exp_path":"data/dynamic-id25-51-prep/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/",
             "force_overwrite": True
         },
         "test" : {
