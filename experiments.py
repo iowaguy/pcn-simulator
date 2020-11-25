@@ -1484,7 +1484,7 @@ def get_experiments():
                                         ("by_tree_depth", 100),
                                         ("by_tree_depth", 300),
                                         ("by_tree_depth", 500)],
-            # "exp_path":"data/dynamic-id68-52-prep/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms/READABLE_FILE_SM-P0-10000/",
+            "exp_path":"data/dynamic-id68-52-prep/dynamic-id68-synthetic-random-nodes-10000-txs-pareto-100000-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms/READABLE_FILE_SM-P0-10000/",
             "force_overwrite": True
         },
         "test" : {
