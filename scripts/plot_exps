@@ -7,12 +7,24 @@ from os.path import isdir, realpath, dirname
 import sys
 from glob import glob
 import pprint
+import re
 
 script_dir = dirname(realpath(__file__))
 
 # This line is required so I can use the pcn module
 sys.path.append(script_dir + '/../')
 import pcn
+
+def sort_key(filepath):
+    p = re.compile('.*-selected-([0-9]+)-.*')
+    m = p.match(filepath)
+    if m:
+        return int(m.groups()[0])
+    else:
+        # If the regex doesn't match, this is the baseline and should show up
+        # first.
+        return -1
+
 
 if __name__ == "__main__":
 
@@ -61,7 +73,7 @@ if __name__ == "__main__":
                      if args.algorithm == 'all' or args.algorithm in inode
                      if not args.attack_type or attack_name_mapping[args.attack_type] in inode
                      if isdir(exp_base + inode)]
-    list_of_files.sort()
+    list_of_files.sort(key=sort_key)
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(list_of_files)
     if not args.xlabel:
