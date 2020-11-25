@@ -24,6 +24,27 @@ def get_top_n_nodes_by_transaction_count(n, exp_path=None, tx_counts=[], roots=3
 
     return summed_txs.nlargest(n, 0)
 
+def get_top_n_nodes_by_tree_depth(n, exp_path, roots=3):
+    selected_nodes = pd.DataFrame()
+    for i in range(roots):
+        df = pd.read_csv(exp_path + f"/INITIAL_graph.txt_SPANNINGTREE_{i}",
+                         header=None, skiprows=6, sep=';',
+                         names=['parent', 'index', 'depth'])
+
+        nodes_to_select_per_tree = int(n/roots)
+        # want to select the same number of roots per tree
+        for depth in range(1, df.max()['depth'] + 1):
+            nodes_at_current_depth = df[(df.depth == depth)]
+            if len(nodes_at_current_depth) >= nodes_to_select_per_tree:
+                select_these = nodes_at_current_depth.sample(nodes_to_select_per_tree)
+                selected_nodes = pd.concat([selected_nodes, select_these])
+                nodes_to_select_per_tree -= len(select_these)
+            else:
+                select_these = nodes_at_current_depth.sample(len(nodes_at_current_depth))
+                selected_nodes = pd.concat([selected_nodes, select_these]) 
+                nodes_to_select_per_tree -= len(select_these)
+            
+    return selected_nodes.index.values.tolist()
 
 def get_transactions_per_node(exp_path):
     cache_file = exp_path + "/txsPerNodeSummedCache.txt"

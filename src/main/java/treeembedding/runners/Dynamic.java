@@ -101,6 +101,9 @@ public class Dynamic {
     double epoch = runConfig.getEpochLength();//E * 1000;
 
 
+    Network net = new ReadableFile(name, name, graph, null);
+    String outputDir = Config.get("MAIN_DATA_FOLDER") + Config.get("FILESYSTEM_FOLDER_DELIMITER") + net.getFolder();
+    runConfig.setOutputDir(outputDir);
 
     Metric[] metrics = null;
     if (routingAlgorithm == RoutingAlgorithm.SILENTWHISPERS ||
@@ -127,7 +130,8 @@ public class Dynamic {
     }
 
 
-    Network net = new ReadableFile(name, name, graph, null);
+
+
     Series.generate(net, metrics, 0, 0);
   }
 

@@ -64,6 +64,16 @@ public class RunConfig {
   @JsonProperty("arrival_delay_ms")
   private int arrivalDelay;
 
+  private String outputDir;
+
+  public void setOutputDir(String outputDir) {
+    this.outputDir = outputDir;
+  }
+
+  public String getOutputDir() {
+    return this.outputDir;
+  }
+
   public double getEpochLength() {
     if (epochLength == 0) {
       return 165.55245497208898;

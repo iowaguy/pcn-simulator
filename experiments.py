@@ -111,13 +111,22 @@ def generate_configs(experiment_name, config_dict):
                 selection_type, num_attackers = t
                 if selection_type == 'betweenness_centrality':
                     if len(config_dict['data_set_list']) > 1:
-                        raise NotImplementedError("Because of some complictions with indexing on the next line, we cannot support multiple datasets per experiment right now.")
+                        raise NotImplementedError("Because of some complictions with "
+                                                  "indexing on the next line, we"
+                                                  "cannot support multiple datasets "
+                                                  "per experiment right now.")
                     n = get_nodes(f"pcn-topologies/datasets/{config_dict['data_set_list'][0]}/betweenness_centrality.txt", num_attackers)
                     byzantine_nodes.append(n)
                 elif selection_type == 'none' or selection_type == 'baseline':
                     byzantine_nodes.append([])
                 elif selection_type == 'by_number_of_transactions':
-                    n = pcn.get_top_n_nodes_by_transaction_count(num_attackers, exp_path=config_dict['exp_path'])
+                    p = config_dict['exp_path']
+                    n = pcn.get_top_n_nodes_by_transaction_count(num_attackers,
+                                                                 exp_path=p)
+                    byzantine_nodes.append(n)
+                elif selection_type == 'by_tree_depth':
+                    p = config_dict['exp_path']
+                    n = pcn.get_top_n_nodes_by_tree_depth(num_attackers, exp_path=p)
                     byzantine_nodes.append(n)
                 elif selection_type == 'selected':
                     # in this case, num attackers is actually a list of attackers
@@ -1400,22 +1409,6 @@ def get_experiments():
             "selected_byzantine_nodes":[("baseline", 0), ("by_number_of_transactions", 1), ("by_number_of_transactions", 10), ("by_number_of_transactions", 100), ("by_number_of_transactions", 1000), ("by_number_of_transactions", 2000), ("by_number_of_transactions", 3000)],
             "exp_path":"data/dynamic-id25-49-prep/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/",
             "force_overwrite": True
-        },        
-        "test" : {
-            "notes" : "Try out new topo that has random participant distro",
-            "num_steps":1,
-            "data_set_list":["id68-synthetic-random-nodes-10000-txs-pareto-100000-scalefree2-mult-0.5-prob-0.5"],
-            "concurrent_transactions_count":[10000],
-            "routing_algorithms":[common.speedymurmurs],
-            "epoch_lengths_list":[1],
-            "network_latency_ms":1,
-            "attack_type":["griefing_success"],
-            "receiver_delay_variability": 0,
-            "receiver_delay_ms":[10000],
-            "attacker_selection":"selected",
-            "selected_byzantine_nodes":[("by_number_of_transactions", 10), ("by_number_of_transactions", 50)],
-            "exp_path":"data/test-output/READABLE_FILE_SM-P0-100/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/",
-            "force_overwrite": True
         },
         "50" : { # fig 7, sm only
             "notes" : "Try selecting as few attackers as possible",
@@ -1432,6 +1425,23 @@ def get_experiments():
             "selected_byzantine_nodes":[("baseline", 0), ("betweenness_centrality", 10), ("betweenness_centrality", 50), ("betweenness_centrality", 100), ("betweenness_centrality", 300), ("betweenness_centrality", 500)],
             "force_overwrite": True
         },
+        "test" : {
+            "notes" : "Try out new topo that has random participant distro",
+            "num_steps":1,
+            "data_set_list":["id68-synthetic-random-nodes-10000-txs-pareto-100000-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":1,
+            "attack_type":["griefing_success"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[("by_tree_depth", 10)],
+            "exp_path":"data/test-output/READABLE_FILE_SM-P0-100/",
+            "force_overwrite": True
+        },
+
     }
 
     return experiments

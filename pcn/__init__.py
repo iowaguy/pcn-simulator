@@ -13,7 +13,8 @@ from pcn.plot_tree_stats import (
 
 from pcn.exp_analysis import (
     get_transactions_per_node,
-    get_top_n_nodes_by_transaction_count
+    get_top_n_nodes_by_transaction_count,
+    get_top_n_nodes_by_tree_depth    
 )
 
 from pcn.plot_utils import (

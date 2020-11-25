@@ -26,10 +26,12 @@ import gtna.graph.Graph;
 import gtna.graph.Node;
 import gtna.graph.spanningTree.SpanningTree;
 import gtna.io.DataWriter;
+import gtna.io.graphWriter.GtnaGraphWriter;
 import gtna.metrics.Metric;
 import gtna.networks.Network;
 import gtna.transformation.spanningtree.MultipleSpanningTree;
 import gtna.transformation.spanningtree.MultipleSpanningTree.Direct;
+import gtna.util.Config;
 import gtna.util.Distribution;
 import gtna.util.parameter.BooleanParameter;
 import gtna.util.parameter.DoubleParameter;
@@ -235,6 +237,10 @@ public class CreditNetwork extends AbstractCreditNetworkBase {
     Treeembedding embed = new Treeembedding("T", 200, roots, MultipleSpanningTree.Direct.TWOPHASE);
     if (!g.hasProperty("SPANNINGTREE_0")) {
       g = embed.transform(g);
+    }
+
+    if (Config.getBoolean("SERIES_GRAPH_WRITE")) {
+      (new GtnaGraphWriter()).writeWithProperties(graph, runConfig.getOutputDir() + "INITIAL_graph.txt");
     }
 
     for (int treeId = 0; treeId < this.roots.length; treeId++) {
