@@ -141,7 +141,7 @@ if __name__ == '__main__':
 
     pcn.generate_graph.write_stats(pcn.generate_graph.calculate_stats(topo, txs))
 
-    pcn.generate_graph.create_newlinks_files()
+    pcn.generate_graph.create_newlinks_files(new_dataset_path)
 
     if args.nographcalcs:
         exit(0)

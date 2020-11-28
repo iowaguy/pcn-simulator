@@ -92,7 +92,7 @@ def write_stats(s, f="stats.txt"):
         for k, v in s.items():
             f.write(f"{k}: {v}\n")
 
-def create_newlinks_files():
+def create_newlinks_files(new_dataset_path):
     for i in range(1, 11):
         new_file = f"{new_dataset_path}/newlinks-{i}.txt"
         open(new_file, 'a').close()
