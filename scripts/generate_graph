@@ -18,6 +18,7 @@ from pcn.topology import Topology
 from pcn.tx_distro import TxDistro
 import pcn.generate_graph
 import pcn.graph_analysis
+import pcn.plot_data_sets
 
 if __name__ == '__main__':
 
@@ -149,7 +150,8 @@ if __name__ == '__main__':
 
     print("Calculating betweenness centrality...")
     nodes, central_point_dominances = pcn.graph_analysis.select_n_by_method(".",
-                                                                            method=pcn.betweenness_centrality, top_n=len(topo.graph))
+                                                                            method='betweenness_centrality',
+                                                                            top_n=len(topo.graph))
     with open("betweenness_centrality.txt", "w") as f:
         f.write(str(nodes))
 
@@ -174,5 +176,5 @@ if __name__ == '__main__':
         exit(0)
 
     print("Plotting datasets...")
-    dsplot.plot_graph(new_dataset_path)
-    dsplot.plot_txs(new_dataset_path)
+    pcn.plot_data_sets.plot_graph(new_dataset_path)
+    pcn.plot_data_sets.plot_txs(new_dataset_path)
