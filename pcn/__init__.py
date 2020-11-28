@@ -28,4 +28,3 @@ from pcn.graph_analysis import (
 from pcn.lightning_utils import (
     load_lightning_topo
 )
-

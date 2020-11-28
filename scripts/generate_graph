@@ -16,7 +16,7 @@ sys.path.append(script_dir + '/../')
 import pcn
 from pcn.topology import Topology
 from pcn.tx_distro import TxDistro
-from pcn.generate_graph import connection_parameter_type, name_dataset
+import pcn.generate_graph
 
 if __name__ == '__main__':
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
                         help='The probability that a transaction will be included during the full-knowledge balance assignment algorithm')
     parser.add_argument('--multiplier_probability', type=float, default=1.0,
                         help='The probability that the value multiplier will be applied to each link during the post-hoc weight adjustment')
-    parser.add_argument('--connection_parameter', type=connection_parameter_type, default=2,
+    parser.add_argument('--connection_parameter', type=pcn.generate_graph.connection_parameter_type, default=2,
                         help='The number of connections that each node makes when joining the graph in the BA scalefree generation algorithm')
     parser.add_argument('--min_channel_balance', type=int, default=0,
                         help='The minimum allowed channel balances. All channels will be guaranteed to have at least this much')
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     else:
         configs = vars(args)
 
-    configs['name'] = name_dataset(configs)
+    configs['name'] = pcn.generate_graph.name_dataset(configs)
     print(f"Looking for {args.dataset_base + '/' + configs.get('name')}")
     if os.path.isdir(args.dataset_base + '/' + configs.get('name')) and \
        not configs.get('force'):
@@ -129,9 +129,9 @@ if __name__ == '__main__':
 
 
     print("Converting data to GTNA format...")
-    convert_topo_to_gtna(topo)
-    convert_credit_links_to_gtna(topo)
-    convert_txs_to_gtna(txs)
+    pcn.generate_graph.convert_topo_to_gtna(topo)
+    pcn.generate_graph.convert_credit_links_to_gtna(topo)
+    pcn.generate_graph.convert_txs_to_gtna(txs)
 
     if args.showtopology:
         topo.show()
@@ -139,9 +139,9 @@ if __name__ == '__main__':
     new_dataset_path = args.dataset_base + '/' + configs.get('name')
     Path(new_dataset_path).mkdir(parents=True, exist_ok=True)
 
-    write_stats(calculate_stats(topo, txs))
+    pcn.generate_graph.write_stats(pcn.generate_graph.calculate_stats(topo, txs))
 
-    create_newlinks_files()
+    pcn.generate_graph.create_newlinks_files()
 
     if args.nographcalcs:
         exit(0)
