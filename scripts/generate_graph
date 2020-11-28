@@ -18,8 +18,6 @@ from pcn.topology import Topology
 from pcn.tx_distro import TxDistro
 from pcn.generate_graph import connection_parameter_type, name_dataset
 
-dataset_base = '../datasets'
-
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Generate graphs')
@@ -35,6 +33,10 @@ if __name__ == '__main__':
     parser.add_argument('--tx_count', type=int, default=100000,
                         help='Number of transactions')
     parser.add_argument('--tx_value_distribution', default='pareto',
+                        choices=['pareto', 'constant', 'exponential',
+                                 'poisson', 'normal'],
+                        help='Distribution of transaction values')
+    parser.add_argument('--dataset_base', default='../pcn-topologies/datasets/',
                         choices=['pareto', 'constant', 'exponential',
                                  'poisson', 'normal'],
                         help='Distribution of transaction values')
@@ -78,8 +80,8 @@ if __name__ == '__main__':
         configs = vars(args)
 
     configs['name'] = name_dataset(configs)
-    print(f"Looking for {dataset_base + '/' + configs.get('name')}")
-    if os.path.isdir(dataset_base + '/' + configs.get('name')) and \
+    print(f"Looking for {args.dataset_base + '/' + configs.get('name')}")
+    if os.path.isdir(args.dataset_base + '/' + configs.get('name')) and \
        not configs.get('force'):
         print(f"Dataset {configs.get('name')} exists, skipping.")
         exit(0)
@@ -134,7 +136,7 @@ if __name__ == '__main__':
     if args.showtopology:
         topo.show()
 
-    new_dataset_path = dataset_base + '/' + configs.get('name')
+    new_dataset_path = args.dataset_base + '/' + configs.get('name')
     Path(new_dataset_path).mkdir(parents=True, exist_ok=True)
 
     write_stats(calculate_stats(topo, txs))
