@@ -1498,6 +1498,16 @@ def get_experiments():
             "exp_path":"data/dynamic-id68-52-prep/dynamic-id68-synthetic-random-nodes-10000-txs-pareto-100000-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms/READABLE_FILE_SM-P0-10000/",
             "force_overwrite": True
         },
+        "53-prep" : {
+            "notes" : "Try a topo with a higher success ratio",
+            "num_steps":1,
+            "data_set_list":["id69-synthetic-poisson-nodes-10000-txs-pareto-100000-scalefree2-mult-0.75-prob-0.25"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":1,
+            "force_overwrite": True            
+        },
         "test" : {
             "notes" : "Try out new topo that has random participant distro",
             "num_steps":1,
@@ -1514,7 +1524,6 @@ def get_experiments():
             "exp_path":"data/test-output/READABLE_FILE_SM-P0-100/",
             "force_overwrite": True
         },
-
     }
 
     return experiments
