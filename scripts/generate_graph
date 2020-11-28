@@ -15,7 +15,7 @@ script_dir = dirname(realpath(__file__))
 sys.path.append(script_dir + '/../')
 import pcn
 # from pcn import TxDistro, Topology
-from pcn.generate_graph import connection_parameter_type
+from pcn.generate_graph import connection_parameter_type, name_dataset
 
 dataset_base = '../datasets'
 
@@ -29,14 +29,21 @@ if __name__ == '__main__':
                         help='Don\'t calculate graph statistics')
     parser.add_argument('--showtopology', action='store_true',
                         default=False, help='Show a diagram of the topology')
-    parser.add_argument('--node_count', type=int, default=10000, help='Number of nodes')
-    parser.add_argument('--tx_count', type=int, default=100000, help='Number of transactions')
+    parser.add_argument('--node_count', type=int, default=10000,
+                        help='Number of nodes')
+    parser.add_argument('--tx_count', type=int, default=100000,
+                        help='Number of transactions')
     parser.add_argument('--tx_value_distribution', default='pareto',
+                        choices=['pareto', 'constant', 'exponential',
+                                 'poisson', 'normal'],
                         help='Distribution of transaction values')
     parser.add_argument('--tx_participant_distribution', default='poisson',
+                        choices=['poisson', 'normal', 'random'],
                         help='Distribution of transaction origins and desinations')
     parser.add_argument('--base_topology', default='scalefree',
-                        help='The base topology type. One of: scalefree, smallworld, or random')
+                        choices=['scalefree', 'smallworld', 'hybrid',
+                                 'random', 'scalefree_max'],
+                        help='The base topology type.')
     parser.add_argument('--log_level', default='error', help='The log level')
     parser.add_argument('--value_multiplier', type=float, default=1.0,
                         help='A multiplier for weighting channel balances')
