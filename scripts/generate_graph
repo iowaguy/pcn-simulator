@@ -4,11 +4,18 @@ import argparse
 import yaml
 import logging
 import os
-import lightning_utils as ln
-from pcn import TxDistro, Topology
+from os.path import realpath, dirname
 from pathlib import Path
 import shutil
+import sys
+
+script_dir = dirname(realpath(__file__))
+
+# This line is required so I can use the pcn module
+sys.path.append(script_dir + '/../')
 import pcn
+# from pcn import TxDistro, Topology
+from pcn.generate_graph import connection_parameter_type
 
 dataset_base = '../datasets'
 
@@ -78,7 +85,7 @@ if __name__ == '__main__':
             # TODO read GTNA files
             raise NotImplementedError()
         elif load_topo_type == 'lightning_snapshot':
-            G = ln.load_lightning_topo(configs['load_topo']['ln_snapshot_file'])
+            G = pcn.load_lightning_topo(configs['load_topo']['ln_snapshot_file'])
             topo = Topology(graph=G, balance_multiplier=configs['value_multiplier'])
         else:
             raise NotImplementedError("{load_topo_type} not yet supported")

@@ -8,7 +8,7 @@ import logging
 import math
 
 
-def load_json(file_path):
+def __load_json(file_path):
     try:
         f = open(file_path, 'r', encoding="utf8")
     except:
@@ -27,7 +27,7 @@ def load_json(file_path):
 
     return json_data
 
-def load_graph(json_data):
+def __load_graph(json_data):
     G = json_graph.node_link_graph(json_data, False, False, {'name':'pub_key', 'source':'node1_pub', 'target':'node2_pub', 'key':'channel_id', 'link':'edges'})
     return G
 
@@ -97,8 +97,8 @@ def roundup(x):
     return math.ceil(x * 10) / 10.0
 
 def load_lightning_topo(ln_snapshot_file):
-    json_data = load_json(ln_snapshot_file)
-    return load_graph(json_data)
+    json_data = __load_json(ln_snapshot_file)
+    return __load_graph(json_data)
 
 if __name__ == '__main__':
     ln_snapshot_file = sys.argv[1]

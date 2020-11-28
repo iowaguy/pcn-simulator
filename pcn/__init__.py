@@ -24,3 +24,8 @@ from pcn.plot_utils import (
 from pcn.graph_analysis import (
     calculate_betweenness_centrality_raw
 )
+
+from pcn.lightning_utils import (
+    load_lightning_topo
+)
+
