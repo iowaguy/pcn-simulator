@@ -14,7 +14,8 @@ script_dir = dirname(realpath(__file__))
 # This line is required so I can use the pcn module
 sys.path.append(script_dir + '/../')
 import pcn
-# from pcn import TxDistro, Topology
+from pcn.topology import Topology
+from pcn.tx_distro import TxDistro
 from pcn.generate_graph import connection_parameter_type, name_dataset
 
 dataset_base = '../datasets'
@@ -99,11 +100,11 @@ if __name__ == '__main__':
 
     else:
         topo = Topology(configs.get('base_topology'),
-                        configs.get(node_count),
+                        configs.get('node_count'),
                         configs.get('connection_parameter'))
 
-    txdist = TxDistro(configs['tx_value_distro'], configs['tx_participant_distro'], topo)
-    txs = txdist.sample(configs[tx_count])
+    txdist = TxDistro(configs['tx_value_distribution'], configs['tx_participant_distribution'], topo)
+    txs = txdist.sample(configs['tx_count'])
 
     if 'load_initial_balances' in configs:
         print("Loading channels...")

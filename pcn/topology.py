@@ -7,7 +7,7 @@ import math
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-import plot_data_sets as dsplot
+import pcn.plot_data_sets as dsplot
 import random
 import statistics as stat
 
