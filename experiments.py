@@ -1560,6 +1560,26 @@ def get_experiments():
             "exp_path":"data/dynamic-id70-54-prep/dynamic-id70-synthetic-poisson-nodes-10000-txs-pareto-100000-scalefree2-mult-0.9-prob-0.1-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms/READABLE_FILE_SM-P0-10000/",
             "force_overwrite": True
         },
+        "55" : {
+            "notes" : "Select attackers by centrality",
+            "num_steps":1,
+            "data_set_list":["id70-synthetic-poisson-nodes-10000-txs-pareto-100000-scalefree2-mult-0.9-prob-0.1"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":1,
+            "attack_type":["griefing_success"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[("baseline", 0),
+                                        ("betweenness_centrality", 10),
+                                        ("betweenness_centrality", 50),
+                                        ("betweenness_centrality", 100),
+                                        ("betweenness_centrality", 300),
+                                        ("betweenness_centrality", 500)],
+            "force_overwrite": True
+        },
         "test" : {
             "notes" : "Try out new topo that has random participant distro",
             "num_steps":1,
