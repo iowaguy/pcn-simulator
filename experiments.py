@@ -1611,6 +1611,16 @@ def get_nodes(filename, n=-1):
 def get_experiment_config(experiment_name):
     return generate_configs(experiment_name, get_experiments().get(experiment_name))
 
+def get_dataset_id(experiment_name):
+    dataset_name = get_experiment_config(experiment_name)['data_set_list'][0]
+    p = re.compile('id([0-9]+)-.*')
+    m = p.match(dataset_name)
+    if m:
+        return int(m.groups()[0])
+    else:
+        raise Error("Dataset name does not conform to standard.")
+
+
 if __name__ == "__main__":
     exp_name = sys.argv[1]
 
