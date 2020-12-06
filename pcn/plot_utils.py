@@ -9,10 +9,12 @@ import math
 import numpy as np
 import matplotlib.ticker as ticker
 
-def line_plot_from_list(file_list, xlabel, ylabel, x_range=[], y_range=[], legend_labels=[], running_avg=1, cumulative=False):
+def line_plot_from_list(file_list, xlabel, ylabel, x_range=[], y_range=[],
+                        legend_labels=[], running_avg=1, cumulative=False,
+                        write=False, plot_name=None):
     """
     Given a list of files in the format of the simulator 
-    results, plot them against each other
+    results, plot them against each other.
     """
 
     if not legend_labels:
@@ -36,5 +38,14 @@ def line_plot_from_list(file_list, xlabel, ylabel, x_range=[], y_range=[], legen
     plt.ylabel(ylabel)
 
     plt.legend(legend_labels)
-    plt.tight_layout()    
-    plt.show()
+    plt.tight_layout()
+    if write:
+        if not plot_name:
+            raise Error("If write option is specified, then plot name must be provided.")
+        plt.savefig(f'{plot_name}.png', dpi=300)
+
+        # Clear the figure so I can plot again.
+        plt.clf()
+    else:
+        plt.show()        
+

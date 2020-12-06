@@ -81,6 +81,8 @@ if __name__ == "__main__":
     #                     help='The y-axis label')
     parser.add_argument('--running_avg', required=False, default=1500,
                         help='The running average of the plot')
+    parser.add_argument('--write', action='store_true',
+                        default=False, help='Write plots to files')
     parser.add_argument('--legend', nargs='+', required=False, default=[],
                         help='The labels for the legend. The order should correspond'
                         ' to the alphanumeric ordering of the simulation result'
@@ -95,14 +97,17 @@ if __name__ == "__main__":
     
             pp = pprint.PrettyPrinter(indent=4)
             pp.pprint(list_of_files)
-            xlabel = metric_file_mapping[metric_name].get('xlabel', None)
-            ylabel = metric_file_mapping[metric_name].get('ylabel', None)
+            xlabel = metric_props.get('xlabel', None)
+            ylabel = metric_props.get('ylabel', None)
 
+            plot_name = f'id{args.dataset}-exp{args.experiment}' + \
+                        f'{attack_name_mapping[args.attack_type]}{metric_name}'
             pcn.line_plot_from_list(list_of_files,
                                     xlabel=xlabel,
                                     ylabel=ylabel,
                                     running_avg=args.running_avg,
-                                    x_range=metric_file_mapping[metric_name].get('x_range', None),
-                                    y_range=metric_file_mapping[metric_name].get('y_range', None),
+                                    x_range=metric_props.get('x_range', None),
+                                    y_range=metric_props.get('y_range', None),
                                     legend_labels=args.legend,
-                                    cumulative=metric_props.get('cumulative', False))
+                                    cumulative=metric_props.get('cumulative', False),
+                                    write=args.write, plot_name=plot_name)
