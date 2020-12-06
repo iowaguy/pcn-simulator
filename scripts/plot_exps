@@ -15,24 +15,43 @@ script_dir = dirname(realpath(__file__))
 sys.path.append(script_dir + '/../')
 import pcn
 
-def sort_key(filepath):
-    p = re.compile('.*-selected-([0-9]+)-.*')
-    m = p.match(filepath)
-    if m:
-        return int(m.groups()[0])
-    else:
-        # If the regex doesn't match, this is the baseline and should show up
-        # first.
-        return -1
+
+def get_list_of_files(metric):
+    def sort_key(filepath):
+        p = re.compile('.*-selected-([0-9]+)-.*')
+        m = p.match(filepath)
+        if m:
+            return int(m.groups()[0])
+        else:
+            # If the regex doesn't match, this is the baseline and should show up
+            # first.
+            return -1
+    
+    list_of_files= [glob(exp_base + inode + '/READABLE*/0/C*/')[0] + metric_file_mapping[metric]['filename']
+                     for inode in listdir(exp_base)
+                     if args.algorithm == 'all' or args.algorithm in inode
+                     if not args.attack_type or attack_name_mapping[args.attack_type] in inode
+                     if isdir(exp_base + inode)]
+    # import pdb; pdb.set_trace()
+    list_of_files.sort(key=sort_key)
+    return list_of_files
 
 
 if __name__ == "__main__":
-
     metric_file_mapping = {'success_ratio':{'ylabel':'Success Ratio',
-                                            'xlabel':'Time Epochs',                                            
+                                            'xlabel':'Time Epochs',
                                             'x_range':[0, 100000],
                                             'y_range':[0.0, 1.0],
-                                            'filename': 'cnet-succR.txt'}}
+                                            'filename': 'cnet-succR.txt'},
+                           'transaction_values':{'ylabel':'Successful Transaction Values',
+                                                 'xlabel':'Time Epochs',
+                                                 'x_range':[0, 100000],
+                                                 'filename': 'cnet-totalCreditTransacted.txt'},
+                           'transaction_values_cumulative':{'ylabel':'Successful Transaction Values',
+                                                            'xlabel':'Time Epochs',
+                                                            'x_range':[0, 100000],
+                                                            'filename': 'cnet-totalCreditTransacted.txt',
+                                                            'cumulative': True}}
     # This mapping is required because the names in the file paths are not
     # intuitive, but it would be difficult to change them.
     attack_name_mapping = {'griefing':'-griefing_success-',
@@ -52,12 +71,14 @@ if __name__ == "__main__":
                         help='The routing algorithm to plot')    
     parser.add_argument('--basepath', required=False, default=script_dir + '/../data/',
                         help='The path to the experiment data directory')
-    parser.add_argument('--metric', required=False, choices=['success_ratio'],
-                        default='success_ratio', help='The metric to plot')
-    parser.add_argument('--xlabel', required=False, default=None,
-                        help='The x-axis label')
-    parser.add_argument('--ylabel', required=False, default=None,
-                        help='The y-axis label')
+    parser.add_argument('--metric', required=False, choices=['all', 'success_ratio',
+                                                             'transaction_values',
+                                                             'transaction_values_cumulative'],
+                        default='all', help='The metric to plot')
+    # parser.add_argument('--xlabel', required=False, default=None,
+    #                     help='The x-axis label')
+    # parser.add_argument('--ylabel', required=False, default=None,
+    #                     help='The y-axis label')
     parser.add_argument('--running_avg', required=False, default=1500,
                         help='The running average of the plot')
     parser.add_argument('--legend', nargs='+', required=False, default=[],
@@ -68,23 +89,20 @@ if __name__ == "__main__":
 
     exp_output = f"dynamic-id{args.dataset}-{args.experiment}/"
     exp_base = args.basepath + exp_output
-    list_of_files = [glob(exp_base + inode + '/READABLE*/0/C*/')[0] + metric_file_mapping[args.metric]['filename']
-                     for inode in listdir(exp_base)
-                     if args.algorithm == 'all' or args.algorithm in inode
-                     if not args.attack_type or attack_name_mapping[args.attack_type] in inode
-                     if isdir(exp_base + inode)]
-    list_of_files.sort(key=sort_key)
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(list_of_files)
-    if not args.xlabel:
-        xlabel = metric_file_mapping[args.metric]['xlabel']
-    if not args.ylabel:
-        ylabel = metric_file_mapping[args.metric]['ylabel']
+    if args.metric == 'all':
+        for metric_name, metric_props in metric_file_mapping.items():
+            list_of_files = get_list_of_files(metric_name)
+    
+            pp = pprint.PrettyPrinter(indent=4)
+            pp.pprint(list_of_files)
+            xlabel = metric_file_mapping[metric_name].get('xlabel', None)
+            ylabel = metric_file_mapping[metric_name].get('ylabel', None)
 
-    pcn.line_plot_from_list(list_of_files,
-                            xlabel=xlabel,
-                            ylabel=ylabel,
-                            running_avg=args.running_avg,
-                            x_range=metric_file_mapping[args.metric]['x_range'],
-                            y_range=metric_file_mapping[args.metric]['y_range'],
-                            legend_labels=args.legend)
+            pcn.line_plot_from_list(list_of_files,
+                                    xlabel=xlabel,
+                                    ylabel=ylabel,
+                                    running_avg=args.running_avg,
+                                    x_range=metric_file_mapping[metric_name].get('x_range', None),
+                                    y_range=metric_file_mapping[metric_name].get('y_range', None),
+                                    legend_labels=args.legend,
+                                    cumulative=metric_props.get('cumulative', False))
