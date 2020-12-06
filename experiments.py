@@ -1588,7 +1588,7 @@ def get_experiments():
             "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1],
             "network_latency_ms":1,
-            "force_overwrite": False
+            "force_overwrite": True
         },        
         "56" : {
             "notes" : "Select attackers by # of txs on a trusted dataset",
@@ -1609,8 +1609,8 @@ def get_experiments():
                                         ("by_number_of_transactions", 1000),
                                         ("by_number_of_transactions", 2000),
                                         ("by_number_of_transactions", 3000)],
-            "exp_path":"data/dynamic-id25-49-prep/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/",
-            "force_overwrite": False
+            "exp_path":"data/dynamic-id25-56-prep/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-maxflow_collateralize-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/",
+            "force_overwrite": True
         },
         
         "test" : {
