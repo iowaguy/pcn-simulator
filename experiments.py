@@ -5,6 +5,7 @@ import yaml
 import json
 import pcn
 import pandas as pd
+import re
 
 config = '''
 notes: {notes}
@@ -1645,7 +1646,7 @@ def get_experiment_config(experiment_name):
     return generate_configs(experiment_name, get_experiments().get(experiment_name))
 
 def get_dataset_id(experiment_name):
-    dataset_name = get_experiment_config(experiment_name)['data_set_list'][0]
+    dataset_name = get_experiment_config(experiment_name)[0][0]['data_set_name']
     p = re.compile('id([0-9]+)-.*')
     m = p.match(dataset_name)
     if m:
