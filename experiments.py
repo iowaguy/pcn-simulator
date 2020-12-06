@@ -1389,7 +1389,7 @@ def get_experiments():
             "num_steps":1,
             "data_set_list":["id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5"],
             "concurrent_transactions_count":[10000],
-            "routing_algorithms":[common.speedymurmurs, maxflow],
+            "routing_algorithms":[common.speedymurmurs],
             "epoch_lengths_list":[1],
             "network_latency_ms":1,
             "force_overwrite": False
@@ -1399,7 +1399,7 @@ def get_experiments():
             "num_steps":1,
             "data_set_list":["id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5"],
             "concurrent_transactions_count":[10000],
-            "routing_algorithms":[common.speedymurmurs, common.maxflow],
+            "routing_algorithms":[common.speedymurmurs],
             "epoch_lengths_list":[1],
             "network_latency_ms":1,
             "attack_type":["griefing_success"],
@@ -1580,6 +1580,39 @@ def get_experiments():
                                         ("betweenness_centrality", 500)],
             "force_overwrite": True
         },
+        "56-prep" : {
+            "notes" : "Select attackers by # of txs on a trusted dataset",
+            "num_steps":1,
+            "data_set_list":["id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.maxflow],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":1,
+            "force_overwrite": False
+        },        
+        "56" : {
+            "notes" : "Select attackers by # of txs on a trusted dataset",
+            "num_steps":1,
+            "data_set_list":["id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":1,
+            "attack_type":["griefing_success"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[("baseline", 0),
+                                        ("by_number_of_transactions", 1),
+                                        ("by_number_of_transactions", 10),
+                                        ("by_number_of_transactions", 100),
+                                        ("by_number_of_transactions", 1000),
+                                        ("by_number_of_transactions", 2000),
+                                        ("by_number_of_transactions", 3000)],
+            "exp_path":"data/dynamic-id25-49-prep/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/",
+            "force_overwrite": False
+        },
+        
         "test" : {
             "notes" : "Try out new topo that has random participant distro",
             "num_steps":1,
