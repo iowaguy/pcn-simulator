@@ -82,9 +82,6 @@ start() {
 experiment() {
   EXPERIMENT_TYPE="$1"
   PRINT_EXPERIMENT_TYPE="$2"
-  #if [ -f "${EXPERIMENT_LOG}" ]; then
-  #    mv "${EXPERIMENT_LOG}" "${EXPERIMENT_LOG}-$(date +%m-%d-%y-%H:%M:%S)"
-  #fi
 
   if [ -n "${PRINT_EXPERIMENT_TYPE}" ]; then
     nohup ${PYTHON} experiments.py "${EXPERIMENT_TYPE}" "${PRINT_EXPERIMENT_TYPE}" &> "${EXPERIMENT_LOG}" &
@@ -94,10 +91,11 @@ experiment() {
 
   sleep 1
   if [ "$EXPERIMENT_TYPE" != "list" ]; then
-      dataset_id=$(${PYTHON} -c "from experiments import get_dataset_id; print(get_dataset_id('${EXPERIMENT_TYPE}'))")
+      if [ "$EXPERIMENT_TYPE" != "print" ]; then      
+	  dataset_id=$(${PYTHON} -c "from experiments import get_dataset_id; print(get_dataset_id('${EXPERIMENT_TYPE}'))")
+	  echo "Experiment started" > $sim_log
+      fi
       sim_log="data/dynamic-id${dataset_id}-${EXPERIMENT_TYPE}/simulation.log"
-    #sim_log=$(head -n1 ${EXPERIMENT_LOG})
-    echo "Experiment started" > $sim_log
   fi
   echo "${EXPERIMENT_LOG}"
   echo "${sim_log}"
