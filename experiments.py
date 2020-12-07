@@ -1626,6 +1626,7 @@ def get_experiments():
             "receiver_delay_ms":[10000],
             "attacker_selection":"selected",
             "selected_byzantine_nodes":[("baseline", 0),
+                                        ("by_tree_depth", 1),
                                         ("by_tree_depth", 10),
                                         ("by_tree_depth", 50),
                                         ("by_tree_depth", 100),
