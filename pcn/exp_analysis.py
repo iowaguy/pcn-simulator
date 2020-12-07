@@ -2,6 +2,7 @@
 
 import pandas as pd
 import os.path
+import math
 
 def sanity_check_tx_counts(exp_path, tx_counts):
     if not exp_path and (len(tx_counts) == 0):
@@ -31,7 +32,7 @@ def get_top_n_nodes_by_tree_depth(n, exp_path, roots=3):
                          header=None, skiprows=6, sep=';',
                          names=['parent', 'index', 'depth'])
 
-        nodes_to_select_per_tree = int(n/roots)
+        nodes_to_select_per_tree = int(math.ceil(float(n)/float(roots))) + 1
         # want to select the same number of roots per tree
         for depth in range(1, df.max()['depth'] + 1):
             nodes_at_current_depth = df[(df.depth == depth)]
