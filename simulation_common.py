@@ -119,10 +119,10 @@ def create_output_dir(config_dict):
     import shutil
     dir = os.getcwd() + f'/{data_root}/' + get_output_base_path(config_dict)
     if not os.path.isdir(dir):
-        os.makedirs(dir)
+        os.makedirs(dir, exists_ok=True)
     elif config_dict["force_overwrite"]:
         shutil.rmtree(dir, ignore_errors=True)
-        os.makedirs(dir)
+        os.makedirs(dir, exists_ok=True)
     return dir
 
 def parse_config(config_text):
