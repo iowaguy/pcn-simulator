@@ -1596,7 +1596,7 @@ def get_experiments():
             "num_steps":1,
             "data_set_list":["id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5"],
             "concurrent_transactions_count":[10000],
-            "routing_algorithms":[common.speedymurmurs],
+            "routing_algorithms":[common.maxflow],
             "epoch_lengths_list":[1],
             "network_latency_ms":1,
             "attack_type":["griefing_success"],
