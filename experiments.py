@@ -1740,7 +1740,7 @@ def get_experiments():
                                         ("by_number_of_transactions", 1000),
                                         ("by_number_of_transactions", 2000),
                                         ("by_number_of_transactions", 3000)],
-            "exp_path":"data/dynamic-id32-60-prep/dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms/READABLE_FILE_SM-P0-10000/0/CREDIT_NETWORK-SM-P0-1.0-TREE_ROUTE_TDRAP-true-false-3-0.002-RANDOM_PARTITIONER-1/",
+            "exp_path":"data/dynamic-id32-61-prep/dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-maxflow_collateralize-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/",
             "force_overwrite": True
         },
         "test" : {
