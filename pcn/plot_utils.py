@@ -45,7 +45,7 @@ def line_plot_from_list(file_list, xlabel, ylabel, x_range=[], y_range=[],
         plt.savefig(f'{plot_name}.png', dpi=300)
 
         # Clear the figure so I can plot again.
-        plt.clf()
+        plt.close()
     else:
         plt.show()        
 
