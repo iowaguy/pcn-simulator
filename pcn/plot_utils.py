@@ -20,8 +20,9 @@ def line_plot_from_list(file_list, xlabel, ylabel, x_range=[], y_range=[],
     if not legend_labels:
         legend_labels = range(len(file_list))
 
-    for f in file_list:
-        df = pd.read_csv(f, header=None, delim_whitespace=True)
+    
+    for i in range(min(len(legend_labels), len(file_list))):
+        df = pd.read_csv(file_list[i], header=None, delim_whitespace=True)
         if cumulative:
             df[1][(df[1].notnull())].cumsum().plot()
         else:
