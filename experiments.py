@@ -1748,6 +1748,38 @@ def get_experiments():
             "exp_path":"data/dynamic-id32-61-prep/dynamic-id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100-maxflow_collateralize-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms/READABLE_FILE_M-P0-10000/0/CREDIT_MAX_FLOW-0.0-0/",
             "force_overwrite": True
         },
+        "62-prep" : {
+            "notes" : "Select attackers by tree depth",
+            "num_steps":1,
+            "data_set_list":["id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":1,
+            "force_overwrite": True            
+        },
+        "62" : {
+            "notes" : "Select attackers by tree depth",
+            "num_steps":1,
+            "data_set_list":["id32-synthetic-poisson-nodes-10k-txs-pareto-100k-smallworld-mult-0.5-prob-0.5-min-100"],
+            "concurrent_transactions_count":[10000],
+            "routing_algorithms":[common.speedymurmurs],
+            "epoch_lengths_list":[1],
+            "network_latency_ms":1,
+            "attack_type":["griefing_success"],
+            "receiver_delay_variability": 0,
+            "receiver_delay_ms":[10000],
+            "attacker_selection":"selected",
+            "selected_byzantine_nodes":[("baseline", 0),
+                                        ("by_tree_depth", 1),
+                                        ("by_tree_depth", 10),
+                                        ("by_tree_depth", 50),
+                                        ("by_tree_depth", 100),
+                                        ("by_tree_depth", 300),
+                                        ("by_tree_depth", 500)],
+            "exp_path":"data/dynamic-id25-51-prep/dynamic-id25-synthetic-poisson-nodes-10k-txs-pareto-100k-scalefree2-mult-0.5-prob-0.5-speedymurmurs-3-1-1-lat1ms-concurrent-10000-arrivalDelay0ms/READABLE_FILE_SM-P0-10000/",
+            "force_overwrite": True
+        },        
         "test" : {
             "notes" : "Try out new topo that has random participant distro",
             "num_steps":1,

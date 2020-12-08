@@ -16,8 +16,8 @@ sys.path.append(script_dir + '/../')
 import pcn
 
 
-def get_list_of_files(metric):
-    def sort_key(filepath):
+def get_list_of_files(metric, sorting):
+    def sort_key_by_attackers(filepath):
         p = re.compile('.*-selected-([0-9]+)-.*')
         m = p.match(filepath)
         if m:
@@ -32,8 +32,15 @@ def get_list_of_files(metric):
                      if args.algorithm == 'all' or args.algorithm in inode
                      if not args.attack_type or attack_name_mapping[args.attack_type] in inode
                      if isdir(exp_base + inode)]
-    # import pdb; pdb.set_trace()
-    list_of_files.sort(key=sort_key)
+
+    
+    if sorting == 'attackers':
+        list_of_files.sort(key=sort_key_by_attackers)
+    elif sorting == 'alphanumeric':
+        list_of_files.sort()
+    else:
+        raise Error("Unsupported sorting key")
+
     return list_of_files
 
 
@@ -59,10 +66,12 @@ if __name__ == "__main__":
                            'dropping':'-drop_all-'}
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--experiment', '--exp', required=True,
+    parser.add_argument('--experiment', '--exp', required=False,
                         help='The experiment ID')
-    parser.add_argument('--dataset', '--ds', required=True,
-                        help='The dataset ID')    
+    parser.add_argument('--dataset', '--ds', required=False,
+                        help='The dataset ID')
+    parser.add_argument('--path', required=False,
+                        help='The directory to plot')
     parser.add_argument('--algorithm', required=False, default='all',
                         choices=['all', 'speedymurmurs', 'maxflow'],
                         help='The routing algorithm to plot')
@@ -79,6 +88,9 @@ if __name__ == "__main__":
     #                     help='The x-axis label')
     # parser.add_argument('--ylabel', required=False, default=None,
     #                     help='The y-axis label')
+    parser.add_argument('--sorting', required=False, choices=['alphanumeric',
+                                                              'attackers',],
+                        default='attackers', help='The key for sorting lines.')
     parser.add_argument('--running_avg', required=False, default=1500,
                         help='The running average of the plot')
     parser.add_argument('--write', action='store_true',
@@ -89,11 +101,15 @@ if __name__ == "__main__":
                         ' directories in the experiment directory.')
     args = parser.parse_args()
 
-    exp_output = f"dynamic-id{args.dataset}-{args.experiment}/"
+    if args.experiment and args.dataset:
+        exp_output = f"dynamic-id{args.dataset}-{args.experiment}/"
+    elif args.path:
+        exp_output = args.path + "/"
+
     exp_base = args.basepath + exp_output
     if args.metric == 'all':
         for metric_name, metric_props in metric_file_mapping.items():
-            list_of_files = get_list_of_files(metric_name)
+            list_of_files = get_list_of_files(metric_name, sorting=args.sorting)
     
             pp = pprint.PrettyPrinter(indent=4)
             pp.pprint(list_of_files)
