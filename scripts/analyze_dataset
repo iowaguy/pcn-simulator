@@ -14,9 +14,17 @@ import pcn
 parser = argparse.ArgumentParser()
 parser.add_argument('--path', required=True,
                     help='The path to the dataset directory')
+parser.add_argument('--exp_path', required=False,
+                    help='The path to the experiment directory')
 parser.add_argument('--betweenness_centrality', '-bc', action='store_true',
                     default=False,
                     help='Calculate the betweenness centrality of the graph')
+parser.add_argument('--connections_by_centrality', default=None,
+                    help='Report the number of connections of top n nodes by betweenness centrality')
+parser.add_argument('--connections_by_tree_depth', default=None,
+                    help='Report the number of connections of top n nodes by betweenness centrality')
+parser.add_argument('--trials', default=1, type=int,
+                    help='Do n trials and take the average.')
 parser.add_argument('--write', '-w', action='store_true',
                     default=False,
                     help='Write output to file')
@@ -36,3 +44,11 @@ if args.method:
     with open(args.path + '/' + "central_point_dominances.txt", "w") as f:
         for d in dominances:
             f.write(str(d) + "\n")
+
+if args.connections_by_centrality:
+    print(pcn.top_n_connections_by_centrality(args.path, n=int(args.connections_by_centrality)))
+
+if args.connections_by_tree_depth:
+    print(pcn.top_n_connections_by_tree_depth(args.exp_path, path=args.path,
+                                              n=int(args.connections_by_tree_depth),
+                                              trials=args.trials))

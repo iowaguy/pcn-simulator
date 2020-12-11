@@ -3,6 +3,7 @@
 import sys
 import os
 from os.path import realpath, dirname
+import re
 script_dir = dirname(realpath(__file__))
 
 # This line is required so I can use the pcn module
@@ -31,8 +32,19 @@ if __name__ == "__main__":
     parser.add_argument('--tree_stats', action='store_true',
                         default=False,
                         help='Create CDFs of the tree statistics')
+    parser.add_argument('--write', action='store_true',
+                        default=False,
+                        help='Create CDFs of the tree statistics')
 
     args = parser.parse_args()
+
+    p = re.compile('.*-(id[0-9]+)-.*')
+    m = p.match(args.exp_path)
+    plot_name_prefix = None
+    if args.write and m:
+        plot_name_prefix = f'{m.groups()[0]}'
+    elif args.write and not m:
+        raise Error("Could not identify dataset ID.")
 
     if args.all or args.tx_vs_bc_scatter or args.tx_vs_subtree_scatter or args.tx_vs_root_dist_scatter:
         tx_counts = pcn.get_transactions_per_node(args.exp_path)
@@ -43,12 +55,19 @@ if __name__ == "__main__":
         pcn.cdf_node_depth(args.exp_path)
 
     if args.all or args.tx_vs_bc_scatter:
-        pcn.transactions_vs_betweenness_centrality(args.dataset_path, tx_counts=tx_counts)
+        pcn.transactions_vs_betweenness_centrality(args.dataset_path,
+                                                   tx_counts=tx_counts,
+                                                   write=args.write,
+                                                   plot_name=plot_name_prefix)
 
     if args.all or args.tx_vs_subtree_scatter:
         pcn.transactions_vs_subtree_size(args.exp_path, tx_counts,
-                                         dataset_path=args.dataset_path)
+                                         dataset_path=args.dataset_path,
+                                         write=args.write,
+                                         plot_name=plot_name_prefix)
 
     if args.all or  args.tx_vs_root_dist_scatter:
         pcn.transactions_vs_tree_depth(args.exp_path, tx_counts,
-                                       dataset_path=args.dataset_path)
+                                       dataset_path=args.dataset_path,
+                                       write=args.write,
+                                       plot_name=plot_name_prefix)

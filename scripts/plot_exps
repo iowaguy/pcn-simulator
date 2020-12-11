@@ -102,8 +102,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.experiment and args.dataset:
-        exp_output = f"dynamic-id{args.dataset}-{args.experiment}/"
+        slug = f'id{args.dataset}-{args.experiment}'
+        exp_output = f"dynamic-{slug}/"
     elif args.path:
+        slug = args.path
         exp_output = args.path + "/"
 
     exp_base = args.basepath + exp_output
@@ -116,8 +118,7 @@ if __name__ == "__main__":
             xlabel = metric_props.get('xlabel', None)
             ylabel = metric_props.get('ylabel', None)
 
-            plot_name = f'id{args.dataset}-exp{args.experiment}' + \
-                        f'{attack_name_mapping[args.attack_type]}{metric_name}'
+            plot_name = f'{slug}{attack_name_mapping[args.attack_type]}{metric_name}'
             pcn.line_plot_from_list(list_of_files,
                                     xlabel=xlabel,
                                     ylabel=ylabel,

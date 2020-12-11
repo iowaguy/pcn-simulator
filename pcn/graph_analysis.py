@@ -3,6 +3,9 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 from typing import Tuple
+import json
+import pcn.exp_analysis as exp_analysis
+import numpy as np
 
 first_data_line_in_topo = 7
 betweenness_centrality = 'betweenness_centrality'
@@ -54,3 +57,33 @@ def calculate_betweenness_centrality_raw(path="./", topo=None, store=False):
     bc = nx.betweenness_centrality(G)
     with open(path + "/betweenness_centrality_raw.txt", "w") as f:
         f.write('\n'.join(str(bc) for node, bc in bc.items()))
+
+def top_n_connections_by_centrality(path="./", topo=None, n=1):
+    if topo:
+        G = topo
+    else:
+        G = parse_topology(path + "/topology.graph")
+
+    bcs = parse_betweenness_centrality_ranking(path)
+    
+    return sum([len(G.edges([str(bcs[i])])) for i in range(n)])
+
+def parse_betweenness_centrality_ranking(path):
+    with open(path + "/betweenness_centrality.txt", 'r') as f:
+        return json.loads(f.read())
+
+def top_n_connections_by_tree_depth(exp_path, path="./", topo=None, n=1, trials=1):
+    return np.mean([__top_n_connections_by_tree_depth_single(exp_path,
+                                                             path, topo, n)
+                    for i in range(trials)])
+    
+def __top_n_connections_by_tree_depth_single(exp_path, path="./", topo=None, n=1):
+    top = exp_analysis.get_top_n_nodes_by_tree_depth(n, exp_path=exp_path)
+
+    if topo:
+        G = topo
+    else:
+        G = parse_topology(path + "/topology.graph")
+
+    return sum([len(G.edges([str(top[i])])) for i in range(n)])
+
