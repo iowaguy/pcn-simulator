@@ -13,24 +13,26 @@ import pcn
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--path', required=True,
-                    help='The path to the dataset directory')
+                    help='The path to the dataset directory.')
 parser.add_argument('--exp_path', required=False,
-                    help='The path to the experiment directory')
+                    help='The path to the experiment directory.')
 parser.add_argument('--betweenness_centrality', '-bc', action='store_true',
                     default=False,
-                    help='Calculate the betweenness centrality of the graph')
+                    help='Calculate the betweenness centrality of the graph.')
 parser.add_argument('--connections_by_centrality', default=None,
-                    help='Report the number of connections of top n nodes by betweenness centrality')
+                    help='Report the number of connections of top n nodes by betweenness centrality.')
 parser.add_argument('--connections_by_tree_depth', default=None,
-                    help='Report the number of connections of top n nodes by betweenness centrality')
+                    help='Report the number of connections of top n nodes by tree depth.')
+parser.add_argument('--connections_by_random', default=None,
+                    help='Report the number of connections of n nodes selected randomly.')
 parser.add_argument('--trials', default=1, type=int,
                     help='Do n trials and take the average.')
 parser.add_argument('--write', '-w', action='store_true',
                     default=False,
-                    help='Write output to file')
+                    help='Write output to file.')
+parser.add_argument('-method', required=False, help='The method for selecting nodes in the graph.')
+parser.add_argument('-n', required=False, type=int, help='The number of nodes to select.')
 
-parser.add_argument('-method', required=False, help='The method for selecting nodes in the graph')
-parser.add_argument('-n', required=False, type=int, help='The number of nodes to select')
 args = parser.parse_args()
 
 if args.betweenness_centrality:
@@ -52,3 +54,7 @@ if args.connections_by_tree_depth:
     print(pcn.top_n_connections_by_tree_depth(args.exp_path, path=args.path,
                                               n=int(args.connections_by_tree_depth),
                                               trials=args.trials))
+
+if args.connections_by_random:
+    print(pcn.n_connections_by_random(args.path, n=int(args.connections_by_random)))
+    

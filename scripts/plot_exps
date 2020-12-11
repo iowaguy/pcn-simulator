@@ -16,7 +16,29 @@ sys.path.append(script_dir + '/../')
 import pcn
 
 
-def get_list_of_files(metric, sorting):
+metric_file_mapping = {'success_ratio':{'ylabel':'Success Ratio',
+                                        'xlabel':'Time Epochs',
+                                        'x_range':[0, 100000],
+                                        'y_range':[0.0, 1.0],
+                                        'filename': 'cnet-succR.txt'},
+                       'transaction_values':{'ylabel':'Successful Transaction Values',
+                                             'xlabel':'Time Epochs',
+                                             'x_range':[0, 100000],
+                                             'filename': 'cnet-totalCreditTransacted.txt'},
+                       'transaction_values_cumulative':{'ylabel':'Successful Transaction Values',
+                                                        'xlabel':'Time Epochs',
+                                                        'x_range':[0, 100000],
+                                                        'filename': 'cnet-totalCreditTransacted.txt',
+                                                        'cumulative': True}}
+
+# This mapping is required because the names in the file paths are not
+# intuitive, but it would be difficult to change them.
+attack_name_mapping = {'griefing':'-griefing_success-',
+                       'griefing_and_dropping':'-griefing-',
+                       'dropping':'-drop_all-'}
+
+
+def get_list_of_files(metric, sorting, algorithm='all', attack_type=None):
     def sort_key_by_attackers(filepath):
         p = re.compile('.*-selected-([0-9]+)-.*')
         m = p.match(filepath)
@@ -26,14 +48,14 @@ def get_list_of_files(metric, sorting):
             # If the regex doesn't match, this is the baseline and should show up
             # first.
             return -1
-    
-    list_of_files= [glob(exp_base + inode + '/READABLE*/0/C*/')[0] + metric_file_mapping[metric]['filename']
+
+    list_of_files= [glob(exp_base + inode + '/READABLE*/0/C*/')[0]
+                    + metric_file_mapping[metric]['filename']
                      for inode in listdir(exp_base)
-                     if args.algorithm == 'all' or args.algorithm in inode
-                     if not args.attack_type or attack_name_mapping[args.attack_type] in inode
+                     if algorithm == 'all' or algorithm in inode
+                     if not attack_type or attack_name_mapping[attack_type] in inode
                      if isdir(exp_base + inode)]
 
-    
     if sorting == 'attackers':
         list_of_files.sort(key=sort_key_by_attackers)
     elif sorting == 'alphanumeric':
@@ -45,26 +67,6 @@ def get_list_of_files(metric, sorting):
 
 
 if __name__ == "__main__":
-    metric_file_mapping = {'success_ratio':{'ylabel':'Success Ratio',
-                                            'xlabel':'Time Epochs',
-                                            'x_range':[0, 100000],
-                                            'y_range':[0.0, 1.0],
-                                            'filename': 'cnet-succR.txt'},
-                           'transaction_values':{'ylabel':'Successful Transaction Values',
-                                                 'xlabel':'Time Epochs',
-                                                 'x_range':[0, 100000],
-                                                 'filename': 'cnet-totalCreditTransacted.txt'},
-                           'transaction_values_cumulative':{'ylabel':'Successful Transaction Values',
-                                                            'xlabel':'Time Epochs',
-                                                            'x_range':[0, 100000],
-                                                            'filename': 'cnet-totalCreditTransacted.txt',
-                                                            'cumulative': True}}
-    # This mapping is required because the names in the file paths are not
-    # intuitive, but it would be difficult to change them.
-    attack_name_mapping = {'griefing':'-griefing_success-',
-                           'griefing_and_dropping':'-griefing-',
-                           'dropping':'-drop_all-'}
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--experiment', '--exp', required=False,
                         help='The experiment ID')
@@ -111,7 +113,9 @@ if __name__ == "__main__":
     exp_base = args.basepath + exp_output
     if args.metric == 'all':
         for metric_name, metric_props in metric_file_mapping.items():
-            list_of_files = get_list_of_files(metric_name, sorting=args.sorting)
+            list_of_files = get_list_of_files(metric_name, sorting=args.sorting,
+                                              algorithm=args.algorithm,
+                                              attack_type=args.attack_type)
     
             pp = pprint.PrettyPrinter(indent=4)
             pp.pprint(list_of_files)

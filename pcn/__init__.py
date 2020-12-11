@@ -24,7 +24,8 @@ from pcn.plot_utils import (
 from pcn.graph_analysis import (
     calculate_betweenness_centrality_raw,
     top_n_connections_by_centrality,
-    top_n_connections_by_tree_depth
+    top_n_connections_by_tree_depth,
+    n_connections_by_random
 )
 
 from pcn.lightning_utils import (

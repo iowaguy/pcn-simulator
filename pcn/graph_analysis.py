@@ -6,6 +6,7 @@ from typing import Tuple
 import json
 import pcn.exp_analysis as exp_analysis
 import numpy as np
+import random
 
 first_data_line_in_topo = 7
 betweenness_centrality = 'betweenness_centrality'
@@ -87,3 +88,10 @@ def __top_n_connections_by_tree_depth_single(exp_path, path="./", topo=None, n=1
 
     return sum([len(G.edges([str(top[i])])) for i in range(n)])
 
+def n_connections_by_random(path="./", topo=None, n=1):
+    if topo:
+        G = topo
+    else:
+        G = parse_topology(path + "/topology.graph")
+
+    return sum([len(G.edges(node)) for node in random.sample(G.nodes(), n)])
