@@ -30,7 +30,7 @@ The parameters that go in `runconfig.yml` are as follows:
 
 
 | Parameter                     | Function                                                                                                                                                                                                                                                                                                  |
-|-------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|- |- |
 | base                          | This is the path to the dataset directory.                                                                                                                                                                                                                                                                |
 | topology                      | The name of the topology file. Usually `topology.graph`.                                                                                                                                                                                                                                                  |
 | transaction_set               | The name of the transaction set file. Usually `transactions.txt`                                                                                                                                                                                                                                          |
@@ -148,7 +148,7 @@ a collection of `.txt` files under
 `data/dynamic-..../READABLE_FILE.../0/CREDIT.../`. The files of interest are:
 
 | Filename                       | Meaning                                                                              |
-|--------------------------------+--------------------------------------------------------------------------------------|
+|- |- |
 | cnet-nodeDepths.txt            | The depth of each node in the spanning tree. Only for `speedymurmurs`.               |
 | cnet-numChildren.txt           | The number of children for each node in the spanning tree. Only for `speedymurmurs`. |
 | cnet-succR.txt                 | The success ratio in each epoch.                                                     |
