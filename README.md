@@ -1,5 +1,3 @@
-# Dependencies
-- Maven (on most OSes can be installed on command line)
 
 # Running the Simulator
 The simulator can be run in one of two ways. It can either be run as a
@@ -8,6 +6,9 @@ standalone JVM application, or as part of an experiment which will run many JVMs
 compiled; this can be done by running `mvn clean install -DskipTests`. This
 simulator requires Java 8, so you must set the JAVA_HOME environment variable
 appropriately.
+
+## Dependencies
+- Maven (on most OSes can be installed on command line)
 
 ## Standalone Mode
 Standalone mode can be used to run one of the routing algorithms for a
@@ -29,11 +30,11 @@ The parameters that go in `runconfig.yml` are as follows:
 
 
 | Parameter                     | Function                                                                                                                                                                                                                                                                                                  |
-| -                             | -                                                                                                                                                                                                                                                                                                         |
+|-------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | base                          | This is the path to the dataset directory.                                                                                                                                                                                                                                                                |
 | topology                      | The name of the topology file. Usually `topology.graph`.                                                                                                                                                                                                                                                  |
 | transaction_set               | The name of the transaction set file. Usually `transactions.txt`                                                                                                                                                                                                                                          |
-| sumulation_type               | Recommended setting is `dynamic`. `static` has not been tested in a while.                                                                                                                                                                                                                                |
+| simulation_type               | Recommended setting is `dynamic`. `static` has not been tested in a while.                                                                                                                                                                                                                                |
 | force_overwrite               | boolean. Should prior results be overwritten?                                                                                                                                                                                                                                                             |
 | routing_algorithm             | One of: `speedymurmurs` or `maxflow_collateralize`                                                                                                                                                                                                                                                        |
 | attempts                      | Retries for failed transactions.                                                                                                                                                                                                                                                                          |
@@ -74,6 +75,13 @@ mkvirtualenv pcn -p python3 -r requirements.txt
 This will install the basics and put you in the env. In the future, when you
 will only need to run: `workon pcn` to enter the virtual environment where
 all the dependencies are installed.
+
+The `JAVA_HOME` environment variable must be set in all shells. To do this, find
+your `JAVA_HOME` and put the following in your `.bash_profile`.
+
+``` bash
+export JAVA_HOME=<your java_home path>
+```
 
 ### Running ipyparallel
 We require two `IPyParallel` components: controllers and engines. The controller
@@ -126,3 +134,23 @@ fail the second time unless the `force_overwrite` option is set to `true`.
 When the experiments are done running, stop the engines with `./sim
 stop`; this must be run on all nodes in the cluster. You can see the current
 status of your ipcluster by running `./sim status`.
+
+### Configuring Concurrent Simulations On Multiple Machines
+Open `~/.ipython/profile_default/security/ipcontroller-engine.json`, and set the
+`location` key to the hostname where you want to run the controller. Copy this
+configuration file to the same path on all machines in the cluster.
+
+# Results Analysis
+The output will be written to a series of subdirectories within `data/`. The
+naming convention is as follows
+`<simulation_type>-id<dataset_id>-<experiment_id>`. The results for that run are
+a collection of `.txt` files under
+`data/dynamic-..../READABLE_FILE.../0/CREDIT.../`. The files of interest are:
+
+| Filename                       | Meaning                                                                              |
+|--------------------------------+--------------------------------------------------------------------------------------|
+| cnet-nodeDepths.txt            | The depth of each node in the spanning tree. Only for `speedymurmurs`.               |
+| cnet-numChildren.txt           | The number of children for each node in the spanning tree. Only for `speedymurmurs`. |
+| cnet-succR.txt                 | The success ratio in each epoch.                                                     |
+| cnet-totalCreditTransacted.txt | The successfully transacted values in each epoch.                                    |
+| cnet-transactionPerNode.txt    | The number of transactions per node.                                                 |
