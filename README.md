@@ -111,24 +111,55 @@ minute), then hit Ctrl-C.
 ```
 
 ### Running An Experiment
-An experiment takes in a generator script. This script will generate the
-configurations for each individual simulation; see `experiments.py`. Note that
-the `generate_configs()` function creates a list of lists. This is done to
-enforce a partial ordering on the simulations. This is needed because in the
-Dynamic simulator, a single simulation may consist of several steps (often 9 or
-10), and for a given setup, these steps need to happen in order.
+An experiment takes in a python dict as its configuration. This configuration
+will be used to generate configurations for each individual simulation. Many
+simulations already exist in `experiments.py`. Note that the
+`generate_configs()` function creates a list of lists. This is done to enforce a
+partial ordering on the simulations. This is needed because in the Dynamic
+simulator, a single simulation may consist of several steps (often 9 or 10), and
+for a given setup, these steps need to happen in order.
 
 The list of available experiments can be viewed by running `./sim experiment
 list`.
 
 To start an experiment, run `./sim experiment <EXPERIMENT_NAME>`, where
-`<EXPERIMENT_NAME>` is one of the provided experiments from the list command. New
-experiments can be created by defining them in `experiments.py`.
+`<EXPERIMENT_NAME>` is one of the provided experiments from the `list` command.
+New experiments can be created by defining them in `experiments.py`.
 
 There is not much in the way of tracking progess, but it can be helpful to keep
 an eye on `htop`. Note that every experiment will end up in a different
 subdirectory. However, if the same experiment is attempted to run twice, it will
 fail the second time unless the `force_overwrite` option is set to `true`.
+
+The experiments used in [Exploiting
+Centrality](https://arxiv.org/abs/2007.09047) are 22, 23, 30, 51, and 57.
+However, several other experiments are provided.
+
+### Defining An Experiment
+An experiment is defined by creating a dict entry in the `experiments` dict in
+`experiments.py`. The key is the experiment name that will be used to run the
+experiment. The key/value pairs in the dictionary are defined in the following
+table. Note that where lists are accepted, all permutations will be run. This
+means that creating a list of *N* entries will increase the number of
+simulations by a factor of *N* (unless otherwise specified).
+
+| Key                           | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| -                             | -                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| notes                         | This is a comment field that has no bearing on the simulation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| num_steps                     | How many steps are in each simulation, most datasets should just use `1`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| data_set_list                 | list. The full name of the dataset to be used. Only one at a time is supported right now.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| concurrent_transactions_count | list. The number of concurrent transactions.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| routing_algorithms            | list. One of `common.speedymurmurs` or `common.maxflow`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| epoch_lengths_list            | list. Length of this list must correspond with the length of `data_set_list`.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| network_latency_ms            | See simulator configs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| attack_type                   | list. Of: `griefing_success`, `griefing`, or `drop_all`. See simulator configs for details.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| receiver_delay_variability    | See simulator configs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| receiver_delay_ms             | list. See simulator configs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| attacker_selection            | One of: `selected` or `random`. See `attacker_selection` in simulator configs.                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| selected_byzantine_nodes      | list of tuples. First item in tuple is a method by which attackers can be selected, one of: `baseline`, `by_number_of_transactions`, `by_tree_depth`. `baseline` is just a placeholder that must be used for the 0 attacker case. `by_number_of_transactions` calculates how many transactions will pass through each node, and selects the highest ranking of those. `by_tree_depth` is specific to `speedymurmurs` and will select the highest nodes in the spanning tree. The second number in the tuple is how many nodes to select. |
+| exp_path                      | file path. Is the path to any pre-runs that were needed. Pre-runs are needed for both the `by_tree_depth` and `by_number_of_transactions` cases.                                                                                                                                                                                                                                                                                                                                                                                         |
+| force_overwrite               | boolean. See simulator configs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+
 
 ### Stopping An Experiment
 When the experiments are done running, stop the engines with `./sim
