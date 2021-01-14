@@ -8,6 +8,7 @@ simulator requires Java 8, so you must set the JAVA_HOME environment variable
 appropriately.
 
 ## Dependencies
+- Java (Java 8 or higher)
 - Maven (on most OSes can be installed on command line)
 
 ## Standalone Mode
