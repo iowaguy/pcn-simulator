@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Weintraub"
+  given-names: "Ben"
+  orcid: "https://orcid.org/0000-0002-9527-5888"
+- family-names: "Nita-Rotaru"
+  given-names: "Cristina"
+- family-names: "Roos"
+  given-names: "Stefanie"
+title: "Structural Attacks on Local Routing in Payment Channel Networks"
+version: 1.0.0
+doi: 10.1109/EuroSPW54576.2021.00046
+date-released: 2021-09-06
+url: "https://github.com/iowaguy/pcn-simulator"
